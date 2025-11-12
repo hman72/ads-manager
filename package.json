@@ -1,0 +1,27 @@
+{
+  "name": "ads-manager",
+  "version": "0.1.0",
+  "private": true,
+  "homepage": "https://yourusername.github.io/ads-manager",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.14.19",
+    "@mui/material": "^5.14.19",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.0",
+    "gh-pages": "^6.3.0",
+    "vite": "^7.1.12"
+  }
+}

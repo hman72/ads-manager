@@ -1,0 +1,62 @@
+/* RokuText Font Family */
+@font-face {
+  font-family: 'RokuText';
+  src: url('../fonts/RokuText-Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'RokuText';
+  src: url('../fonts/RokuText-LightItalic.otf') format('opentype');
+  font-weight: 300;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'RokuText';
+  src: url('../fonts/RokuText-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'RokuText';
+  src: url('../fonts/RokuText-Italic.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'RokuText';
+  src: url('../fonts/RokuText-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'RokuText';
+  src: url('../fonts/RokuText-MediumItalic.otf') format('opentype');
+  font-weight: 500;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'RokuText';
+  src: url('../fonts/RokuText-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'RokuText';
+  src: url('../fonts/RokuText-BoldItalic.otf') format('opentype');
+  font-weight: 700;
+  font-style: italic;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  font-family: 'RokuText', Inter, Roboto, sans-serif;
+}
