@@ -2,7 +2,7 @@
   "name": "ads-manager",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://yourusername.github.io/ads-manager",
+  "homepage": "https://hman72.github.io/ads-manager",
   "type": "module",
   "scripts": {
     "dev": "vite",
