@@ -103,6 +103,7 @@ import WorkIcon from "@mui/icons-material/Work";
 import HomeIcon from "@mui/icons-material/Home";
 import Logo from "/images/Logo.svg";
 import Conversion from "./images/Conversion.png";
+import AdGroup from "/images/ad-group.png";
 
 // Register Chart.js components
 ChartJS.register(
