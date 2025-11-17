@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useTheme } from "@mui/material/styles";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
@@ -20,10 +21,19 @@ import SearchIcon from "@mui/icons-material/Search";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import DateRangeField from "./components/DateRangeField";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip as ChartTooltip,
+  Legend,
+} from 'chart.js';
+import { Bar } from 'react-chartjs-2';
 import ArchiveIcon from "@mui/icons-material/Archive";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
-import FolderIcon from "@mui/icons-material/Folder";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import ImageIcon from "@mui/icons-material/Image";
@@ -32,6 +42,7 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import TableChartIcon from "@mui/icons-material/TableChart";
+import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import Collapse from "@mui/material/Collapse";
 import BlockIcon from "@mui/icons-material/Block";
@@ -75,6 +86,7 @@ import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import AddIcon from "@mui/icons-material/Add";
 import ClearIcon from "@mui/icons-material/Clear";
 import CancelIcon from "@mui/icons-material/Cancel";
+import TuneIcon from "@mui/icons-material/Tune";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import WarningIcon from "@mui/icons-material/Warning";
 import CreditCardIcon from "@mui/icons-material/CreditCard";
@@ -89,11 +101,30 @@ import InfoIcon from "@mui/icons-material/Info";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import WorkIcon from "@mui/icons-material/Work";
 import HomeIcon from "@mui/icons-material/Home";
+import Logo from "/images/Logo.svg";
+import Conversion from "./images/Conversion.png";
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  ChartTooltip,
+  Legend
+);
+
+// Helper function to get the correct image path for both dev and production
+const getImagePath = (imagePath) => {
+  // Remove leading slash if present
+  const cleanPath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;
+  return `${import.meta.env.BASE_URL}${cleanPath}`;
+};
 
 const RokuLogo = () => (
   <Box
     component="img"
-    src="/images/logo.svg"
+    src={getImagePath("images/Logo.svg")}
     alt="Roku"
     sx={{ height: 16, mr: "8px" }}
   />
@@ -256,7 +287,7 @@ const CreativesCard = ({ adGroup, isSelected, handleCampaignCheckboxClick, onAdd
             gap: 2
           }}>
             <TileComponent
-              image="/images/Creatives/Creative-InContent-Video.png"
+              image={getImagePath("images/Creatives/Creative-InContent-Video.png")}
               title="In-content video"
               description="Video ads that play within content feeds"
               isSelected={false}
@@ -266,7 +297,7 @@ const CreativesCard = ({ adGroup, isSelected, handleCampaignCheckboxClick, onAdd
               }}
             />
             <TileComponent
-              image="/images/Creatives/Creative-Marquee.png"
+              image={getImagePath("images/Creatives/Creative-Marquee.png")}
               title="Marquee"
               description="Banner ads displayed at the top of content"
               isSelected={false}
@@ -276,7 +307,7 @@ const CreativesCard = ({ adGroup, isSelected, handleCampaignCheckboxClick, onAdd
               }}
             />
             <TileComponent
-              image="/images/Creatives/Creative-Billboard.png"
+              image={getImagePath("images/Creatives/Creative-Billboard.png")}
               title="Billboard"
               description="Large format display ads for maximum impact"
               isSelected={false}
@@ -367,7 +398,7 @@ const CreativesCard = ({ adGroup, isSelected, handleCampaignCheckboxClick, onAdd
                   {creative.type === 'In-content video' ? (
                     <Box
                       component="video"
-                      src="/images/Creatives/In-content_video.mp4"
+                      src={getImagePath("images/Creatives/In-content_video.mp4")}
                       sx={{
                         width: '175px',
                         aspectRatio: '16/9',
@@ -380,7 +411,7 @@ const CreativesCard = ({ adGroup, isSelected, handleCampaignCheckboxClick, onAdd
                   ) : creative.type === 'Marquee' ? (
                     <Box
                       component="img"
-                      src="/images/Creatives/Marquee.png"
+                      src={getImagePath("images/Creatives/Marquee.png")}
                       alt={creative.name}
                       sx={{
                         width: '175px',
@@ -392,7 +423,7 @@ const CreativesCard = ({ adGroup, isSelected, handleCampaignCheckboxClick, onAdd
                   ) : creative.type === 'Billboard' ? (
                     <Box
                       component="img"
-                      src="/images/Creatives/Billboard.png"
+                      src={getImagePath("images/Creatives/Billboard.png")}
                       alt={creative.name}
                       sx={{
                         width: '175px',
@@ -404,7 +435,7 @@ const CreativesCard = ({ adGroup, isSelected, handleCampaignCheckboxClick, onAdd
                   ) : (
                     <Box
                       component="img"
-                      src="/images/creative-placeholder.jpg"
+                      src={getImagePath("images/creative-placeholder.jpg")}
                       alt={creative.name}
                       sx={{
                         width: '175px',
@@ -860,7 +891,7 @@ const campaignsData = [
   },
   {
     id: 3,
-    campaign: "New Creative Review",
+    campaign: "Kmart Upfront Holiday Total Plan 2025",
     goal: "Conversion",
     conversionEvent: "app_installs",
     status: "Creative in review",
@@ -1039,7 +1070,7 @@ const adGroupsData = [
     goalActions: "145", 
     goalCpa: "$10.05",
     creatives: [
-      { id: 401, name: "Howdy S3 Home Banner 1", type: "Banner", status: "Approved" }
+      { id: 401, name: "Howdy S3 Home Banner 1", type: "Billboard", status: "Approved" }
     ]
   },
   { 
@@ -1150,24 +1181,24 @@ const adGroupsData = [
   { id: 9072, campaign: "Video - TRC Targeted Base - TYLER, LONGVIEW (TYL) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Inactive", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90072, name: "DeLorean DMC-12 Tyler Longview 15s Video", type: "In-content video", status: "Draft" }] },
   { id: 9073, campaign: "Video - TRC Targeted Base - WCO, TMPL, KILN (WAC) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Inactive", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90073, name: "DeLorean DMC-12 Waco Temple Killeen 15s Video", type: "In-content video", status: "Draft" }] },
   { id: 9074, campaign: "Video - TRC Targeted Base - WCHT FLLS, LWTN (WIF) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Inactive", budget: "$1,630.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90074, name: "DeLorean DMC-12 Wichita Falls Lawton 15s Video", type: "In-content video", status: "Draft" }] },
-  { id: 10, campaign: "Men 25-35 - Tech", parentCampaign: "New Creative Review", status: "Draft", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 1001, name: "Tech Banner 1", type: "Marquee", status: "Rejected" }, { id: 1002, name: "Tech Video 1", type: "In-content video", status: "In review" }, { id: 1003, name: "Tech Banner 2", type: "Billboard", status: "Draft" }] },
+  { id: 10, campaign: "432264404_Brand Showcase_Native Ads (Marquee)_50% SOVTakeover_1 (TFL0277361)", parentCampaign: "Kmart Upfront Holiday Total Plan 2025", status: "Draft", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 1001, name: "Tech Banner 1", type: "Marquee", status: "Rejected" }, { id: 1002, name: "Tech Video 1", type: "In-content video", status: "In review" }, { id: 1003, name: "Tech Banner 2", type: "Billboard", status: "Draft" }] },
   { id: 11, campaign: "Cart Abandoners - Retarget", parentCampaign: "Paused Brand Campaign", status: "Active", spend: "$892.34", impressions: "29,876", cpm: "$2.99", goalActions: "89", goalCpa: "$10.03", creatives: [{ id: 1101, name: "Retarget Banner 1", type: "Billboard", status: "Approved" }, { id: 1102, name: "Retarget Video 1", type: "In-content video", status: "Approved" }] },
   { id: 12, campaign: "Website Visitors - Retarget", parentCampaign: "Paused Brand Campaign", status: "Active", spend: "$1,123.45", impressions: "38,901", cpm: "$2.89", goalActions: "112", goalCpa: "$10.03", creatives: [{ id: 1201, name: "Website Banner 1", type: "Marquee", status: "In review" }] },
   { id: 13, campaign: "High Value Customers - Lookalike", parentCampaign: "Holiday Sale 2024", status: "Active", spend: "$1,567.89", impressions: "49,234", cpm: "$3.18", goalActions: "156", goalCpa: "$10.05", creatives: [{ id: 1301, name: "Lookalike Banner 1", type: "Billboard", status: "Approved" }, { id: 1302, name: "Lookalike Video 1", type: "In-content video", status: "Approved" }, { id: 1303, name: "Lookalike Banner 2", type: "Marquee", status: "Draft" }] },
   { id: 14, campaign: "Frequent Buyers - Lookalike", parentCampaign: "Holiday Sale 2024", status: "Active", spend: "$1,345.67", impressions: "42,108", cpm: "$3.20", goalActions: "134", goalCpa: "$10.04", creatives: [{ id: 1401, name: "Buyers Banner 1", type: "Billboard", status: "Rejected" }, { id: 1402, name: "Buyers Video 1", type: "In-content video", status: "In review" }] },
   { id: 15, campaign: "Sports Fans - Weekend", parentCampaign: "Failed Campaign Test", status: "Inactive", spend: "$678.90", impressions: "21,567", cpm: "$3.15", goalActions: "67", goalCpa: "$10.13" },
-  { id: 16, campaign: "ALL-ALL-US_RTG-S3LINE2_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277228)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$987.65", impressions: "31,234", cpm: "$3.16", goalActions: "98", goalCpa: "$10.08", creatives: [{ id: 1601, name: "Howdy S3 Home Banner 2", type: "Banner", status: "Approved" }] },
-  { id: 30, campaign: "ALL-ALL-US_RTG-S3LINE3_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277233)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3001, name: "Howdy S3 Home Banner 3", type: "Banner", status: "Approved" }] },
-  { id: 31, campaign: "ALL-ALL-US_RTG-S3LINE4_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277235)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3101, name: "Howdy S3 Home Banner 4", type: "Banner", status: "Approved" }] },
-  { id: 32, campaign: "ALL-ALL-US_RTG-S3LINE5_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277240)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3201, name: "Howdy S3 Home Banner 5", type: "Banner", status: "Approved" }] },
-  { id: 33, campaign: "ALL-ALL-US_RTG-S3LINE7_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277243)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3301, name: "Howdy S3 Home Banner 7", type: "Banner", status: "Approved" }] },
-  { id: 34, campaign: "ALL-ALL-US_RTG-S3LINE8_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277249)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3401, name: "Howdy S3 Home Banner 8", type: "Banner", status: "Approved" }] },
-  { id: 35, campaign: "ALL-ALL-US_RTG-S3LINE9_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277252)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3501, name: "Howdy S3 Home Banner 9", type: "Banner", status: "Approved" }] },
-  { id: 36, campaign: "ALL-ALL-US_RTG-S3LINE10_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277256)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3601, name: "Howdy S3 Home Banner 10 Nov", type: "Banner", status: "Approved" }] },
-  { id: 37, campaign: "ALL-ALL-US_RTG-S3LINE10_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - October (TFL0277257)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Scheduled", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3701, name: "Howdy S3 Home Banner 10 Oct", type: "Banner", status: "Draft" }] },
-  { id: 38, campaign: "ALL-ALL-US_RTG-S3LINE11_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277259)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3801, name: "Howdy S3 Home Banner 11", type: "Banner", status: "Approved" }] },
-  { id: 39, campaign: "ALL-ALL-US_RTG-S3LINE12_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - October (TFL0277263)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Scheduled", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3901, name: "Howdy S3 Home Banner 12 Oct", type: "Banner", status: "Draft" }] },
-  { id: 40, campaign: "ALL-ALL-US_RTG-S3LINE20_CPM_HOME-SPOTLIGHT_ALL_ROKU_NA_ROT-G_NA- November (TFL0277299)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 4001, name: "Howdy S3 Home Spotlight", type: "Spotlight", status: "Approved" }] },
+  { id: 16, campaign: "ALL-ALL-US_RTG-S3LINE2_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277228)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$987.65", impressions: "31,234", cpm: "$3.16", goalActions: "98", goalCpa: "$10.08", creatives: [{ id: 1601, name: "Howdy S3 Home Banner 2", type: "Billboard", status: "Approved" }] },
+  { id: 30, campaign: "ALL-ALL-US_RTG-S3LINE3_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277233)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3001, name: "Howdy S3 Home Banner 3", type: "Billboard", status: "Approved" }] },
+  { id: 31, campaign: "ALL-ALL-US_RTG-S3LINE4_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277235)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3101, name: "Howdy S3 Home Banner 4", type: "Billboard", status: "Approved" }] },
+  { id: 32, campaign: "ALL-ALL-US_RTG-S3LINE5_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277240)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3201, name: "Howdy S3 Home Banner 5", type: "Billboard", status: "Approved" }] },
+  { id: 33, campaign: "ALL-ALL-US_RTG-S3LINE7_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277243)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3301, name: "Howdy S3 Home Banner 7", type: "Billboard", status: "Approved" }] },
+  { id: 34, campaign: "ALL-ALL-US_RTG-S3LINE8_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277249)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3401, name: "Howdy S3 Home Banner 8", type: "Billboard", status: "Approved" }] },
+  { id: 35, campaign: "ALL-ALL-US_RTG-S3LINE9_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277252)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3501, name: "Howdy S3 Home Banner 9", type: "Billboard", status: "Approved" }] },
+  { id: 36, campaign: "ALL-ALL-US_RTG-S3LINE10_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277256)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3601, name: "Howdy S3 Home Banner 10 Nov", type: "Billboard", status: "Approved" }] },
+  { id: 37, campaign: "ALL-ALL-US_RTG-S3LINE10_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - October (TFL0277257)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Scheduled", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3701, name: "Howdy S3 Home Banner 10 Oct", type: "Billboard", status: "Draft" }] },
+  { id: 38, campaign: "ALL-ALL-US_RTG-S3LINE11_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277259)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3801, name: "Howdy S3 Home Banner 11", type: "Billboard", status: "Approved" }] },
+  { id: 39, campaign: "ALL-ALL-US_RTG-S3LINE12_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - October (TFL0277263)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Scheduled", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3901, name: "Howdy S3 Home Banner 12 Oct", type: "Billboard", status: "Draft" }] },
+  { id: 40, campaign: "ALL-ALL-US_RTG-S3LINE20_CPM_HOME-SPOTLIGHT_ALL_ROKU_NA_ROT-G_NA- November (TFL0277299)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cmp: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 4001, name: "Howdy S3 Home Spotlight", type: "Billboard", status: "Approved" }] },
   { id: 17, campaign: "Urban Areas - Commute Hours", parentCampaign: "Q3 Product Archive", status: "Active", spend: "$1,234.56", impressions: "39,876", cpm: "$3.10", goalActions: "123", goalCpa: "$10.04", creatives: [{ id: 1701, name: "Urban Video 1", type: "In-content video", status: "Approved" }, { id: 1702, name: "Urban Banner 1", type: "Billboard", status: "Draft" }, { id: 1703, name: "Urban Banner 2", type: "Marquee", status: "In review" }] },
   { id: 18, campaign: "Suburban Areas - Evening", parentCampaign: "Q3 Product Archive", status: "Active", spend: "$1,456.78", impressions: "46,543", cpm: "$3.13", goalActions: "145", goalCpa: "$10.05", creatives: [{ id: 1801, name: "Suburban Banner 1", type: "Billboard", status: "Approved" }] },
   { id: 19, campaign: "432015535_Brand Showcase_Native Ads (Marquee)_50% SOVTakeover_2 (TFL0277363)", parentCampaign: "Caldor Upfront Holiday 2025", status: "Scheduled", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 1901, name: "Brand Showcase Marquee 2", type: "Marquee", status: "Draft" }] },
@@ -1179,7 +1210,20 @@ const adGroupsData = [
   { id: 21, campaign: "Electronics Cross-sell", parentCampaign: "Black Friday 2023", status: "Active", spend: "$789.01", impressions: "25,432", cpm: "$3.10", goalActions: "78", goalCpa: "$10.12", creatives: [{ id: 2101, name: "Electronics Banner 1", type: "Billboard", status: "Approved" }] },
   { id: 22, campaign: "Accessories Cross-sell", parentCampaign: "Holiday Sale 2024", status: "Active", spend: "$654.32", impressions: "21,098", cpm: "$3.10", goalActions: "65", goalCpa: "$10.07", creatives: [{ id: 2201, name: "Accessories Video 1", type: "In-content video", status: "In review" }, { id: 2202, name: "Accessories Banner 1", type: "Marquee", status: "Approved" }, { id: 2203, name: "Accessories Banner 2", type: "Billboard", status: "Draft" }, { id: 2204, name: "Accessories Video 2", type: "In-content video", status: "Rejected" }] },
   { id: 23, campaign: "Premium Products Upsell", parentCampaign: "Holiday Sale 2024", status: "Active", spend: "$1,098.76", impressions: "35,467", cpm: "$3.10", goalActions: "109", goalCpa: "$10.08", creatives: Array.from({length: 37}, (_, i) => ({ id: 2300 + i + 1, name: `Premium Creative ${i + 1}`, type: ['In-content video', 'Billboard', 'Marquee'][i % 3], status: ['Approved', 'In review', 'Draft', 'Rejected'][i % 4] })) },
-  { id: 24, campaign: "Service Add-ons Upsell", parentCampaign: "New Creative Review", status: "Creative in review", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 2401, name: "Service Banner 1", type: "Marquee", status: "In review" }] },
+  { id: 24, campaign: "432015535_Brand Showcase_Native Ads (Marquee)_50% SOVTakeover_2 (TFL0277363)", parentCampaign: "Kmart Upfront Holiday Total Plan 2025", status: "Creative in review", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 2401, name: "Brand Showcase Marquee 2", type: "Marquee", status: "In review" }] },
+  { id: 25, campaign: "432015526_Brand Showcase_Native Ads (Marquee)_50% SOVTakeover_3 (TFL0277366)", parentCampaign: "Kmart Upfront Holiday Total Plan 2025", status: "Draft", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 2501, name: "Brand Showcase Marquee 3", type: "Marquee", status: "Draft" }] },
+  { id: 26, campaign: "432603873_BILLABLE_Theme_BETA_Sponsorship Display_Theme (TFL0277386)", parentCampaign: "Kmart Upfront Holiday Total Plan 2025", status: "Draft", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 2601, name: "Theme Sponsorship Billboard", type: "Billboard", status: "Draft" }] },
+  { id: 27, campaign: "432015559_Season's Streamings_Native Ads (Marquee Ad Video)_TKO_Hourly_Primetime 7-11pm UTZ (TFL0288536)", parentCampaign: "Kmart Upfront Holiday Total Plan 2025", status: "Draft", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 2701, name: "Season's Streamings Marquee Video", type: "Marquee", status: "Draft" }] },
+  { id: 28, campaign: "432604569_Season's Streamings_Season's Streaming_Native Ads (Marquee + Billboard) (TFL0288538)", parentCampaign: "Kmart Upfront Holiday Total Plan 2025", status: "Draft", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 2801, name: "Season's Streamings Combined", type: "Billboard", status: "Draft" }] },
+  { id: 29, campaign: "432262595_Season's Streamings_Season's Streaming_Premiere Tile_1A (TFL0288539)", parentCampaign: "Kmart Upfront Holiday Total Plan 2025", status: "Draft", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 2901, name: "Premiere Tile 1A", type: "Marquee", status: "Draft" }] },
+  { id: 37, campaign: "432603879_Season's Streamings_Season's Streaming_In-Destination Banner Ad_AV (TFL0288540)", parentCampaign: "Kmart Upfront Holiday Total Plan 2025", status: "Draft", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3701, name: "In-Destination Banner AV", type: "Billboard", status: "Draft" }] },
+  { id: 38, campaign: "432603861_Season's Streamings_Roku Original Premiere_Native Ads (Marquee + Billboard) (TFL0288546)", parentCampaign: "Kmart Upfront Holiday Total Plan 2025", status: "Draft", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3801, name: "Roku Premiere Native Ads", type: "Marquee", status: "Draft" }] },
+  { id: 39, campaign: "432015130_Season's Streamings_Roku Original Premiere_Title Card_AV (TFL0288547)", parentCampaign: "Kmart Upfront Holiday Total Plan 2025", status: "Draft", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3901, name: "Title Card AV", type: "Billboard", status: "Draft" }] },
+  { id: 40, campaign: "432603888_Season's Streamings_Roku Original Premiere_Roku Channel Tile_AV (TFL0288548)", parentCampaign: "Kmart Upfront Holiday Total Plan 2025", status: "Draft", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 4001, name: "Roku Channel Tile AV", type: "Marquee", status: "Draft" }] },
+  { id: 41, campaign: "432604584_Season's Streamings_Roku Original Premiere_Pause Ad_AV (TFL0288549)", parentCampaign: "Kmart Upfront Holiday Total Plan 2025", status: "Draft", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 4101, name: "Pause Ad AV", type: "Billboard", status: "Draft" }] },
+  { id: 42, campaign: "432603867_Season's Streamings_Roku Original Premiere_Sponsorship Video_Roku Channel_Targeted Base (TFL0288550)", parentCampaign: "Kmart Upfront Holiday Total Plan 2025", status: "Draft", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 4201, name: "Sponsorship Video Targeted", type: "Marquee", status: "Draft" }] },
+  { id: 43, campaign: "432604602_Season's Streamings_Roku Original Premiere_Native Ads (Spotlight Ad)_Hourly Takeover_AV (TFL0288551)", parentCampaign: "Kmart Upfront Holiday Total Plan 2025", status: "Draft", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 4301, name: "Spotlight Ad Hourly Takeover", type: "Billboard", status: "Draft" }] },
+  { id: 44, campaign: "432603894_Season's Streamings_InContent Overlay_OKtoCheckout_MLM Watch Along Overlay (TFL0289193)", parentCampaign: "Kmart Upfront Holiday Total Plan 2025", status: "Draft", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 4401, name: "Watch Along Overlay", type: "Marquee", status: "Draft" }] },
 
 ];
 
@@ -1230,7 +1274,62 @@ const creativesData = [
   }
 ];
 
+// Helper function to generate chart data based on date range
+const generateChartData = (startDate, endDate, primaryColor, secondaryColor) => {
+  const days = [];
+  const impressionsData = [];
+  const spendData = [];
+  
+  // If no dates selected, show sample data for last 7 days
+  const end = endDate || new Date();
+  const start = startDate || new Date(end.getTime() - 6 * 24 * 60 * 60 * 1000);
+  
+  const currentDate = new Date(start);
+  while (currentDate <= end) {
+    const dayName = currentDate.toLocaleDateString('en-US', { weekday: 'short' });
+    const dayDate = currentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    days.push(`${dayName} ${dayDate}`);
+    
+    // Generate sample data
+    impressionsData.push(Math.floor(Math.random() * 50000) + 10000);
+    spendData.push(Math.floor(Math.random() * 1000) + 200);
+    
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  
+  // Convert hex colors to rgba
+  const hexToRgba = (hex, opacity) => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  };
+  
+  return {
+    labels: days,
+    datasets: [
+      {
+        label: 'Impressions',
+        data: impressionsData,
+        backgroundColor: hexToRgba(primaryColor, 0.8),
+        borderColor: hexToRgba(primaryColor, 1),
+        borderWidth: 1,
+        yAxisID: 'y',
+      },
+      {
+        label: 'Spend ($)',
+        data: spendData,
+        backgroundColor: hexToRgba(secondaryColor, 0.8),
+        borderColor: hexToRgba(secondaryColor, 1),
+        borderWidth: 1,
+        yAxisID: 'y1',
+      }
+    ]
+  };
+};
+
 export default function App() {
+  const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedCampaignId, setSelectedCampaignId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -1245,6 +1344,7 @@ export default function App() {
     'Inactive', 
     'Scheduled'
   ]);
+  const [collapsedCampaigns, setCollapsedCampaigns] = useState(new Set());
   const [campaigns, setCampaigns] = useState(campaignsData);
   const [adGroups, setAdGroups] = useState(adGroupsData);
   const [creatives, setCreatives] = useState(creativesData);
@@ -1261,9 +1361,21 @@ export default function App() {
   const [selectedCreativesForAssignment, setSelectedCreativesForAssignment] = useState([]);
   const [creativeSearchTerm, setCreativeSearchTerm] = useState('');
   const [selectedAdGroupForCreatives, setSelectedAdGroupForCreatives] = useState(null);
-  const [currentView, setCurrentView] = useState('list'); // 'list' or 'details'
+  const [visibleFilters, setVisibleFilters] = useState(['status']);
+  const [filterMenuAnchor, setFilterMenuAnchor] = useState(null);
+  const [statusSelectOpen, setStatusSelectOpen] = useState(false);
+  const [creativeTypeSelectOpen, setCreativeTypeSelectOpen] = useState(false);
+  const [currentView, setCurrentView] = useState('list'); // 'list', 'details', or 'reports'
   const [selectedCampaignForDetails, setSelectedCampaignForDetails] = useState(null);
   const [selectedAdGroupForDetails, setSelectedAdGroupForDetails] = useState(null);
+  
+  // Reports view state
+  const [reportsSelectedCampaigns, setReportsSelectedCampaigns] = useState([]);
+  const [reportsSelectedCreatives, setReportsSelectedCreatives] = useState([]);
+  const [reportsStartDate, setReportsStartDate] = useState(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
+  const [reportsEndDate, setReportsEndDate] = useState(new Date());
+  const [reportsSelectedTab, setReportsSelectedTab] = useState(0); // 0: Ad account, 1: Location, 2: Creative, 3: Placement
+  
   const [selectedTab, setSelectedTab] = useState(0); // 0: Campaigns, 1: Ad groups, 2: Creatives
   const [selectedCampaigns, setSelectedCampaigns] = useState({
     0: [], // Campaigns tab selections
@@ -1340,6 +1452,9 @@ export default function App() {
   const [profileMenuAnchorEl, setProfileMenuAnchorEl] = useState(null);
   const profileMenuOpen = Boolean(profileMenuAnchorEl);
   const [selectedProfileOption, setSelectedProfileOption] = useState('All');
+  const [activeNavItem, setActiveNavItem] = useState('Campaigns'); // Default to Campaigns
+  const [reportsMenuAnchorEl, setReportsMenuAnchorEl] = useState(null);
+  const reportsMenuOpen = Boolean(reportsMenuAnchorEl);
 
   // Update campaign name when campaign type changes
   React.useEffect(() => {
@@ -1398,7 +1513,91 @@ export default function App() {
   };
 
   const handleViewChange = (event) => {
-    setViewMode(event.target.value);
+    const newViewMode = event.target.value;
+    setViewMode(newViewMode);
+    
+    // Update status filter based on view mode
+    if (newViewMode === 'Pre-launch') {
+      setStatusFilter(['Draft', 'Creative in review', 'Creative needed', 'Scheduled']);
+    } else if (newViewMode === 'Performance') {
+      setStatusFilter(['Active', 'Creative in review', 'Creative needed', 'Deactivated', 'Draft', 'Ended', 'Inactive', 'Scheduled']);
+    }
+  };
+
+  const handleFilterMenuOpen = (event) => {
+    setFilterMenuAnchor(event.currentTarget);
+  };
+
+  const handleFilterMenuClose = () => {
+    setFilterMenuAnchor(null);
+  };
+
+  const handleFilterVisibilityChange = (filterName) => {
+    setVisibleFilters(prev => {
+      let newFilters;
+      const isAdding = !prev.includes(filterName);
+      
+      if (prev.includes(filterName)) {
+        newFilters = prev.filter(f => f !== filterName);
+      } else {
+        newFilters = [...prev, filterName];
+      }
+      
+      // Close the filter menu
+      setFilterMenuAnchor(null);
+      
+      // Open the newly added filter's menu
+      if (isAdding) {
+        setTimeout(() => {
+          if (filterName === 'status') {
+            setStatusSelectOpen(true);
+          } else if (filterName === 'creativeType') {
+            setCreativeTypeSelectOpen(true);
+          }
+        }, 100);
+      }
+      
+      return newFilters;
+    });
+  };
+
+  const toggleCampaignCollapse = (campaignName) => {
+    setCollapsedCampaigns(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(campaignName)) {
+        newSet.delete(campaignName);
+      } else {
+        newSet.add(campaignName);
+      }
+      return newSet;
+    });
+  };
+
+  const expandAllCreativeGroups = () => {
+    setCollapsedCampaigns(new Set());
+  };
+
+  const collapseAllCreativeGroups = () => {
+    // Get all unique campaign names from ad groups data
+    const allCampaignNames = [...new Set(adGroupsData.map(adGroup => adGroup.campaign))];
+    setCollapsedCampaigns(new Set(allCampaignNames));
+  };
+
+  const handleCampaignGroupSelect = (campaignName, adGroups, isSelected) => {
+    const adGroupIds = adGroups.map(ag => ag.id);
+    if (isSelected) {
+      // Deselect all ad groups in this campaign
+      setSelectedCampaigns(prev => ({
+        ...prev,
+        [selectedTab]: prev[selectedTab].filter(id => !adGroupIds.includes(id))
+      }));
+    } else {
+      // Select all ad groups in this campaign
+      setSelectedCampaigns(prev => ({
+        ...prev,
+        [selectedTab]: [...new Set([...prev[selectedTab], ...adGroupIds])]
+      }));
+    }
   };
 
   const handleCreativeGridSort = (column) => {
@@ -1456,6 +1655,61 @@ export default function App() {
     setDrawerOpen(false);
   };
 
+  const handleSaveCampaign = () => {
+    if (!campaignName.trim()) {
+      console.error('Campaign name is required');
+      return;
+    }
+
+    if (!selectedCampaignType) {
+      console.error('Campaign type is required');
+      return;
+    }
+
+    // Create new campaign object
+    const newCampaign = {
+      id: Date.now(), // Simple ID generation for demo
+      campaign: campaignName.trim(),
+      goal: selectedCampaignType === 'conversion' ? 'Conversion' : 'Awareness',
+      conversionEvent: selectedCampaignType === 'conversion' ? selectedConversionEvent : null,
+      status: "Draft",
+      previousStatus: "Draft",
+      spend: "$0.00",
+      impressions: "0",
+      cpm: "$0.00",
+      goalActions: "0",
+      goalCpa: "$0.00",
+      lastModified: new Date(),
+      accessType: "self",
+      dayparting: Array.from(tempDayparting) // Save the temporary dayparting
+    };
+
+    // Add the new campaign to the campaigns array
+    setCampaigns(prev => [newCampaign, ...prev]);
+
+    // Show success message
+    setToastMessage('Campaign created successfully');
+    setToastOpen(true);
+
+    // Close the drawer
+    setDrawerOpen(false);
+
+    // Navigate to campaign details
+    setSelectedCampaignForDetails(newCampaign);
+    setSelectedAdGroupForDetails(null);
+    setCurrentView('details');
+
+    // Reset form state
+    setSelectedCampaignType(null);
+    setSpecialCategories({
+      credit: false,
+      employment: false,
+      housing: false
+    });
+    setSelectedConversionEvent('');
+    setTempDayparting(new Set());
+  };
+
   const handleAdGroupsDrawerOpen = () => {
     setAdGroupsDrawerOpen(true);
   };
@@ -1511,11 +1765,10 @@ export default function App() {
     setNewAdGroupName('');
     setMultipleAdGroupNameError(false); // Clear any error state
     
-    // Close the info drawer and go directly to Ad Group Details
+    // Close the info drawer and stay on the table view
     handleMultipleAdGroupsInfoDrawerClose();
     setSelectedCampaignForDetails(null);
-    setSelectedAdGroupForDetails(newAdGroup);
-    setCurrentView('details');
+    // Don't change the current view - stay on the table
   };
 
   const handleMultipleAdGroupsInfoDrawerOpen = (campaign) => {
@@ -1531,13 +1784,26 @@ export default function App() {
 
   // Auto-focus the ad group name field when the drawer opens
   useEffect(() => {
-    if (adGroupsDrawerOpen && adGroupNameFieldRef.current) {
-      setTimeout(() => {
-        const inputElement = adGroupNameFieldRef.current.querySelector('input');
-        if (inputElement) {
-          inputElement.focus();
+    if (adGroupsDrawerOpen) {
+      // Use multiple attempts to ensure focus works
+      const attemptFocus = (attempt = 0) => {
+        if (attempt > 10) return; // Max 10 attempts
+        
+        if (adGroupNameFieldRef.current) {
+          const inputElement = adGroupNameFieldRef.current.querySelector('input');
+          if (inputElement && document.contains(inputElement)) {
+            inputElement.focus();
+            inputElement.select();
+            return;
+          }
         }
-      }, 200);
+        
+        // Try again after a short delay
+        setTimeout(() => attemptFocus(attempt + 1), 100);
+      };
+      
+      // Start attempting to focus after initial delay
+      setTimeout(() => attemptFocus(), 100);
     }
   }, [adGroupsDrawerOpen]);
 
@@ -1602,12 +1868,15 @@ export default function App() {
   };
 
   const handleCampaignClick = (campaign) => {
+    console.log('Campaign clicked:', campaign);
     // Check if this campaign has multiple ad groups
     const campaignAdGroups = adGroups.filter(ag => ag.parentCampaign === campaign.campaign);
+    console.log('Campaign ad groups found:', campaignAdGroups.length);
     
     if (campaignAdGroups.length > 1) {
       // If multiple ad groups, navigate to the first ad group details (with sidebar) with loading
       const firstAdGroup = campaignAdGroups[0];
+      console.log('Multiple ad groups, navigating to first ad group:', firstAdGroup);
       setIsLoadingAdGroupDetails(true);
       setSelectedAdGroupForDetails(null);
       setSelectedCampaignForDetails(null);
@@ -1620,9 +1889,11 @@ export default function App() {
       }, 200);
     } else {
       // Single ad group or no ad groups, navigate to campaign details
+      console.log('Single/no ad groups, navigating to campaign details:', campaign);
       setSelectedCampaignForDetails(campaign);
       setSelectedAdGroupForDetails(null);
       setCurrentView('details');
+      console.log('Set currentView to details and selectedCampaignForDetails');
     }
   };
 
@@ -1642,8 +1913,9 @@ export default function App() {
   const handleCreateAdGroup = () => {
     // Create a new ad group object
     const adGroupName = newAdGroupName.trim() || 'New Ad Group';
-    // Use the currently selected campaign or ad group's parent campaign
-    const parentCampaign = selectedAdGroupForDetails?.parentCampaign || 
+    // Use the target campaign if set (from campaign header button), otherwise fallback to other options
+    const parentCampaign = targetCampaignForMultipleAdGroups?.campaign ||
+                          selectedAdGroupForDetails?.parentCampaign || 
                           selectedCampaignForDetails?.campaign || 
                           campaigns[0]?.campaign || 
                           'Default Campaign';
@@ -1672,10 +1944,11 @@ export default function App() {
     setToastMessage('Your ad group has been created');
     setToastOpen(true);
     
-    // Close the drawer and open Ad Group Details
+    // Close the drawer and stay on the table view
     setAdGroupsDrawerOpen(false);
-    setSelectedAdGroupForDetails(newAdGroup);
-    setCurrentView('details');
+    // Clear the target campaign after creation
+    setTargetCampaignForMultipleAdGroups(null);
+    // Don't change the current view - stay on the table
   };
 
   const handleBackToList = () => {
@@ -1883,15 +2156,32 @@ export default function App() {
 
   const filteredCampaigns = campaigns.filter(campaign => {
     const matchesSearch = campaign.campaign.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter.length === 0 || statusFilter.includes(campaign.status);
+    
+    // For Performance view, exclude Archived status regardless of status filter
+    let matchesStatus = statusFilter.length === 0 || statusFilter.includes(campaign.status);
+    if (viewMode === 'Performance' && campaign.status === 'Archived') {
+      matchesStatus = false;
+    }
+    
+    // Filter by creative type - check if campaign has ad groups with the selected creative types
+    let matchesCreativeType = selectedCreativeTypes.length === 0; // Default to true if no types selected
+    if (selectedCreativeTypes.length > 0) {
+      const campaignAdGroups = adGroups.filter(ag => ag.parentCampaign === campaign.campaign);
+      matchesCreativeType = campaignAdGroups.some(adGroup => {
+        const creativesForAdGroup = getCreativesForAdGroup(adGroup);
+        return creativesForAdGroup.some(creative => 
+          selectedCreativeTypes.includes(creative.type)
+        );
+      });
+    }
     
     // If in "show selected only" mode, only show selected campaigns
     if (showSelectedOnly && selectedCampaigns[0]?.length > 0) {
       const isSelected = selectedCampaigns[0].includes(campaign.id);
-      return matchesSearch && matchesStatus && isSelected;
+      return matchesSearch && matchesStatus && matchesCreativeType && isSelected;
     }
     
-    return matchesSearch && matchesStatus;
+    return matchesSearch && matchesStatus && matchesCreativeType;
   }).sort((a, b) => {
     // Primary sort: by last modified date (most recent first)
     const dateA = new Date(a.lastModified);
@@ -1919,7 +2209,21 @@ export default function App() {
   // Filter ad groups based on search term, selected statuses, and selected campaigns
   const filteredAdGroups = adGroups.filter(adGroup => {
     const matchesSearch = adGroup.campaign.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter.length === 0 || statusFilter.includes(adGroup.status);
+    
+    // For Performance view, exclude Archived status regardless of status filter
+    let matchesStatus = statusFilter.length === 0 || statusFilter.includes(adGroup.status);
+    if (viewMode === 'Performance' && adGroup.status === 'Archived') {
+      matchesStatus = false;
+    }
+    
+    // Filter by creative type - check if ad group has the selected creative types
+    let matchesCreativeType = selectedCreativeTypes.length === 0; // Default to true if no types selected
+    if (selectedCreativeTypes.length > 0) {
+      const creativesForAdGroup = getCreativesForAdGroup(adGroup);
+      matchesCreativeType = creativesForAdGroup.some(creative => 
+        selectedCreativeTypes.includes(creative.type)
+      );
+    }
     
     // If campaigns are selected, only show ad groups belonging to those campaigns
     const selectedCampaignIds = selectedCampaigns[0] || [];
@@ -1928,10 +2232,10 @@ export default function App() {
         .filter(camp => selectedCampaignIds.includes(camp.id))
         .map(camp => camp.campaign);
       const belongsToSelectedCampaign = selectedCampaignNames.includes(adGroup.parentCampaign);
-      return matchesSearch && matchesStatus && belongsToSelectedCampaign;
+      return matchesSearch && matchesStatus && matchesCreativeType && belongsToSelectedCampaign;
     }
     
-    return matchesSearch && matchesStatus;
+    return matchesSearch && matchesStatus && matchesCreativeType;
   }).sort((a, b) => {
     // Primary sort: by last modified date (most recent first) - if available
     if (a.lastModified && b.lastModified) {
@@ -1958,7 +2262,13 @@ export default function App() {
   // Filter creatives based on search term and selected statuses
   const filteredCreatives = creatives.filter(creative => {
     const matchesSearch = creative.campaign.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter.length === 0 || statusFilter.includes(creative.status);
+    
+    // For Performance view, exclude Archived status regardless of status filter
+    let matchesStatus = statusFilter.length === 0 || statusFilter.includes(creative.status);
+    if (viewMode === 'Performance' && creative.status === 'Archived') {
+      matchesStatus = false;
+    }
+    
     return matchesSearch && matchesStatus;
   });
 
@@ -1993,10 +2303,28 @@ export default function App() {
     setTempDayparting,
     handleMultipleAdGroupsInfoDrawerOpen
   }) => {
-    const [campaignName, setCampaignName] = useState(campaign.campaign);
-    const [lifetimeBudget, setLifetimeBudget] = useState(campaign.lifetimeBudget?.replace('$', '') || "500");
+    // Add safety check for campaign object
+    if (!campaign) {
+      console.error('CampaignDetails: No campaign data provided');
+      return (
+        <Container maxWidth={false} sx={{ mt: 0, p: "20px" }}>
+          <Typography variant="h6" color="error">
+            Campaign not found
+          </Typography>
+          <Button onClick={() => window.history.back()}>Back</Button>
+        </Container>
+      );
+    }
+
+    const [campaignName, setCampaignName] = useState(campaign.campaign || '');
+    const [lifetimeBudget, setLifetimeBudget] = useState(
+      campaign.lifetimeBudget && typeof campaign.lifetimeBudget === 'string' 
+        ? campaign.lifetimeBudget.replace('$', '') 
+        : "500"
+    );
     const [isSaving, setIsSaving] = useState(false);
     const [isBudgetSaving, setIsBudgetSaving] = useState(false);
+    const [autoBid, setAutoBid] = useState(true);
 
     // Format hour function for time display
     const formatHour = (h) => {
@@ -2714,18 +3042,80 @@ export default function App() {
         </Box>
         
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px', mt: 2 }}>
-          <Box component="img" src="/images/Channels/roku_chan.png" alt="Roku Channel" sx={{ width: 50, height: 38 }} />
-          <Box component="img" src="/images/Channels/Disney.png" alt="Disney" sx={{ width: 50, height: 38 }} />
-          <Box component="img" src="/images/Channels/hulu.png" alt="Hulu" sx={{ width: 50, height: 38 }} />
-          <Box component="img" src="/images/Channels/hbo.png" alt="HBO" sx={{ width: 50, height: 38 }} />
-          <Box component="img" src="/images/Channels/peacock.png" alt="Peacock" sx={{ width: 50, height: 38 }} />
-          <Box component="img" src="/images/Channels/tubi.png" alt="Tubi" sx={{ width: 50, height: 38 }} />
-          <Box component="img" src="/images/Channels/espn.png" alt="ESPN" sx={{ width: 50, height: 38 }} />
+          <Box component="img" src={getImagePath("images/Channels/roku_chan.png")} alt="Roku Channel" sx={{ width: 50, height: 38 }} />
+          <Box component="img" src={getImagePath("images/Channels/Disney.png")} alt="Disney" sx={{ width: 50, height: 38 }} />
+          <Box component="img" src={getImagePath("images/Channels/hulu.png")} alt="Hulu" sx={{ width: 50, height: 38 }} />
+          <Box component="img" src={getImagePath("images/Channels/hbo.png")} alt="HBO" sx={{ width: 50, height: 38 }} />
+          <Box component="img" src={getImagePath("images/Channels/peacock.png")} alt="Peacock" sx={{ width: 50, height: 38 }} />
+          <Box component="img" src={getImagePath("images/Channels/tubi.png")} alt="Tubi" sx={{ width: 50, height: 38 }} />
+          <Box component="img" src={getImagePath("images/Channels/espn.png")} alt="ESPN" sx={{ width: 50, height: 38 }} />
         </Box>
         
         <Link href="#" underline="hover" color="primary" sx={{ mt: 1, display: 'inline-block' }}>
           See more
         </Link>
+      </Box>
+
+      {/* Delivery Card */}
+      <Box sx={{ 
+        boxShadow: '0 1px 6px rgba(0, 0, 0, 0.1)',
+        p: 3,
+        backgroundColor: 'white',
+        mb: 3
+      }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Typography variant="h2">
+            Delivery
+          </Typography>
+          <Button variant="outlined" size="small">
+            Edit
+          </Button>
+        </Box>
+        
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+          Campaigns are billed on delivered impressions
+        </Typography>
+        
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px', width: '150px' }}>
+            <Typography variant="body1" color="text.secondary">
+              Auto bid
+            </Typography>
+            <Tooltip 
+              title={
+                <Box>
+                  <Typography variant="body2" gutterBottom>
+                    Allows the system to optimize your bid based on your advertising objective
+                  </Typography>
+                </Box>
+              }
+              arrow
+              placement="top"
+              componentsProps={{
+                tooltip: {
+                  sx: {
+                    backgroundColor: 'white',
+                    border: '1px solid #ccc',
+                    color: 'text.primary',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                    maxWidth: 300
+                  }
+                },
+                arrow: {
+                  sx: {
+                    color: 'white',
+                    '&::before': {
+                      border: '1px solid #ccc'
+                    }
+                  }
+                }
+              }}
+            >
+              <HelpOutlineIcon fontSize="small" color="action" />
+            </Tooltip>
+          </Box>
+          <Switch size="small" checked={autoBid} onChange={(e) => setAutoBid(e.target.checked)} />
+        </Box>
       </Box>
 
       {/* Creatives Card for Campaign */}
@@ -2772,7 +3162,7 @@ export default function App() {
                 gap: 2
               }}>
                 <TileComponent
-                  image="/images/Creatives/Creative-InContent-Video.png"
+                  image={getImagePath("images/Creatives/Creative-InContent-Video.png")}
                   title="In-content video"
                   description="Video ads that play within content feeds"
                   isSelected={false}
@@ -2781,7 +3171,7 @@ export default function App() {
                   }}
                 />
                 <TileComponent
-                  image="/images/Creatives/Creative-Marquee.png"
+                  image={getImagePath("images/Creatives/Creative-Marquee.png")}
                   title="Marquee"
                   description="Banner ads displayed at the top of content"
                   isSelected={false}
@@ -2790,7 +3180,7 @@ export default function App() {
                   }}
                 />
                 <TileComponent
-                  image="/images/Creatives/Creative-Billboard.png"
+                  image={getImagePath("images/Creatives/Creative-Billboard.png")}
                   title="Billboard"
                   description="Large format display ads for maximum impact"
                   isSelected={false}
@@ -2886,7 +3276,7 @@ export default function App() {
                         {creative.type === 'In-content video' ? (
                           <Box
                             component="video"
-                            src="/images/Creatives/In-content_video.mp4"
+                            src={getImagePath("images/Creatives/In-content_video.mp4")}
                             sx={{
                               width: '175px',
                               aspectRatio: '16/9',
@@ -2899,7 +3289,7 @@ export default function App() {
                         ) : creative.type === 'Marquee' ? (
                           <Box
                             component="img"
-                            src="/images/Creatives/Marquee.png"
+                            src={getImagePath("images/Creatives/Marquee.png")}
                             alt={creative.name}
                             sx={{
                               width: '175px',
@@ -2911,7 +3301,7 @@ export default function App() {
                         ) : creative.type === 'Billboard' ? (
                           <Box
                             component="img"
-                            src="/images/Creatives/Billboard.png"
+                            src={getImagePath("images/Creatives/Billboard.png")}
                             alt={creative.name}
                             sx={{
                               width: '175px',
@@ -2923,7 +3313,7 @@ export default function App() {
                         ) : (
                           <Box
                             component="img"
-                            src="/images/creative-placeholder.jpg"
+                            src={getImagePath("images/creative-placeholder.jpg")}
                             alt={creative.name}
                             sx={{
                               width: '175px',
@@ -2991,7 +3381,7 @@ export default function App() {
   };
 
   // Ad Group Details Component
-  const AdGroupDetails = ({ adGroup, selectedTimeSlots, setSelectedTimeSlots, setScheduleEditDrawerOpen, setDrawerContext: setDrawerContextProp, setDrawerOpen: setDrawerOpenProp }) => {
+  const AdGroupDetails = ({ adGroup, selectedTimeSlots, setSelectedTimeSlots, setScheduleEditDrawerOpen, setDrawerContext: setDrawerContextProp, setDrawerOpen: setDrawerOpenProp, setCurrentView, setActiveNavItem }) => {
     const [adGroupName, setAdGroupName] = useState(adGroup.campaign);
     const [lifetimeBudget, setLifetimeBudget] = useState(adGroup.lifetimeBudget?.replace('$', '') || "500");
     const [isSaving, setIsSaving] = useState(false);
@@ -3000,6 +3390,7 @@ export default function App() {
     const [sidebarWidth, setSidebarWidth] = useState(250);
     const [isResizing, setIsResizing] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [autoBid, setAutoBid] = useState(true);
     const endDateRef = useRef(null);
 
     const toggleCampaignDetailsExpanded = () => {
@@ -3804,13 +4195,79 @@ export default function App() {
             </Box>
             
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px', mt: 2 }}>
-              <Box component="img" src="/images/Channels/roku_chan.png" alt="Roku Channel" sx={{ width: 50, height: 38 }} />
-              <Box component="img" src="/images/Channels/Disney.png" alt="Disney" sx={{ width: 50, height: 38 }} />
-              <Box component="img" src="/images/Channels/hulu.png" alt="Hulu" sx={{ width: 50, height: 38 }} />
-              <Box component="img" src="/images/Channels/hbo.png" alt="HBO" sx={{ width: 50, height: 38 }} />
-              <Box component="img" src="/images/Channels/peacock.png" alt="Peacock" sx={{ width: 50, height: 38 }} />
-              <Box component="img" src="/images/Channels/tubi.png" alt="Tubi" sx={{ width: 50, height: 38 }} />
-              <Box component="img" src="/images/Channels/espn.png" alt="ESPN" sx={{ width: 50, height: 38 }} />
+              <Box component="img" src={getImagePath("images/Channels/roku_chan.png")} alt="Roku Channel" sx={{ width: 50, height: 38 }} />
+              <Box component="img" src={getImagePath("images/Channels/Disney.png")} alt="Disney" sx={{ width: 50, height: 38 }} />
+              <Box component="img" src={getImagePath("images/Channels/hulu.png")} alt="Hulu" sx={{ width: 50, height: 38 }} />
+              <Box component="img" src={getImagePath("images/Channels/hbo.png")} alt="HBO" sx={{ width: 50, height: 38 }} />
+              <Box component="img" src={getImagePath("images/Channels/peacock.png")} alt="Peacock" sx={{ width: 50, height: 38 }} />
+              <Box component="img" src={getImagePath("images/Channels/tubi.png")} alt="Tubi" sx={{ width: 50, height: 38 }} />
+              <Box component="img" src={getImagePath("images/Channels/espn.png")} alt="ESPN" sx={{ width: 50, height: 38 }} />
+            </Box>
+            
+            <Link href="#" underline="hover" color="primary" sx={{ mt: 1, display: 'inline-block' }}>
+              See more
+            </Link>
+          </Box>
+
+          {/* Delivery Card */}
+          <Box sx={{ 
+            boxShadow: '0 1px 6px rgba(0, 0, 0, 0.1)',
+            p: 3,
+            backgroundColor: 'white',
+            mb: 3
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography variant="h2">
+                Delivery
+              </Typography>
+              <Button variant="outlined" size="small">
+                Edit
+              </Button>
+            </Box>
+            
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+              Campaigns are billed on delivered impressions
+            </Typography>
+            
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px', width: '150px' }}>
+                <Typography variant="body1" color="text.secondary">
+                  Auto bid
+                </Typography>
+                <Tooltip 
+                  title={
+                    <Box>
+                      <Typography variant="body2" gutterBottom>
+                        Allows the system to optimize your bid based on your advertising objective
+                      </Typography>
+                    </Box>
+                  }
+                  arrow
+                  placement="top"
+                  componentsProps={{
+                    tooltip: {
+                      sx: {
+                        backgroundColor: 'white',
+                        border: '1px solid #ccc',
+                        color: 'text.primary',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                        maxWidth: 300
+                      }
+                    },
+                    arrow: {
+                      sx: {
+                        color: 'white',
+                        '&::before': {
+                          border: '1px solid #ccc'
+                        }
+                      }
+                    }
+                  }}
+                >
+                  <HelpOutlineIcon fontSize="small" color="action" />
+                </Tooltip>
+              </Box>
+              <Switch size="small" checked={autoBid} onChange={(e) => setAutoBid(e.target.checked)} />
             </Box>
           </Box>
 
@@ -3853,9 +4310,23 @@ export default function App() {
           <Typography variant="caption" color="text.secondary" sx={{ alignSelf: 'center', mr: 2 }}>
             {isSaving || isBudgetSaving ? '✓ Saved' : `Last updated ${new Date().toLocaleString()}`}
           </Typography>
-          <Button variant="contained" color="primary" size="medium">
-            Publish
-          </Button>
+          {adGroup.status === 'Active' ? (
+            <Button 
+              variant="contained" 
+              color="primary" 
+              size="medium"
+              onClick={() => {
+                setCurrentView('reports');
+                setActiveNavItem('Reports');
+              }}
+            >
+              Run report
+            </Button>
+          ) : (
+            <Button variant="contained" color="primary" size="medium">
+              Publish
+            </Button>
+          )}
         </Box>
       </Box>
     </Box>
@@ -3924,12 +4395,72 @@ export default function App() {
             </Select>
           </FormControl>
           <Box sx={{ flexGrow: 1 }} />
-          <Button color="inherit" sx={{ mr: 1 }} onClick={handleBackToList}>
+          <Button color="inherit" sx={{ 
+            mr: 1,
+            padding: '4px 12px 4px 12px',
+            backgroundColor: activeNavItem === 'Campaigns' ? '#fefefe26' : 'transparent',
+            border: activeNavItem === 'Campaigns' ? '1px solid #fefefe40' : '1px solid transparent',
+            borderRadius: '6px',
+            '&:hover': {
+              border: '1px solid white',
+              borderRadius: '6px'
+            }
+          }} onClick={() => {
+            setActiveNavItem('Campaigns');
+            handleBackToList();
+          }}>
             Campaigns
           </Button>
-          <Button color="inherit" sx={{ mr: 2 }}>
+          <Button 
+            color="inherit" 
+            sx={{ 
+              mr: 2,
+              padding: '4px 12px 4px 12px',
+              backgroundColor: activeNavItem === 'Reports' ? '#fefefe26' : 'transparent',
+              border: activeNavItem === 'Reports' ? '1px solid #fefefe40' : '1px solid transparent',
+              borderRadius: '6px',
+              '&:hover': {
+                border: '1px solid white',
+                borderRadius: '6px'
+              }
+            }} 
+            onClick={(event) => {
+              setActiveNavItem('Reports');
+              setReportsMenuAnchorEl(event.currentTarget);
+            }}
+            endIcon={<ArrowDropDownIcon />}
+          >
             Reports
           </Button>
+          <Menu
+            anchorEl={reportsMenuAnchorEl}
+            open={reportsMenuOpen}
+            onClose={() => setReportsMenuAnchorEl(null)}
+            MenuListProps={{
+              'aria-labelledby': 'reports-button',
+            }}
+            sx={{
+              '& .MuiPaper-root': {
+                mt: 1,
+                minWidth: 160,
+              },
+            }}
+          >
+            <MenuItem onClick={() => {
+              setReportsMenuAnchorEl(null);
+              setCurrentView('reports');
+              setActiveNavItem('Reports');
+            }}>
+              Reports
+            </MenuItem>
+            <MenuItem onClick={() => {
+              setReportsMenuAnchorEl(null);
+              // Add navigation logic for Custom Reports here
+              console.log('Navigate to Custom Reports');
+            }}>
+              Custom Reports
+            </MenuItem>
+          </Menu>
           <IconButton 
             color="inherit"
             onClick={handleProfileMenuClick}
@@ -3981,37 +4512,87 @@ export default function App() {
       </AppBar>
 
       {currentView === 'list' ? (
-        <Container maxWidth={false} sx={{ mt: 4, p: "20px" }}>
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2, gap: 2 }}>
-            <TextField 
-              placeholder="Search by name or ID"
-              value={searchTerm}
-              onChange={handleSearchChange}
-              variant="outlined"
-              sx={{ flexGrow: 1, height: "40px" }}
-              InputProps={{
-                sx: { height: "40px" },
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-                endAdornment: searchTerm && (
-                  <InputAdornment position="end">
-                    <IconButton 
-                      size="small" 
-                      onClick={() => setSearchTerm('')}
-                      sx={{ p: 0.5 }}
-                    >
-                      <ClearIcon fontSize="small" />
-                    </IconButton>
-                  </InputAdornment>
-                )
-              }}
-            />
-            <FormControl sx={{ minWidth: 120, maxWidth: 360, height: "40px" }} variant="outlined">
+        <Container maxWidth={false} sx={{ p: "20px" }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: "4px", width: "100%" }}>
+              <TextField 
+                placeholder="Search by name or ID"
+                value={searchTerm}
+                onChange={handleSearchChange}
+                variant="outlined"
+                sx={{ width: "100%", minWidth: "250px", height: "40px" }}
+                InputProps={{
+                  sx: { height: "40px" },
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon />
+                    </InputAdornment>
+                  ),
+                  endAdornment: searchTerm && (
+                    <InputAdornment position="end">
+                      <IconButton 
+                        size="small" 
+                        onClick={() => setSearchTerm('')}
+                        sx={{ p: 0.5 }}
+                      >
+                        <ClearIcon fontSize="small" />
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }}
+              />
+              <IconButton 
+                color="primary"
+                sx={{ 
+                  height: "40px", 
+                  width: "40px",
+                  border: "1px solid rgba(0, 0, 0, 0.23)",
+                  borderRadius: "4px",
+                  "&:hover": {
+                    border: "1px solid rgba(0, 0, 0, 0.87)"
+                  }
+                }}
+                title="Filter options"
+                onClick={handleFilterMenuOpen}
+              >
+                <TuneIcon />
+              </IconButton>
+              <Menu
+                anchorEl={filterMenuAnchor}
+                open={Boolean(filterMenuAnchor)}
+                onClose={handleFilterMenuClose}
+              >
+                <MenuItem onClick={(e) => e.stopPropagation()}>
+                  <Checkbox
+                    checked={visibleFilters.includes('status')}
+                    onChange={() => handleFilterVisibilityChange('status')}
+                  />
+                  <ListItemText 
+                    primary="Status"
+                    onClick={() => handleFilterVisibilityChange('status')}
+                    sx={{ cursor: 'pointer', ml: 1 }}
+                  />
+                </MenuItem>
+                <MenuItem onClick={(e) => e.stopPropagation()}>
+                  <Checkbox
+                    checked={visibleFilters.includes('creativeType')}
+                    onChange={() => handleFilterVisibilityChange('creativeType')}
+                  />
+                  <ListItemText 
+                    primary="Creative Type"
+                    onClick={() => handleFilterVisibilityChange('creativeType')}
+                    sx={{ cursor: 'pointer', ml: 1 }}
+                  />
+                </MenuItem>
+              </Menu>
+              {visibleFilters.includes('status') && (
+              <div data-filter="status">
+              <FormControl sx={{ minWidth: 120, maxWidth: 360, height: "40px" }} variant="outlined">
               <InputLabel id="status-label" sx={{ fontSize: "14px" }}>Status</InputLabel>
               <Select
+                open={statusSelectOpen}
+                onOpen={() => setStatusSelectOpen(true)}
+                onClose={() => setStatusSelectOpen(false)}
                 labelId="status-label"
                 value={statusFilter}
                 onChange={handleStatusChange}
@@ -4067,7 +4648,59 @@ export default function App() {
                 </MenuItem>
               </Select>
             </FormControl>
-            <FormControl sx={{ minWidth: 150, height: "40px" }} variant="outlined">
+            </div>
+            )}
+            {visibleFilters.includes('creativeType') && (
+            <div data-filter="creativeType">
+            <FormControl sx={{ minWidth: 120, maxWidth: 360, height: "40px" }} variant="outlined">
+              <InputLabel 
+                id="creative-type-label" 
+                shrink={true}
+                sx={{ fontSize: "14px" }}
+              >
+                Creative Type
+              </InputLabel>
+              <Select
+                open={creativeTypeSelectOpen}
+                onOpen={() => setCreativeTypeSelectOpen(true)}
+                onClose={() => setCreativeTypeSelectOpen(false)}
+                labelId="creative-type-label"
+                value={selectedCreativeTypes}
+                onChange={(event) => setSelectedCreativeTypes(event.target.value)}
+                label="Creative Type"
+                variant="outlined"
+                multiple
+                displayEmpty
+                renderValue={(selected) => selected.length === 0 ? 'All' : selected.join(', ')}
+                title={selectedCreativeTypes.length === 0 ? 'All creative types' : selectedCreativeTypes.join(', ')}
+                sx={{ 
+                  height: "40px",
+                  "& .MuiSelect-select": {
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap"
+                  }
+                }}
+              >
+                <MenuItem value="Billboard">
+                  <Checkbox checked={selectedCreativeTypes.indexOf('Billboard') > -1} />
+                  <ListItemText primary="Billboard" />
+                </MenuItem>
+                <MenuItem value="In-content video">
+                  <Checkbox checked={selectedCreativeTypes.indexOf('In-content video') > -1} />
+                  <ListItemText primary="In-content video" />
+                </MenuItem>
+                <MenuItem value="Marquee">
+                  <Checkbox checked={selectedCreativeTypes.indexOf('Marquee') > -1} />
+                  <ListItemText primary="Marquee" />
+                </MenuItem>
+              </Select>
+            </FormControl>
+            </div>
+            )}
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, pl: "20px" }}>
+              <FormControl sx={{ minWidth: 150, height: "40px" }} variant="outlined">
               <InputLabel id="view-label" sx={{ fontSize: "14px" }}>View</InputLabel>
               <Select
                 labelId="view-label"
@@ -4086,7 +4719,11 @@ export default function App() {
                 }}
                 renderValue={(value) => (
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <TableChartIcon sx={{ color: "primary.main" }} />
+                    {value === "Pre-launch" ? (
+                      <RocketLaunchIcon sx={{ color: "primary.main" }} />
+                    ) : (
+                      <TableChartIcon sx={{ color: "primary.main" }} />
+                    )}
                     {value}
                   </Box>
                 )}
@@ -4097,13 +4734,20 @@ export default function App() {
                     Performance
                   </Box>
                 </MenuItem>
+                <MenuItem value="Pre-launch">
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <RocketLaunchIcon />
+                    Pre-launch
+                  </Box>
+                </MenuItem>
               </Select>
             </FormControl>
             {selectedProfileOption !== 'Managed' && (
-              <Button variant="contained" color="primary" sx={{ height: "40px" }} onClick={handleCreateCampaign}>
+              <Button variant="contained" color="primary" sx={{ height: "40px", whiteSpace: "nowrap" }} onClick={handleCreateCampaign}>
                 Create campaign
               </Button>
             )}
+            </Box>
           </Box>
           
           <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
@@ -4263,8 +4907,39 @@ export default function App() {
               display: 'flex', 
               justifyContent: 'flex-end', 
               alignItems: 'center', 
-              mb: 2 
+              mb: 2,
+              gap: 1
             }}>
+              {/* Expand/Collapse All Control */}
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => {
+                  // Check if any groups are collapsed
+                  const allCampaignNames = [...new Set(adGroupsData.map(adGroup => adGroup.campaign))];
+                  const hasCollapsedGroups = allCampaignNames.some(campaign => collapsedCampaigns.has(campaign));
+                  
+                  if (hasCollapsedGroups) {
+                    expandAllCreativeGroups();
+                  } else {
+                    collapseAllCreativeGroups();
+                  }
+                }}
+                startIcon={(() => {
+                  const allCampaignNames = [...new Set(adGroupsData.map(adGroup => adGroup.campaign))];
+                  const hasCollapsedGroups = allCampaignNames.some(campaign => collapsedCampaigns.has(campaign));
+                  return hasCollapsedGroups ? <KeyboardArrowDownIcon /> : <KeyboardArrowUpIcon />;
+                })()}
+                sx={{ textTransform: 'none' }}
+              >
+                {(() => {
+                  const allCampaignNames = [...new Set(adGroupsData.map(adGroup => adGroup.campaign))];
+                  const hasCollapsedGroups = allCampaignNames.some(campaign => collapsedCampaigns.has(campaign));
+                  return hasCollapsedGroups ? 'Expand all' : 'Collapse all';
+                })()}
+              </Button>
+
+              {/* View Creatives Grid Control */}
               {selectedProfileOption !== 'Self' && (
                 <ButtonGroup variant="outlined" size="small">
                   <Button
@@ -4325,330 +5000,341 @@ export default function App() {
                 <TableHead>
                   <TableRow>
                     <TableCell padding="checkbox">
-                      <Checkbox
-                        indeterminate={selectedCampaigns[selectedTab]?.length > 0 && selectedCampaigns[selectedTab]?.length < getFilteredData().length}
-                        checked={getFilteredData().length > 0 && selectedCampaigns[selectedTab]?.length === getFilteredData().length}
-                        onChange={handleSelectAllClick}
+                      <Checkbox 
+                        size="small"
+                        indeterminate={selectedCreativesForAssignment.length > 0 && selectedCreativesForAssignment.length < adGroupsData.flatMap(adGroup => getCreativesForAdGroup(adGroup)).length}
+                        checked={selectedCreativesForAssignment.length > 0 && selectedCreativesForAssignment.length === adGroupsData.flatMap(adGroup => getCreativesForAdGroup(adGroup)).length}
+                        onChange={handleSelectAllCreatives}
                       />
                     </TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Ad group</TableCell>
-                    <TableCell align="center" sx={{ fontWeight: 'bold' }}></TableCell>
+                    <TableCell sx={{ width: '175px', padding: '8px' }}>Preview</TableCell>
+                    <TableCell sx={{ width: '100%' }}>Creative Name</TableCell>
+                    <TableCell sx={{ whiteSpace: 'nowrap' }}>Status</TableCell>
+                    <TableCell sx={{ whiteSpace: 'nowrap' }}>Type</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {getFilteredData().map((adGroup) => (
-                    <React.Fragment key={adGroup.id}>
-                      <TableRow hover sx={{ backgroundColor: 'grey-50' }}>
-                        <TableCell padding="checkbox">
-                          <Checkbox
-                            checked={isSelected(adGroup.id)}
-                            onChange={() => handleCampaignCheckboxClick(adGroup.id)}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <IconButton
-                            aria-label="expand row"
-                            size="small"
-                            onClick={() => handleRowToggle(adGroup.id)}
-                          >
-                            {openRows[adGroup.id] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-                          </IconButton>
-                          {adGroup.campaign}
-                        </TableCell>
-                        <TableCell align="center">
-                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
-                            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                              {(() => {
-                                // Use the same function that the child table uses
-                                const creativesToShow = getCreativesForAdGroup(adGroup);
-                                
-                                // If no creatives, show "Creatives required" status
-                                if (!creativesToShow || creativesToShow.length === 0) {
-                                  return (
-                                    <StatusComponent status="Creatives required" />
-                                  );
-                                }
-                                
-                                // Group creatives by status and count them
-                                const statusCounts = {};
-                                creativesToShow?.forEach(creative => {
-                                  statusCounts[creative.status] = (statusCounts[creative.status] || 0) + 1;
-                                });
-                                
-                                // Helper function to get lighter background color for each status
-                                const getStatusPillColor = (status) => {
-                                  switch (status) {
-                                    case 'Active':
-                                    case 'Approved':
-                                      return '#e8f5e8'; // Light green
-                                    case 'Archived':
-                                      return '#e8f5e8'; // Light green
-                                    case 'Creative in review':
-                                    case 'In review':
-                                    case 'Draft':
-                                    case 'Scheduled':
-                                    case 'Event not yet configured':
-                                      return '#e3f2fd'; // Light blue
-                                    case 'Creative needed':
-                                    case 'Deactivated':
-                                    case 'Rejected':
-                                    case 'Creatives required':
-                                      return '#ffebee'; // Light red
-                                    case 'Ended':
-                                      return '#f5f5f5'; // Light grey
-                                    case 'Inactive':
-                                      return '#fff3e0'; // Light orange
-                                    default:
-                                      return '#f5f5f5'; // Light grey
-                                  }
-                                };
-                                
-                                return Object.entries(statusCounts).map(([status, count]) => (
-                                  <Box 
-                                    key={status} 
-                                    sx={{ 
-                                      display: 'flex', 
-                                      alignItems: 'center', 
-                                      gap: 0.5,
-                                      backgroundColor: getStatusPillColor(status),
-                                      borderRadius: '12px',
-                                      padding: '2px 6px',
-                                      border: '1px solid rgba(0, 0, 0, 0.1)'
-                                    }}
-                                  >
-                                    <StatusComponent status={status} />
-                                    <Chip 
-                                      label={count} 
-                                      size="small" 
-                                      sx={{ 
-                                        height: '16px', 
-                                        fontSize: '10px', 
-                                        minWidth: '16px',
-                                        backgroundColor: 'rgba(255, 255, 255, 0.7)'
-                                      }}
-                                    />
-                                  </Box>
-                                ));
-                              })()}
-                            </Box>
-                            <Button 
-                              variant="outlined" 
+                  {/* Group creatives by ad groups, similar to how ad groups are grouped by campaigns */}
+                  {adGroupsData.map((adGroup) => {
+                    const creativesForAdGroup = getCreativesForAdGroup(adGroup)
+                      .filter(creative => 
+                        (selectedCreativeTypes.length === 0 || 
+                         selectedCreativeTypes.includes(creative.type)) &&
+                        (selectedCreativeStatuses.length === 0 || 
+                         selectedCreativeStatuses.includes(creative.status)) &&
+                        (creativeSearchTerm === '' ||
+                         creative.name.toLowerCase().includes(creativeSearchTerm.toLowerCase()))
+                      );
+                    
+                    // Don't render ad group header if no creatives match the filter
+                    if (creativesForAdGroup.length === 0) {
+                      return null;
+                    }
+
+                    return (
+                      <React.Fragment key={adGroup.id}>
+                        {/* Ad Group Header Row */}
+                        <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                          <TableCell padding="checkbox" sx={{ backgroundColor: '#f5f5f5' }}>
+                            <Checkbox
                               size="small"
-                              onClick={() => {
-                                setSelectedAdGroupForCreatives(adGroup);
-                                setCreativesDrawerOpen(true);
-                              }}
-                            >
-                              Add creatives
-                            </Button>
-                          </Box>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell style={{ paddingBottom: 0, paddingTop: 0, backgroundColor: '#FAFAFA' }} colSpan={3}>
-                          <Collapse in={openRows[adGroup.id]} timeout="auto" unmountOnExit>
-                            <Box sx={{ borderLeft: '1px solid #E0E0E0', borderRight: '1px solid #E0E0E0' }}>
-                              {(() => {
-                                const creativesToShow = getCreativesForAdGroup(adGroup);
-                                
-                                // If no creatives, show TileComponents instead of table
-                                if (!creativesToShow || creativesToShow.length === 0) {
-                                  return (
-                                    <Box sx={{ backgroundColor: 'white', padding: 3 }}>
-                                      <Typography variant="h5" sx={{ mb: 2, textAlign: 'left' }}>
-                                        Select the type of creative you want to add to this ad group.
-                                      </Typography>
-                                      <Box sx={{ 
-                                        display: 'flex', 
-                                        justifyContent: 'center', 
-                                        gap: 2
-                                      }}>
-                                        <TileComponent
-                                          image="/images/Creatives/Creative-InContent-Video.png"
-                                          title="In-content video"
-                                          description="Video ads that play within content feeds"
-                                          isSelected={false}
-                                          onClick={() => console.log('In-content video selected')}
-                                        />
-                                        <TileComponent
-                                          image="/images/Creatives/Creative-Marquee.png"
-                                          title="Marquee"
-                                          description="Banner ads displayed at the top of content"
-                                          isSelected={false}
-                                          onClick={() => console.log('Marquee selected')}
-                                        />
-                                        <TileComponent
-                                          image="/images/Creatives/Creative-Billboard.png"
-                                          title="Billboard"
-                                          description="Large format display ads for maximum impact"
-                                          isSelected={false}
-                                          onClick={() => console.log('Billboard selected')}
-                                        />
-                                        <Card 
-                                          sx={{ 
-                                            width: '280px', 
-                                            height: '275px', 
-                                            cursor: 'pointer',
-                                            border: '1px solid #ccc',
-                                            borderRadius: 0,
-                                            backgroundColor: '#FAFAFA',
-                                            boxShadow: 'none'
-                                          }}
-                                          onClick={() => {
-                                            setSelectedAdGroupForCreatives(adGroup);
-                                            setAssignCreativeDrawerOpen(true);
-                                          }}
-                                        >
-                                          <Box sx={{ 
-                                            display: 'flex', 
-                                            flexDirection: 'column', 
-                                            alignItems: 'center', 
-                                            justifyContent: 'center',
-                                            height: '100%',
-                                            p: 2
-                                          }}>
-                                            <Box sx={{ 
-                                              width: '100%', 
-                                              height: 140, 
-                                              display: 'flex', 
-                                              alignItems: 'center', 
-                                              justifyContent: 'center',
-                                              mb: 2
-                                            }}>
-                                              <ImageIcon sx={{ fontSize: 64, color: 'primary.main' }} />
-                                            </Box>
-                                            <Typography variant="body1" sx={{ mb: 1, textAlign: 'center' }}>
-                                              Select an existing creative from your creative library
-                                            </Typography>
-                                          </Box>
-                                        </Card>
-                                      </Box>
-                                    </Box>
-                                  );
-                                }
-                                
-                                // Show normal creative table if creatives exist
-                                return (
-                                  <Table size="small" aria-label="creatives" sx={{ backgroundColor: 'white' }}>
-                                    <TableHead>
-                                      <TableRow>
-                                        <TableCell padding="checkbox">
-                                          <Checkbox
-                                            size="small"
-                                            indeterminate={
-                                              getCreativesForAdGroup(adGroup)?.some(creative => isSelected(creative.id)) &&
-                                              !getCreativesForAdGroup(adGroup)?.every(creative => isSelected(creative.id))
-                                            }
-                                            checked={getCreativesForAdGroup(adGroup)?.every(creative => isSelected(creative.id)) || false}
-                                            onChange={(event) => {
-                                              const isChecked = event.target.checked;
-                                              getCreativesForAdGroup(adGroup)?.forEach(creative => {
-                                                if (isChecked !== isSelected(creative.id)) {
-                                                  handleCampaignCheckboxClick(creative.id);
-                                                }
-                                              });
-                                            }}
-                                          />
-                                        </TableCell>
-                                        <TableCell sx={{ width: '175px', padding: '8px' }}>Preview</TableCell>
-                                        <TableCell sx={{ width: '100%' }}>Creative Name</TableCell>
-                                        <TableCell sx={{ whiteSpace: 'nowrap' }}>Status</TableCell>
-                                        <TableCell sx={{ whiteSpace: 'nowrap' }}>Type</TableCell>
-                                      </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                      {getCreativesForAdGroup(adGroup)?.map((creative) => (
-                                        <TableRow key={creative.id}>
-                                          <TableCell padding="checkbox">
-                                            <Checkbox
-                                              checked={isSelected(creative.id)}
-                                              onChange={() => handleCampaignCheckboxClick(creative.id)}
-                                              size="small"
-                                            />
-                                          </TableCell>
-                                          <TableCell sx={{ width: '175px', padding: '8px' }}>
-                                            {creative.type === 'In-content video' ? (
-                                              <Box
-                                                component="video"
-                                                src="/images/Creatives/In-content_video.mp4"
-                                                sx={{
-                                                  width: '175px',
-                                                  aspectRatio: '16/9',
-                                                  objectFit: 'cover',
-                                                  backgroundColor: '#f5f5f5'
-                                                }}
-                                                controls
-                                                muted
-                                              />
-                                            ) : creative.type === 'Marquee' ? (
-                                              <Box
-                                                component="img"
-                                                src="/images/Creatives/Marquee.png"
-                                                alt={creative.name}
-                                                sx={{
-                                                  width: '175px',
-                                                  aspectRatio: '16/9',
-                                                  objectFit: 'cover',
-                                                  backgroundColor: '#f5f5f5'
-                                                }}
-                                              />
-                                            ) : creative.type === 'Billboard' ? (
-                                              <Box
-                                                component="img"
-                                                src="/images/Creatives/Billboard.png"
-                                                alt={creative.name}
-                                                sx={{
-                                                  width: '175px',
-                                                  aspectRatio: '16/9',
-                                                  objectFit: 'cover',
-                                                  backgroundColor: '#f5f5f5'
-                                                }}
-                                              />
-                                            ) : (
-                                              <Box
-                                                component="img"
-                                                src="/images/creative-placeholder.jpg"
-                                                alt={creative.name}
-                                                sx={{
-                                                  width: '175px',
-                                                  aspectRatio: '16/9',
-                                                  objectFit: 'cover',
-                                                  backgroundColor: '#f5f5f5'
-                                                }}
-                                              />
-                                            )}
-                                          </TableCell>
-                                          <TableCell component="th" scope="row" sx={{ width: '100%' }}>
-                                            <Link href="#" underline="hover" color="primary">
-                                              {creative.name}
-                                            </Link>
-                                          </TableCell>
-                                          <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                                            <StatusComponent status={creative.status} />
-                                          </TableCell>
-                                          <TableCell sx={{ whiteSpace: 'nowrap' }}>{creative.type}</TableCell>
-                                        </TableRow>
-                                      ))}
-                                    </TableBody>
-                                  </Table>
-                                );
+                              indeterminate={(() => {
+                                const creativeIds = creativesForAdGroup.map(c => c.id);
+                                const selectedCount = creativeIds.filter(id => selectedCreativesForAssignment.includes(id)).length;
+                                return selectedCount > 0 && selectedCount < creativeIds.length;
                               })()}
+                              checked={(() => {
+                                const creativeIds = creativesForAdGroup.map(c => c.id);
+                                return creativeIds.length > 0 && creativeIds.every(id => selectedCreativesForAssignment.includes(id));
+                              })()}
+                              onChange={() => {
+                                const creativeIds = creativesForAdGroup.map(c => c.id);
+                                const areAllSelected = creativeIds.every(id => selectedCreativesForAssignment.includes(id));
+                                if (areAllSelected) {
+                                  // Deselect all creatives in this ad group
+                                  setSelectedCreativesForAssignment(prev => prev.filter(id => !creativeIds.includes(id)));
+                                } else {
+                                  // Select all creatives in this ad group
+                                  setSelectedCreativesForAssignment(prev => [...new Set([...prev, ...creativeIds])]);
+                                }
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell colSpan={4} sx={{ 
+                            fontWeight: 'bold', 
+                            fontSize: '0.9rem',
+                            backgroundColor: '#f5f5f5',
+                            borderTop: '2px solid #e0e0e0',
+                            cursor: 'pointer',
+                            '&:hover': {
+                              backgroundColor: '#eeeeee'
+                            }
+                          }}
+                          onClick={() => toggleCampaignCollapse(adGroup.campaign)}
+                          >
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, flexWrap: 'wrap' }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                                {collapsedCampaigns.has(adGroup.campaign) ? (
+                                  <ChevronRightIcon fontSize="small" />
+                                ) : (
+                                  <KeyboardArrowDownIcon fontSize="small" />
+                                )}
+                                <span>{adGroup.campaign}</span>
+                                {(() => {
+                                  // Group creatives by status and count them
+                                  const statusCounts = {};
+                                  creativesForAdGroup.forEach(creative => {
+                                    statusCounts[creative.status] = (statusCounts[creative.status] || 0) + 1;
+                                  });
+
+                                  // Helper function to get lighter background color for each status
+                                  const getStatusPillColor = (status) => {
+                                    switch (status) {
+                                      case 'Active':
+                                      case 'Approved':
+                                        return '#e8f5e8'; // Light green
+                                      case 'Archived':
+                                        return '#e8f5e8'; // Light green
+                                      case 'Creative in review':
+                                      case 'In review':
+                                      case 'Draft':
+                                      case 'Scheduled':
+                                      case 'Event not yet configured':
+                                        return '#e3f2fd'; // Light blue
+                                      case 'Creative needed':
+                                      case 'Deactivated':
+                                      case 'Rejected':
+                                      case 'Creatives required':
+                                        return '#ffebee'; // Light red
+                                      case 'Ended':
+                                        return '#f5f5f5'; // Light grey
+                                      case 'Inactive':
+                                        return '#fff3e0'; // Light orange
+                                      default:
+                                        return '#f5f5f5'; // Light grey
+                                    }
+                                  };
+
+                                  return Object.entries(statusCounts).map(([status, count]) => (
+                                    <Box 
+                                      key={status} 
+                                      sx={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        gap: 0.5,
+                                        backgroundColor: getStatusPillColor(status),
+                                        borderRadius: '12px',
+                                        padding: '2px 6px',
+                                        border: '1px solid rgba(0, 0, 0, 0.1)'
+                                      }}
+                                    >
+                                      <StatusComponent status={status} />
+                                      <Chip 
+                                        label={count} 
+                                        size="small" 
+                                        sx={{ 
+                                          height: '16px', 
+                                          fontSize: '10px', 
+                                          minWidth: '16px',
+                                          backgroundColor: 'rgba(255, 255, 255, 0.7)'
+                                        }}
+                                      />
+                                    </Box>
+                                  ));
+                                })()}
+                              </Box>
+                              <Button 
+                                variant="outlined" 
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedAdGroupForCreatives(adGroup);
+                                  setCreativesDrawerOpen(true);
+                                }}
+                                sx={{
+                                  textTransform: 'none'
+                                }}
+                              >
+                                Add creatives
+                              </Button>
                             </Box>
-                          </Collapse>
-                        </TableCell>
-                      </TableRow>
-                    </React.Fragment>
-                  ))}
+                          </TableCell>
+                        </TableRow>
+                        
+                        {/* Creative Rows - Only show if not collapsed */}
+                        {!collapsedCampaigns.has(adGroup.campaign) && creativesForAdGroup.map((creative) => (
+                          <TableRow key={creative.id}>
+                            <TableCell padding="checkbox">
+                              <Checkbox
+                                size="small"
+                                checked={selectedCreativesForAssignment.includes(creative.id)}
+                                onChange={() => handleCreativeSelection(creative.id)}
+                              />
+                            </TableCell>
+                            <TableCell sx={{ width: '175px', padding: '8px' }}>
+                              {creative.type === 'In-content video' ? (
+                                <Box
+                                  component="video"
+                                  src={getImagePath("images/Creatives/In-content_video.mp4")}
+                                  sx={{
+                                    width: '175px',
+                                    aspectRatio: '16/9',
+                                    objectFit: 'cover',
+                                    backgroundColor: '#f5f5f5'
+                                  }}
+                                  controls
+                                  muted
+                                />
+                              ) : creative.type === 'Marquee' ? (
+                                <Box
+                                  component="img"
+                                  src={getImagePath("images/Creatives/Marquee.png")}
+                                  alt={creative.name}
+                                  sx={{
+                                    width: '175px',
+                                    aspectRatio: '16/9',
+                                    objectFit: 'cover',
+                                    backgroundColor: '#f5f5f5'
+                                  }}
+                                />
+                              ) : creative.type === 'Billboard' ? (
+                                <Box
+                                  component="img"
+                                  src={getImagePath("images/Creatives/Billboard.png")}
+                                  alt={creative.name}
+                                  sx={{
+                                    width: '175px',
+                                    aspectRatio: '16/9',
+                                    objectFit: 'cover',
+                                    backgroundColor: '#f5f5f5'
+                                  }}
+                                />
+                              ) : (
+                                <Box
+                                  component="img"
+                                  src={getImagePath("images/creative-placeholder.jpg")}
+                                  alt={creative.name}
+                                  sx={{
+                                    width: '175px',
+                                    aspectRatio: '16/9',
+                                    objectFit: 'cover',
+                                    backgroundColor: '#f5f5f5'
+                                  }}
+                                />
+                              )}
+                            </TableCell>
+                            <TableCell component="th" scope="row" sx={{ width: '100%' }}>
+                              <Link href="#" underline="hover" color="primary">
+                                {creative.name}
+                              </Link>
+                            </TableCell>
+                            <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                              <StatusComponent status={creative.status} />
+                            </TableCell>
+                            <TableCell sx={{ whiteSpace: 'nowrap' }}>{creative.type}</TableCell>
+                          </TableRow>
+                        ))}
+                      </React.Fragment>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </TableContainer>
           ) : (
-            <TableContainer component={Paper} sx={{ width: "100%", borderRadius: "0px", boxShadow: "none" }}>
+            <>
+              {selectedTab === 1 && (
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between',
+                  alignItems: 'center', 
+                  mb: 2,
+                  p: selectedCampaigns[1].length > 0 ? 1.5 : 0,
+                  backgroundColor: selectedCampaigns[1].length > 0 ? '#f5f5f5' : 'transparent',
+                  borderRadius: '4px'
+                }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    {selectedCampaigns[1].length > 0 && (
+                      <>
+                        <Typography variant="body2" color="text.secondary">
+                          {selectedCampaigns[1].length} selected ad group{selectedCampaigns[1].length > 1 ? 's' : ''}
+                        </Typography>
+                        <Button 
+                          variant="contained" 
+                          size="small"
+                          onClick={() => {
+                            if (showSelectedOnly) {
+                              setShowSelectedOnly(false);
+                            } else {
+                              setShowSelectedOnly(true);
+                            }
+                          }}
+                        >
+                          {showSelectedOnly ? 'Show all' : 'Show selected'}
+                        </Button>
+                        <Button 
+                          variant="outlined" 
+                          size="small"
+                        >
+                          Edit
+                        </Button>
+                        <Button 
+                          variant="outlined" 
+                          size="small"
+                          onClick={() => {
+                            // Open the drawer for the first selected ad group
+                            const selectedAdGroupIds = selectedCampaigns[1];
+                            if (selectedAdGroupIds && selectedAdGroupIds.length > 0) {
+                              const adGroup = getFilteredData().find(ag => ag.id === selectedAdGroupIds[0]);
+                              if (adGroup) {
+                                setSelectedAdGroupForCreatives(adGroup);
+                                setCreativesDrawerOpen(true);
+                              }
+                            }
+                          }}
+                        >
+                          Add creatives
+                        </Button>
+                      </>
+                    )}
+                  </Box>
+                  {/* Expand/Collapse All Control for Ad Groups */}
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => {
+                      // Check if any groups are collapsed for Ad Groups
+                      const allParentCampaigns = [...new Set(getFilteredData().map(adGroup => adGroup.parentCampaign))];
+                      const hasCollapsedGroups = allParentCampaigns.some(campaign => collapsedCampaigns.has(campaign));
+                      
+                      if (hasCollapsedGroups) {
+                        expandAllCreativeGroups();
+                      } else {
+                        collapseAllCreativeGroups();
+                      }
+                    }}
+                    startIcon={(() => {
+                      const allParentCampaigns = [...new Set(getFilteredData().map(adGroup => adGroup.parentCampaign))];
+                      const hasCollapsedGroups = allParentCampaigns.some(campaign => collapsedCampaigns.has(campaign));
+                      return hasCollapsedGroups ? <KeyboardArrowDownIcon /> : <KeyboardArrowUpIcon />;
+                    })()}
+                    sx={{ textTransform: 'none' }}
+                  >
+                    {(() => {
+                      const allParentCampaigns = [...new Set(getFilteredData().map(adGroup => adGroup.parentCampaign))];
+                      const hasCollapsedGroups = allParentCampaigns.some(campaign => collapsedCampaigns.has(campaign));
+                      return hasCollapsedGroups ? 'Expand all' : 'Collapse all';
+                    })()}
+                  </Button>
+                </Box>
+              )}
+              
+              <TableContainer component={Paper} sx={{ width: "100%", borderRadius: "0px", boxShadow: "none" }}>
             <Table size="small">
               <TableHead>
                 <TableRow>
                   <TableCell padding="checkbox">
                     <Checkbox
+                      size="small"
                       indeterminate={selectedCampaigns[selectedTab]?.length > 0 && selectedCampaigns[selectedTab]?.length < getFilteredData().length}
                       checked={getFilteredData().length > 0 && selectedCampaigns[selectedTab]?.length === getFilteredData().length}
                       onChange={handleSelectAllClick}
@@ -4659,20 +5345,258 @@ export default function App() {
                   </TableCell>
                   {selectedTab === 0 && <TableCell sx={{ fontWeight: 'bold' }}>Objective</TableCell>}
                   <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Off / On</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 'bold' }}>Budget</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 'bold' }}>Impressions</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 'bold' }}>CPM</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 'bold' }}>Goal Actions</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 'bold' }}>Goal CPA</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 'bold' }}></TableCell>
+                  {viewMode === 'Pre-launch' && <TableCell align="right" sx={{ fontWeight: 'bold' }}>Budget</TableCell>}
+                  {viewMode === 'Performance' && <TableCell sx={{ fontWeight: 'bold' }}>Off / On</TableCell>}
+                  {viewMode === 'Performance' && (
+                    <>
+                      <TableCell align="right" sx={{ fontWeight: 'bold' }}>Spend</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 'bold' }}>Results</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 'bold' }}>Cost per result</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 'bold' }}>CPM</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 'bold' }}>Impressions</TableCell>
+                    </>
+                  )}
+                  <TableCell align="center" sx={{ fontWeight: 'bold', width: '60px' }}></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {getFilteredData().map((item) => (
+                {selectedTab === 1 ? (
+                  // Grouped Ad Groups by Parent Campaign
+                  (() => {
+                    const groupedAdGroups = getFilteredData().reduce((groups, adGroup) => {
+                      const parentCampaign = adGroup.parentCampaign;
+                      if (!groups[parentCampaign]) {
+                        groups[parentCampaign] = [];
+                      }
+                      groups[parentCampaign].push(adGroup);
+                      return groups;
+                    }, {});
+
+                    return Object.entries(groupedAdGroups).map(([parentCampaign, adGroups]) => (
+                      <React.Fragment key={parentCampaign}>
+                        {/* Campaign Header Row */}
+                        <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                          <TableCell padding="checkbox" sx={{ backgroundColor: '#f5f5f5' }}>
+                            <Checkbox
+                              size="small"
+                              indeterminate={(() => {
+                                const adGroupIds = adGroups.map(ag => ag.id);
+                                const selectedIds = selectedCampaigns[selectedTab] || [];
+                                const selectedCount = adGroupIds.filter(id => selectedIds.includes(id)).length;
+                                return selectedCount > 0 && selectedCount < adGroupIds.length;
+                              })()}
+                              checked={(() => {
+                                const adGroupIds = adGroups.map(ag => ag.id);
+                                const selectedIds = selectedCampaigns[selectedTab] || [];
+                                return adGroupIds.length > 0 && adGroupIds.every(id => selectedIds.includes(id));
+                              })()}
+                              onChange={() => {
+                                const adGroupIds = adGroups.map(ag => ag.id);
+                                const selectedIds = selectedCampaigns[selectedTab] || [];
+                                const areAllSelected = adGroupIds.every(id => selectedIds.includes(id));
+                                handleCampaignGroupSelect(parentCampaign, adGroups, areAllSelected);
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell colSpan={viewMode === 'Performance' ? 11 : 5} sx={{ 
+                            fontWeight: 'bold', 
+                            fontSize: '0.9rem',
+                            backgroundColor: '#f5f5f5',
+                            borderTop: '2px solid #e0e0e0',
+                            cursor: 'pointer',
+                            '&:hover': {
+                              backgroundColor: '#eeeeee'
+                            }
+                          }}
+                          onClick={() => toggleCampaignCollapse(parentCampaign)}
+                          >
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, flexWrap: 'wrap' }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                                {collapsedCampaigns.has(parentCampaign) ? (
+                                  <ChevronRightIcon fontSize="small" />
+                                ) : (
+                                  <KeyboardArrowDownIcon fontSize="small" />
+                                )}
+                                <span>{parentCampaign}</span>
+                                {(() => {
+                                  // Group ad groups by status and count them
+                                  const statusCounts = {};
+                                  adGroups.forEach(adGroup => {
+                                    statusCounts[adGroup.status] = (statusCounts[adGroup.status] || 0) + 1;
+                                  });
+
+                                  // Helper function to get lighter background color for each status
+                                  const getStatusPillColor = (status) => {
+                                    switch (status) {
+                                      case 'Active':
+                                      case 'Approved':
+                                        return '#e8f5e8'; // Light green
+                                      case 'Archived':
+                                        return '#e8f5e8'; // Light green
+                                      case 'Creative in review':
+                                      case 'In review':
+                                      case 'Draft':
+                                      case 'Scheduled':
+                                      case 'Event not yet configured':
+                                        return '#e3f2fd'; // Light blue
+                                      case 'Creative needed':
+                                      case 'Deactivated':
+                                      case 'Rejected':
+                                      case 'Creatives required':
+                                        return '#ffebee'; // Light red
+                                      case 'Ended':
+                                        return '#f5f5f5'; // Light grey
+                                      case 'Inactive':
+                                        return '#fff3e0'; // Light orange
+                                      default:
+                                        return '#f5f5f5'; // Light grey
+                                    }
+                                  };
+
+                                  return Object.entries(statusCounts).map(([status, count]) => (
+                                    <Box 
+                                      key={status} 
+                                      sx={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        gap: 0.5,
+                                        backgroundColor: getStatusPillColor(status),
+                                        borderRadius: '12px',
+                                        padding: '2px 6px',
+                                        border: '1px solid rgba(0, 0, 0, 0.1)'
+                                      }}
+                                    >
+                                      <StatusComponent status={status} />
+                                      <Chip 
+                                        label={count} 
+                                        size="small" 
+                                        sx={{ 
+                                          height: '16px', 
+                                          fontSize: '10px', 
+                                          minWidth: '16px',
+                                          backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                                          '& .MuiChip-label': {
+                                            fontWeight: 'normal'
+                                          }
+                                        }}
+                                      />
+                                    </Box>
+                                  ));
+                                })()}
+                              </Box>
+                              <Button 
+                                variant="outlined" 
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent row collapse when clicking button
+                                  // Find the campaign object that matches the parentCampaign name
+                                  const campaignObj = campaigns.find(c => c.campaign === parentCampaign);
+                                  if (campaignObj) {
+                                    setTargetCampaignForMultipleAdGroups(campaignObj);
+                                  }
+                                  setAdGroupsDrawerOpen(true);
+                                  
+                                  // Force focus on the input field after a delay
+                                  setTimeout(() => {
+                                    if (adGroupNameFieldRef.current) {
+                                      const inputElement = adGroupNameFieldRef.current.querySelector('input');
+                                      if (inputElement) {
+                                        inputElement.focus();
+                                        inputElement.select();
+                                      }
+                                    }
+                                  }, 500);
+                                }}
+                                sx={{
+                                  textTransform: 'none'
+                                }}
+                              >
+                                Add ad group
+                              </Button>
+                            </Box>
+                          </TableCell>
+                        </TableRow>
+                        {/* Ad Group Rows - Only show if not collapsed */}
+                        {!collapsedCampaigns.has(parentCampaign) && adGroups.map((item) => (
+                          <TableRow key={item.id} hover>
+                            <TableCell padding="checkbox">
+                              <Checkbox
+                                size="small"
+                                checked={isSelected(item.id)}
+                                onChange={() => handleCampaignCheckboxClick(item.id)}
+                              />
+                            </TableCell>
+                            <TableCell component="th" scope="row" sx={{ paddingLeft: '32px' }}>
+                              <Link 
+                                href="#" 
+                                underline="hover"
+                                color="primary"
+                                sx={{ cursor: 'pointer' }}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  handleAdGroupClick(item);
+                                }}
+                              >
+                                {item.campaign}
+                              </Link>
+                            </TableCell>
+                            <TableCell>
+                              <StatusComponent status={item.status} />
+                            </TableCell>
+                            {viewMode === 'Pre-launch' && (
+                              <TableCell align="right">
+                                {(() => {
+                                  const budget = item.lifetimeBudget;
+                                  return budget ? budget : "-";
+                                })()}
+                              </TableCell>
+                            )}
+                            {viewMode === 'Performance' && (
+                              <TableCell>
+                                <Switch 
+                                  checked={item.status !== 'Inactive'}
+                                  size="small"
+                                  color="primary"
+                                  onChange={(event) => handleSwitchChange(item.id, event.target.checked)}
+                                />
+                              </TableCell>
+                            )}
+                            {viewMode === 'Performance' && (
+                              <>
+                                <TableCell align="right">{item.spend}</TableCell>
+                                <TableCell align="right">{item.goalActions}</TableCell>
+                                <TableCell align="right">
+                                  {(() => {
+                                    const spend = parseFloat(item.spend?.replace(/[$,]/g, '') || '0');
+                                    const results = parseInt(item.goalActions || '0');
+                                    return results > 0 ? `$${(spend / results).toFixed(2)}` : '$0.00';
+                                  })()}
+                                </TableCell>
+                                <TableCell align="right">{item.cpm}</TableCell>
+                                <TableCell align="right">{item.impressions}</TableCell>
+                              </>
+                            )}
+                            <TableCell align="center" sx={{ width: '60px' }}>
+                              <IconButton 
+                                size="small" 
+                                color="default"
+                                onClick={(event) => handleMenuClick(event, item.id)}
+                              >
+                                <MoreHorizIcon />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </React.Fragment>
+                    ));
+                  })()
+                ) : (
+                  // Regular Campaign/Creative Rows
+                  getFilteredData().map((item) => (
                   <TableRow key={item.id} hover>
                     <TableCell padding="checkbox">
                       <Checkbox
+                        size="small"
                         checked={isSelected(item.id)}
                         onChange={() => handleCampaignCheckboxClick(item.id)}
                       />
@@ -4721,21 +5645,39 @@ export default function App() {
                     <TableCell>
                       <StatusComponent status={item.status} />
                     </TableCell>
-                    <TableCell>
-                      <Switch 
-                        checked={item.status !== 'Inactive'}
-                        size="small"
-                        color="primary"
-                        onChange={(event) => handleSwitchChange(item.id, event.target.checked)}
-                      />
-                    </TableCell>
-                    <TableCell align="right">
-                      {selectedTab === 0 ? (item.lifetimeBudget || "$0.00") : (item.lifetimeBudget || "$500")}
-                    </TableCell>
-                    <TableCell align="right">{item.impressions}</TableCell>
-                    <TableCell align="right">{item.cpm}</TableCell>
-                    <TableCell align="right">{item.goalActions}</TableCell>
-                    <TableCell align="right">{item.goalCpa}</TableCell>
+                    {viewMode === 'Pre-launch' && (
+                      <TableCell align="right">
+                        {(() => {
+                          const budget = selectedTab === 0 ? item.lifetimeBudget : item.lifetimeBudget;
+                          return budget ? budget : "-";
+                        })()}
+                      </TableCell>
+                    )}
+                    {viewMode === 'Performance' && (
+                      <TableCell>
+                        <Switch 
+                          checked={item.status !== 'Inactive'}
+                          size="small"
+                          color="primary"
+                          onChange={(event) => handleSwitchChange(item.id, event.target.checked)}
+                        />
+                      </TableCell>
+                    )}
+                    {viewMode === 'Performance' && (
+                      <>
+                        <TableCell align="right">{item.spend}</TableCell>
+                        <TableCell align="right">{item.goalActions}</TableCell>
+                        <TableCell align="right">
+                          {(() => {
+                            const spend = parseFloat(item.spend?.replace(/[$,]/g, '') || '0');
+                            const results = parseInt(item.goalActions || '0');
+                            return results > 0 ? `$${(spend / results).toFixed(2)}` : '$0.00';
+                          })()}
+                        </TableCell>
+                        <TableCell align="right">{item.cpm}</TableCell>
+                        <TableCell align="right">{item.impressions}</TableCell>
+                      </>
+                    )}
                     <TableCell align="center">
                       <IconButton 
                         size="small" 
@@ -4746,14 +5688,228 @@ export default function App() {
                       </IconButton>
                     </TableCell>
                   </TableRow>
-                ))}
+                  ))
+                )}
               </TableBody>
             </Table>
           </TableContainer>
+          </>
           )}
         </Container>
-      ) : selectedCampaignForDetails ? (
-        <CampaignDetails 
+      ) : currentView === 'reports' ? (
+        <Container maxWidth={false} sx={{ p: "20px" }}>
+          {/* Reports Header */}
+          <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>
+            Reports
+          </Typography>
+          
+          {/* Filter Controls */}
+          <Box sx={{ display: "flex", gap: 2, mb: 4, flexWrap: 'wrap' }}>
+            {/* Campaign Multi-select */}
+            <FormControl sx={{ minWidth: 300 }} size="small">
+              <InputLabel>Campaigns</InputLabel>
+              <Select
+                multiple
+                size="small"
+                value={reportsSelectedCampaigns}
+                onChange={(event) => setReportsSelectedCampaigns(event.target.value)}
+                label="Campaigns"
+                renderValue={(selected) => 
+                  selected.length === 0 
+                    ? 'Select campaigns...' 
+                    : `${selected.length} campaign${selected.length === 1 ? '' : 's'} selected`
+                }
+              >
+                {campaigns.map((campaign) => (
+                  <MenuItem key={campaign.id} value={campaign.id}>
+                    <Checkbox checked={reportsSelectedCampaigns.indexOf(campaign.id) > -1} />
+                    <ListItemText primary={campaign.campaign} />
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* Date Range */}
+            <DateRangeField 
+              sx={{ gap: '6px' }}
+              startDate={reportsStartDate ? reportsStartDate.toISOString().split('T')[0] : ''}
+              endDate={reportsEndDate ? reportsEndDate.toISOString().split('T')[0] : ''}
+              onStartDateChange={(dateString) => setReportsStartDate(dateString ? new Date(dateString) : null)}
+              onEndDateChange={(dateString) => setReportsEndDate(dateString ? new Date(dateString) : null)}
+            />
+
+            {/* Creatives Multi-select */}
+            <FormControl sx={{ minWidth: 300 }} size="small">
+              <InputLabel>Creatives</InputLabel>
+              <Select
+                multiple
+                size="small"
+                value={reportsSelectedCreatives}
+                onChange={(event) => setReportsSelectedCreatives(event.target.value)}
+                label="Creatives"
+                renderValue={(selected) => 
+                  selected.length === 0 
+                    ? 'Select creatives...' 
+                    : `${selected.length} creative${selected.length === 1 ? '' : 's'} selected`
+                }
+              >
+                {creatives.map((creative) => (
+                  <MenuItem key={creative.id} value={creative.id}>
+                    <Checkbox checked={reportsSelectedCreatives.indexOf(creative.id) > -1} />
+                    <ListItemText primary={creative.campaign} />
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+
+          {/* Reports Tabs */}
+          <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+            <Tabs 
+              value={reportsSelectedTab} 
+              onChange={(event, newValue) => setReportsSelectedTab(newValue)}
+              aria-label="reports tabs"
+              sx={{
+                '& .MuiTab-root': {
+                  textTransform: 'none'
+                }
+              }}
+            >
+              <Tab label="Ad account" />
+              <Tab label="Location" />
+              <Tab label="Creative" />
+              <Tab label="Placement" />
+            </Tabs>
+          </Box>
+
+          {/* Metrics Card */}
+          <Box sx={{ 
+            display: 'flex', 
+            gap: 4, 
+            p: 3,
+            backgroundColor: 'white',
+            boxShadow: '0 1px 6px rgba(0, 0, 0, 0.1)',
+            borderRadius: 1,
+            mb: 4,
+            flexWrap: 'wrap',
+            justifyContent: 'space-between'
+          }}>
+            <Box sx={{ flex: 1, minWidth: '120px' }}>
+              <Typography variant="caption" color="text.secondary">Spend</Typography>
+              <Typography variant="body1" sx={{ fontWeight: 'bold' }}>$12,345.67</Typography>
+            </Box>
+            <Box sx={{ flex: 1, minWidth: '120px' }}>
+              <Typography variant="caption" color="text.secondary">Impressions</Typography>
+              <Typography variant="body1" sx={{ fontWeight: 'bold' }}>1,234,567</Typography>
+            </Box>
+            <Box sx={{ flex: 1, minWidth: '120px' }}>
+              <Typography variant="caption" color="text.secondary">Goal Actions</Typography>
+              <Typography variant="body1" sx={{ fontWeight: 'bold' }}>8,912</Typography>
+            </Box>
+            <Box sx={{ flex: 1, minWidth: '120px' }}>
+              <Typography variant="caption" color="text.secondary">Total Households Reached</Typography>
+              <Typography variant="body1" sx={{ fontWeight: 'bold' }}>345,678</Typography>
+            </Box>
+            <Box sx={{ flex: 1, minWidth: '120px' }}>
+              <Typography variant="caption" color="text.secondary">Active Campaigns</Typography>
+              <Typography variant="body1" sx={{ fontWeight: 'bold' }}>12</Typography>
+            </Box>
+            <Box sx={{ flex: 1, minWidth: '120px' }}>
+              <Typography variant="caption" color="text.secondary">CPM</Typography>
+              <Typography variant="body1" sx={{ fontWeight: 'bold' }}>$3.57</Typography>
+            </Box>
+            <Box sx={{ flex: 1, minWidth: '120px' }}>
+              <Typography variant="caption" color="text.secondary">CPA</Typography>
+              <Typography variant="body1" sx={{ fontWeight: 'bold' }}>$1.39</Typography>
+            </Box>
+            <Box sx={{ flex: 1, minWidth: '120px' }}>
+              <Typography variant="caption" color="text.secondary">Cost per Unique Reach</Typography>
+              <Typography variant="body1" sx={{ fontWeight: 'bold' }}>$0.04</Typography>
+            </Box>
+          </Box>
+
+          {/* Chart Card */}
+          <Paper sx={{ p: 3, mb: 4 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Daily Impressions/Spend
+            </Typography>
+            <Box sx={{ height: 400 }}>
+              <Bar 
+                data={generateChartData(
+                  reportsStartDate, 
+                  reportsEndDate, 
+                  theme.palette.primary.main, 
+                  theme.palette.secondary.main
+                )}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      position: 'top',
+                    },
+                    title: {
+                      display: false,
+                    },
+                  },
+                  scales: {
+                    x: {
+                      display: true,
+                      title: {
+                        display: true,
+                        text: 'Date'
+                      }
+                    },
+                    y: {
+                      type: 'linear',
+                      display: true,
+                      position: 'left',
+                      title: {
+                        display: true,
+                        text: 'Impressions'
+                      },
+                    },
+                    y1: {
+                      type: 'linear',
+                      display: true,
+                      position: 'right',
+                      title: {
+                        display: true,
+                        text: 'Spend ($)'
+                      },
+                      grid: {
+                        drawOnChartArea: false,
+                      },
+                    },
+                  },
+                }}
+              />
+            </Box>
+          </Paper>
+
+          {/* Reports Content */}
+          <Paper sx={{ p: 3 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Report Data
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              {reportsSelectedCampaigns.length === 0 && reportsSelectedCreatives.length === 0
+                ? 'Please select campaigns and/or creatives to view report data.'
+                : `Showing data for ${reportsSelectedCampaigns.length} campaign${reportsSelectedCampaigns.length === 1 ? '' : 's'} and ${reportsSelectedCreatives.length} creative${reportsSelectedCreatives.length === 1 ? '' : 's'}.`
+              }
+            </Typography>
+            {(reportsStartDate || reportsEndDate) && (
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                Date range: {reportsStartDate ? reportsStartDate.toLocaleDateString() : 'Start date not set'} - {reportsEndDate ? reportsEndDate.toLocaleDateString() : 'End date not set'}
+              </Typography>
+            )}
+          </Paper>
+        </Container>
+      ) : currentView === 'details' && selectedCampaignForDetails ? (
+        (() => {
+          console.log('Rendering CampaignDetails - currentView:', currentView, 'selectedCampaignForDetails:', selectedCampaignForDetails);
+          return (
+            <CampaignDetails 
           campaign={selectedCampaignForDetails}
           selectedTimeSlots={getDayparting('campaign', selectedCampaignForDetails.id)}
           setSelectedTimeSlots={(timeSlots) => {
@@ -4776,25 +5932,43 @@ export default function App() {
           setTempDayparting={setTempDayparting}
           handleMultipleAdGroupsInfoDrawerOpen={handleMultipleAdGroupsInfoDrawerOpen}
         />
-      ) : isLoadingAdGroupDetails ? (
-        <AdGroupDetailsSkeleton 
-          adGroups={adGroups} 
-          currentCampaign={selectedAdGroupForDetails?.parentCampaign || 'Holiday Sale 2024'}
-          selectedAdGroupId={selectedAdGroupForDetails?.id}
-        />
-      ) : selectedAdGroupForDetails ? (
-        <AdGroupDetails 
-          adGroup={selectedAdGroupForDetails} 
-          selectedTimeSlots={getDayparting('adGroup', selectedAdGroupForDetails.id)}
-          setSelectedTimeSlots={(timeSlots) => {
+        );
+      })()
+      ) : currentView === 'details' && isLoadingAdGroupDetails ? (
+        (() => {
+          console.log('Rendering AdGroupDetailsSkeleton - currentView:', currentView, 'isLoadingAdGroupDetails:', isLoadingAdGroupDetails);
+          return (
+            <AdGroupDetailsSkeleton 
+              adGroups={adGroups} 
+              currentCampaign={selectedAdGroupForDetails?.parentCampaign || 'Holiday Sale 2024'}
+              selectedAdGroupId={selectedAdGroupForDetails?.id}
+            />
+          );
+        })()
+      ) : currentView === 'details' && selectedAdGroupForDetails ? (
+        (() => {
+          console.log('Rendering AdGroupDetails - currentView:', currentView, 'selectedAdGroupForDetails:', selectedAdGroupForDetails);
+          return (
+            <AdGroupDetails 
+              adGroup={selectedAdGroupForDetails} 
+              selectedTimeSlots={getDayparting('adGroup', selectedAdGroupForDetails.id)}
+              setSelectedTimeSlots={(timeSlots) => {
             setSelectedTimeSlots(timeSlots);
-            saveDayparting('adGroup', selectedAdGroupForDetails.id, timeSlots);
-          }}
-          setScheduleEditDrawerOpen={setScheduleEditDrawerOpen}
-          setDrawerContext={setDrawerContext}
-          setDrawerOpen={setDrawerOpen}
-        />
-      ) : null}
+              setSelectedTimeSlots(timeSlots);
+              saveDayparting('adGroup', selectedAdGroupForDetails.id, timeSlots);
+            }}
+            setScheduleEditDrawerOpen={setScheduleEditDrawerOpen}
+            setDrawerContext={setDrawerContext}
+            setDrawerOpen={setDrawerOpen}
+            setCurrentView={setCurrentView}
+            setActiveNavItem={setActiveNavItem}
+          />
+        );
+      })()
+    ) : (() => {
+      console.log('No conditions met - currentView:', currentView, 'selectedCampaignForDetails:', selectedCampaignForDetails, 'selectedAdGroupForDetails:', selectedAdGroupForDetails, 'isLoadingAdGroupDetails:', isLoadingAdGroupDetails);
+      return null;
+    })()}
 
       <Menu
         anchorEl={anchorEl}
@@ -4943,7 +6117,7 @@ export default function App() {
           {drawerContext === 'campaign' && (
             <Box sx={{ display: 'flex', gap: 2, mt: 3, justifyContent: 'center' }}>
               <TileComponent 
-                image="/images/Awareness.png"
+                image={getImagePath("images/Awareness.png")}
                 title="Awareness"
               description="An awareness ad campaign is a marketing effort designed to inform and educate your target audience about your brand, product, or cause to increase recognition."
               selected={selectedCampaignType === 'awareness'}
@@ -4954,7 +6128,7 @@ export default function App() {
               }}
             />
             <TileComponent 
-              image="/images/Conversion.png"
+              image={getImagePath("/images/Conversion.png")}
               title="Conversion"
               description="A conversion ad campaign is designed to motivate your target audience to take a specific action, such as making a purchase, signing up, or downloading an app."
               selected={selectedCampaignType === 'conversion'}
@@ -5196,7 +6370,7 @@ export default function App() {
           boxShadow: '0 -2px 8px rgba(0, 0, 0, 0.1)',
           zIndex: 1001
         }}>
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', maxWidth: 'none', mx: 'auto' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: 'none', mx: 'auto' }}>
             <Button 
               variant="outlined" 
               color="primary" 
@@ -5204,6 +6378,15 @@ export default function App() {
               onClick={handleCloseDrawer}
             >
               Close
+            </Button>
+            <Button 
+              variant="contained" 
+              color="primary" 
+              size="medium"
+              onClick={handleSaveCampaign}
+              disabled={!campaignName.trim() || !selectedCampaignType}
+            >
+              Continue
             </Button>
           </Box>
         </Box>
@@ -5395,7 +6578,7 @@ export default function App() {
             </Box>
             <Box sx={{ flexShrink: 0 }}>
               <img 
-                src="/images/ad-groups.png" 
+                src={getImagePath("images/ad-groups.png")} 
                 alt="Ad groups illustration" 
                 style={{ 
                   maxWidth: '200px',
@@ -5562,7 +6745,7 @@ export default function App() {
               
               <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 3, justifyContent: 'center' }}>
                 <TileComponent
-                  image="/images/Creatives/Creative-InContent-Video.png"
+                  image={getImagePath("images/Creatives/Creative-InContent-Video.png")}
                   title="In-content video"
                   description="In-content ads are commercials that run directly in content, they can be either simple video ads or interactive action ads."
                   onClick={() => {
@@ -5572,7 +6755,7 @@ export default function App() {
                   }}
                 />
                 <TileComponent
-                  image="/images/Creatives/Creative-Marquee.png"
+                  image={getImagePath("images/Creatives/Creative-Marquee.png")}
                   title="Marquee"
                   description="This premier ad is displayed on the Roku home screen, engaging users before they start streaming."
                   onClick={() => {
@@ -5581,7 +6764,7 @@ export default function App() {
                   }}
                 />
                 <TileComponent
-                  image="/images/Creatives/Creative-Billboard.png"
+                  image={getImagePath("images/Creatives/Creative-Billboard.png")}
                   title="Billboard"
                   description="Banner creative in Roku City that reach your audiences whenever they are seeing Roku City."
                   onClick={() => {
@@ -5814,9 +6997,9 @@ export default function App() {
                   </TableRow>
                 </TableHead>
               <TableBody>
-                {/* Show all creatives from all ad groups, filtered by selected types, statuses, and search term */}
-                {adGroupsData.flatMap(adGroup => 
-                  getCreativesForAdGroup(adGroup)
+                {/* Group creatives by ad groups, similar to how ad groups are grouped by campaigns */}
+                {adGroupsData.map((adGroup) => {
+                  const creativesForAdGroup = getCreativesForAdGroup(adGroup)
                     .filter(creative => 
                       (selectedCreativeTypes.length === 0 || 
                        selectedCreativeTypes.includes(creative.type)) &&
@@ -5824,80 +7007,168 @@ export default function App() {
                        selectedCreativeStatuses.includes(creative.status)) &&
                       (creativeSearchTerm === '' ||
                        creative.name.toLowerCase().includes(creativeSearchTerm.toLowerCase()))
-                    )
-                    .map((creative) => (
-                    <TableRow key={creative.id}>
-                      <TableCell padding="checkbox">
-                        <Checkbox
-                          size="small"
-                          checked={selectedCreativesForAssignment.includes(creative.id)}
-                          onChange={() => handleCreativeSelection(creative.id)}
-                        />
-                      </TableCell>
-                      <TableCell sx={{ width: '175px', padding: '8px' }}>
-                        {creative.type === 'In-content video' ? (
-                          <Box
-                            component="video"
-                            src="/images/Creatives/In-content_video.mp4"
-                            sx={{
-                              width: '175px',
-                              aspectRatio: '16/9',
-                              objectFit: 'cover',
-                              backgroundColor: '#f5f5f5'
-                            }}
-                            controls
-                            muted
-                          />
-                        ) : creative.type === 'Marquee' ? (
-                          <Box
-                            component="img"
-                            src="/images/Creatives/Marquee.png"
-                            alt={creative.name}
-                            sx={{
-                              width: '175px',
-                              aspectRatio: '16/9',
-                              objectFit: 'cover',
-                              backgroundColor: '#f5f5f5'
+                    );
+                  
+                  // Don't render ad group header if no creatives match the filter
+                  if (creativesForAdGroup.length === 0) {
+                    return null;
+                  }
+
+                  return (
+                    <React.Fragment key={adGroup.id}>
+                      {/* Ad Group Header Row */}
+                      <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                        <TableCell padding="checkbox" sx={{ backgroundColor: '#f5f5f5' }}>
+                          <Checkbox
+                            indeterminate={(() => {
+                              const creativeIds = creativesForAdGroup.map(c => c.id);
+                              const selectedCount = creativeIds.filter(id => selectedCreativesForAssignment.includes(id)).length;
+                              return selectedCount > 0 && selectedCount < creativeIds.length;
+                            })()}
+                            checked={(() => {
+                              const creativeIds = creativesForAdGroup.map(c => c.id);
+                              return creativeIds.length > 0 && creativeIds.every(id => selectedCreativesForAssignment.includes(id));
+                            })()}
+                            onChange={() => {
+                              const creativeIds = creativesForAdGroup.map(c => c.id);
+                              const areAllSelected = creativeIds.every(id => selectedCreativesForAssignment.includes(id));
+                              if (areAllSelected) {
+                                // Deselect all creatives in this ad group
+                                setSelectedCreativesForAssignment(prev => prev.filter(id => !creativeIds.includes(id)));
+                              } else {
+                                // Select all creatives in this ad group
+                                setSelectedCreativesForAssignment(prev => [...new Set([...prev, ...creativeIds])]);
+                              }
                             }}
                           />
-                        ) : creative.type === 'Billboard' ? (
-                          <Box
-                            component="img"
-                            src="/images/Creatives/Billboard.png"
-                            alt={creative.name}
-                            sx={{
-                              width: '175px',
-                              aspectRatio: '16/9',
-                              objectFit: 'cover',
-                              backgroundColor: '#f5f5f5'
-                            }}
-                          />
-                        ) : (
-                          <Box
-                            component="img"
-                            src="/images/creative-placeholder.jpg"
-                            alt={creative.name}
-                            sx={{
-                              width: '175px',
-                              aspectRatio: '16/9',
-                              objectFit: 'cover',
-                              backgroundColor: '#f5f5f5'
-                            }}
-                          />
-                        )}
-                      </TableCell>
-                      <TableCell component="th" scope="row" sx={{ width: '100%' }}>
-                        <Link href="#" underline="hover" color="primary">
-                          {creative.name}
-                        </Link>
-                      </TableCell>
-                      <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                        <StatusComponent status={creative.status} />
-                      </TableCell>
-                      <TableCell sx={{ whiteSpace: 'nowrap' }}>{creative.type}</TableCell>
-                    </TableRow>
-                  ))
-                )}
+                        </TableCell>
+                        <TableCell colSpan={4} sx={{ 
+                          fontWeight: 'bold', 
+                          fontSize: '0.9rem',
+                          backgroundColor: '#f5f5f5',
+                          borderTop: '2px solid #e0e0e0',
+                          cursor: 'pointer',
+                          '&:hover': {
+                            backgroundColor: '#eeeeee'
+                          }
+                        }}
+                        onClick={() => toggleCampaignCollapse(adGroup.campaign)}
+                        >
+                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, flexWrap: 'wrap' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                              {collapsedCampaigns.has(adGroup.campaign) ? (
+                                <ChevronRightIcon fontSize="small" />
+                              ) : (
+                                <KeyboardArrowDownIcon fontSize="small" />
+                              )}
+                              <span>{adGroup.campaign}</span>
+                              <Chip 
+                                label={creativesForAdGroup.length} 
+                                variant="outlined" 
+                                color="info" 
+                                size="small"
+                                sx={{ 
+                                  ml: 0.5,
+                                  '& .MuiChip-label': {
+                                    fontWeight: 'normal'
+                                  }
+                                }}
+                              />
+                            </Box>
+                            <Button 
+                              variant="outlined" 
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedAdGroupForCreatives(adGroup);
+                                setCreativesDrawerOpen(true);
+                              }}
+                              sx={{
+                                textTransform: 'none'
+                              }}
+                            >
+                              Add creatives
+                            </Button>
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                      
+                      {/* Creative Rows - Only show if not collapsed */}
+                      {!collapsedCampaigns.has(adGroup.campaign) && creativesForAdGroup.map((creative) => (
+                        <TableRow key={creative.id}>
+                          <TableCell padding="checkbox">
+                            <Checkbox
+                              size="small"
+                              checked={selectedCreativesForAssignment.includes(creative.id)}
+                              onChange={() => handleCreativeSelection(creative.id)}
+                            />
+                          </TableCell>
+                          <TableCell sx={{ width: '175px', padding: '8px' }}>
+                            {creative.type === 'In-content video' ? (
+                              <Box
+                                component="video"
+                                src={getImagePath("images/Creatives/In-content_video.mp4")}
+                                sx={{
+                                  width: '175px',
+                                  aspectRatio: '16/9',
+                                  objectFit: 'cover',
+                                  backgroundColor: '#f5f5f5'
+                                }}
+                                controls
+                                muted
+                              />
+                            ) : creative.type === 'Marquee' ? (
+                              <Box
+                                component="img"
+                                src={getImagePath("images/Creatives/Marquee.png")}
+                                alt={creative.name}
+                                sx={{
+                                  width: '175px',
+                                  aspectRatio: '16/9',
+                                  objectFit: 'cover',
+                                  backgroundColor: '#f5f5f5'
+                                }}
+                              />
+                            ) : creative.type === 'Billboard' ? (
+                              <Box
+                                component="img"
+                                src={getImagePath("images/Creatives/Billboard.png")}
+                                alt={creative.name}
+                                sx={{
+                                  width: '175px',
+                                  aspectRatio: '16/9',
+                                  objectFit: 'cover',
+                                  backgroundColor: '#f5f5f5'
+                                }}
+                              />
+                            ) : (
+                              <Box
+                                component="img"
+                                src={getImagePath("images/creative-placeholder.jpg")}
+                                alt={creative.name}
+                                sx={{
+                                  width: '175px',
+                                  aspectRatio: '16/9',
+                                  objectFit: 'cover',
+                                  backgroundColor: '#f5f5f5'
+                                }}
+                              />
+                            )}
+                          </TableCell>
+                          <TableCell component="th" scope="row" sx={{ width: '100%' }}>
+                            <Link href="#" underline="hover" color="primary">
+                              {creative.name}
+                            </Link>
+                          </TableCell>
+                          <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                            <StatusComponent status={creative.status} />
+                          </TableCell>
+                          <TableCell sx={{ whiteSpace: 'nowrap' }}>{creative.type}</TableCell>
+                        </TableRow>
+                      ))}
+                    </React.Fragment>
+                  );
+                })}
               </TableBody>
             </Table>
           </TableContainer>
@@ -6873,7 +8144,7 @@ export default function App() {
           
           <Box sx={{ display: 'flex', gap: 2, mt: 3, justifyContent: 'center' }}>
             <TileComponent 
-              image="/images/Awareness.png"
+              image={getImagePath("images/Awareness.png")}
               title="Awareness"
               description="An awareness ad campaign is a marketing effort designed to inform and educate your target audience about your brand, product, or cause to increase recognition."
               selected={selectedCampaignForDetails?.goal === 'Awareness' || selectedCampaignType === 'awareness'}
@@ -6895,7 +8166,7 @@ export default function App() {
               }}
             />
             <TileComponent 
-              image="/images/Conversion.png"
+              image={getImagePath("images/Conversion.png")}
               title="Conversion"
               description="A conversion ad campaign is designed to motivate your target audience to take a specific action, such as making a purchase, signing up, or downloading an app."
               selected={selectedCampaignForDetails?.goal === 'Conversion' || selectedCampaignType === 'conversion'}
