@@ -125,7 +125,7 @@ const getImagePath = (imagePath) => {
 const RokuLogo = () => (
   <Box
     component="img"
-    src={getImagePath("./images/Logo.svg")}
+    src={Logo}
     alt="Roku"
     sx={{ height: 16, mr: "8px" }}
   />
