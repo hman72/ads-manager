@@ -103,7 +103,21 @@ import WorkIcon from "@mui/icons-material/Work";
 import HomeIcon from "@mui/icons-material/Home";
 import Logo from "./images/Logo.svg";
 import Conversion from "./images/Conversion.png";
+import Awareness from "./images/Awareness.png";
 import AdGroup from "./images/ad-groups.png";
+import DisneyTile from "./images/Channels/Disney.png";
+import RokuTile from "./images/Channels/roku_chan.png";
+import HBOTile from "./images/Channels/hbo.png";
+import ESPNTile from "./images/Channels/espn.png";
+import HuluTile from "./images/Channels/hulu.png";
+import PeacockTile from "./images/Channels/peacock.png";
+import TubiTile from "./images/Channels/tubi.png";
+import Billboard from "./images/Creatives/Billboard.png";
+import CreativeBillboard from "./images/Creatives/Creative-Billboard.png";
+import Marquee from "./images/Creatives/Marquee.png";
+import CreativeMarquee from "./images/Creatives/Creative-Marquee.png";
+import CreativeIncontent from "./images/Creatives/Creative-InContent-Video.png";
+import IncontentVideo from "./images/Creatives/In-content_video.mp4";
 
 // Register Chart.js components
 ChartJS.register(
@@ -288,7 +302,7 @@ const CreativesCard = ({ adGroup, isSelected, handleCampaignCheckboxClick, onAdd
             gap: 2
           }}>
             <TileComponent
-              image={getImagePath("images/Creatives/Creative-InContent-Video.png")}
+              image={CreativeIncontent}
               title="In-content video"
               description="Video ads that play within content feeds"
               isSelected={false}
@@ -298,7 +312,7 @@ const CreativesCard = ({ adGroup, isSelected, handleCampaignCheckboxClick, onAdd
               }}
             />
             <TileComponent
-              image={getImagePath("images/Creatives/Creative-Marquee.png")}
+              image={CreativeMarquee}
               title="Marquee"
               description="Banner ads displayed at the top of content"
               isSelected={false}
@@ -308,7 +322,7 @@ const CreativesCard = ({ adGroup, isSelected, handleCampaignCheckboxClick, onAdd
               }}
             />
             <TileComponent
-              image={getImagePath("images/Creatives/Creative-Billboard.png")}
+              image={CreativeBillboard}
               title="Billboard"
               description="Large format display ads for maximum impact"
               isSelected={false}
@@ -399,7 +413,7 @@ const CreativesCard = ({ adGroup, isSelected, handleCampaignCheckboxClick, onAdd
                   {creative.type === 'In-content video' ? (
                     <Box
                       component="video"
-                      src={getImagePath("images/Creatives/In-content_video.mp4")}
+                      src={IncontentVideo}
                       sx={{
                         width: '175px',
                         aspectRatio: '16/9',
@@ -412,7 +426,7 @@ const CreativesCard = ({ adGroup, isSelected, handleCampaignCheckboxClick, onAdd
                   ) : creative.type === 'Marquee' ? (
                     <Box
                       component="img"
-                      src={getImagePath("images/Creatives/Marquee.png")}
+                      src={Marquee}
                       alt={creative.name}
                       sx={{
                         width: '175px',
@@ -424,7 +438,7 @@ const CreativesCard = ({ adGroup, isSelected, handleCampaignCheckboxClick, onAdd
                   ) : creative.type === 'Billboard' ? (
                     <Box
                       component="img"
-                      src={getImagePath("images/Creatives/Billboard.png")}
+                      src={Billboard}
                       alt={creative.name}
                       sx={{
                         width: '175px',
@@ -3043,13 +3057,13 @@ export default function App() {
         </Box>
         
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px', mt: 2 }}>
-          <Box component="img" src={getImagePath("images/Channels/roku_chan.png")} alt="Roku Channel" sx={{ width: 50, height: 38 }} />
-          <Box component="img" src={getImagePath("images/Channels/Disney.png")} alt="Disney" sx={{ width: 50, height: 38 }} />
-          <Box component="img" src={getImagePath("images/Channels/hulu.png")} alt="Hulu" sx={{ width: 50, height: 38 }} />
-          <Box component="img" src={getImagePath("images/Channels/hbo.png")} alt="HBO" sx={{ width: 50, height: 38 }} />
-          <Box component="img" src={getImagePath("images/Channels/peacock.png")} alt="Peacock" sx={{ width: 50, height: 38 }} />
-          <Box component="img" src={getImagePath("images/Channels/tubi.png")} alt="Tubi" sx={{ width: 50, height: 38 }} />
-          <Box component="img" src={getImagePath("images/Channels/espn.png")} alt="ESPN" sx={{ width: 50, height: 38 }} />
+          <Box component="img" src={RokuTile} alt="Roku Channel" sx={{ width: 50, height: 38 }} />
+          <Box component="img" src={DisneyTile} alt="Disney" sx={{ width: 50, height: 38 }} />
+          <Box component="img" src={HuluTile} alt="Hulu" sx={{ width: 50, height: 38 }} />
+          <Box component="img" src={HBOTile} alt="HBO" sx={{ width: 50, height: 38 }} />
+          <Box component="img" src={PeacockTile} alt="Peacock" sx={{ width: 50, height: 38 }} />
+          <Box component="img" src={TubiTile} alt="Tubi" sx={{ width: 50, height: 38 }} />
+          <Box component="img" src={ESPNTile} alt="ESPN" sx={{ width: 50, height: 38 }} />
         </Box>
         
         <Link href="#" underline="hover" color="primary" sx={{ mt: 1, display: 'inline-block' }}>
@@ -3163,7 +3177,7 @@ export default function App() {
                 gap: 2
               }}>
                 <TileComponent
-                  image={getImagePath("images/Creatives/Creative-InContent-Video.png")}
+                  image={CreativeIncontent}
                   title="In-content video"
                   description="Video ads that play within content feeds"
                   isSelected={false}
@@ -3172,7 +3186,7 @@ export default function App() {
                   }}
                 />
                 <TileComponent
-                  image={getImagePath("images/Creatives/Creative-Marquee.png")}
+                  image={CreativeMarquee}
                   title="Marquee"
                   description="Banner ads displayed at the top of content"
                   isSelected={false}
@@ -3181,7 +3195,7 @@ export default function App() {
                   }}
                 />
                 <TileComponent
-                  image={getImagePath("images/Creatives/Creative-Billboard.png")}
+                  image={CreativeBillboard}
                   title="Billboard"
                   description="Large format display ads for maximum impact"
                   isSelected={false}
@@ -3277,7 +3291,7 @@ export default function App() {
                         {creative.type === 'In-content video' ? (
                           <Box
                             component="video"
-                            src={getImagePath("images/Creatives/In-content_video.mp4")}
+                            src={IncontentVideo}
                             sx={{
                               width: '175px',
                               aspectRatio: '16/9',
@@ -3290,7 +3304,7 @@ export default function App() {
                         ) : creative.type === 'Marquee' ? (
                           <Box
                             component="img"
-                            src={getImagePath("images/Creatives/Marquee.png")}
+                            src={Marquee}
                             alt={creative.name}
                             sx={{
                               width: '175px',
@@ -3302,7 +3316,7 @@ export default function App() {
                         ) : creative.type === 'Billboard' ? (
                           <Box
                             component="img"
-                            src={getImagePath("images/Creatives/Billboard.png")}
+                            src={Billboard}
                             alt={creative.name}
                             sx={{
                               width: '175px',
@@ -4196,13 +4210,13 @@ export default function App() {
             </Box>
             
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px', mt: 2 }}>
-              <Box component="img" src={getImagePath("images/Channels/roku_chan.png")} alt="Roku Channel" sx={{ width: 50, height: 38 }} />
-              <Box component="img" src={getImagePath("images/Channels/Disney.png")} alt="Disney" sx={{ width: 50, height: 38 }} />
-              <Box component="img" src={getImagePath("images/Channels/hulu.png")} alt="Hulu" sx={{ width: 50, height: 38 }} />
-              <Box component="img" src={getImagePath("images/Channels/hbo.png")} alt="HBO" sx={{ width: 50, height: 38 }} />
-              <Box component="img" src={getImagePath("images/Channels/peacock.png")} alt="Peacock" sx={{ width: 50, height: 38 }} />
-              <Box component="img" src={getImagePath("images/Channels/tubi.png")} alt="Tubi" sx={{ width: 50, height: 38 }} />
-              <Box component="img" src={getImagePath("images/Channels/espn.png")} alt="ESPN" sx={{ width: 50, height: 38 }} />
+              <Box component="img" src={RokuTile} />
+              <Box component="img" src={DisneyTile} />
+              <Box component="img" src={HuluTile} />
+              <Box component="img" src={HBOTile} />
+              <Box component="img" src={PeacockTile} />
+              <Box component="img" src={TubiTile} />
+              <Box component="img" src={ESPNTile} />
             </Box>
             
             <Link href="#" underline="hover" color="primary" sx={{ mt: 1, display: 'inline-block' }}>
@@ -5176,7 +5190,7 @@ export default function App() {
                               {creative.type === 'In-content video' ? (
                                 <Box
                                   component="video"
-                                  src={getImagePath("images/Creatives/In-content_video.mp4")}
+                                  src={IncontentVideo}
                                   sx={{
                                     width: '175px',
                                     aspectRatio: '16/9',
@@ -5189,7 +5203,7 @@ export default function App() {
                               ) : creative.type === 'Marquee' ? (
                                 <Box
                                   component="img"
-                                  src={getImagePath("images/Creatives/Marquee.png")}
+                                  src={Marquee}
                                   alt={creative.name}
                                   sx={{
                                     width: '175px',
@@ -5201,7 +5215,7 @@ export default function App() {
                               ) : creative.type === 'Billboard' ? (
                                 <Box
                                   component="img"
-                                  src={getImagePath("images/Creatives/Billboard.png")}
+                                  src={Billboard}
                                   alt={creative.name}
                                   sx={{
                                     width: '175px',
@@ -6118,7 +6132,7 @@ export default function App() {
           {drawerContext === 'campaign' && (
             <Box sx={{ display: 'flex', gap: 2, mt: 3, justifyContent: 'center' }}>
               <TileComponent 
-                image={getImagePath("images/Awareness.png")}
+                image={Awareness}
                 title="Awareness"
               description="An awareness ad campaign is a marketing effort designed to inform and educate your target audience about your brand, product, or cause to increase recognition."
               selected={selectedCampaignType === 'awareness'}
@@ -6129,7 +6143,7 @@ export default function App() {
               }}
             />
             <TileComponent 
-              image={getImagePath("/images/Conversion.png")}
+              image={Conversion}
               title="Conversion"
               description="A conversion ad campaign is designed to motivate your target audience to take a specific action, such as making a purchase, signing up, or downloading an app."
               selected={selectedCampaignType === 'conversion'}
@@ -6579,7 +6593,7 @@ export default function App() {
             </Box>
             <Box sx={{ flexShrink: 0 }}>
               <img 
-                src={getImagePath("images/ad-groups.png")} 
+                src={AdGroup} 
                 alt="Ad groups illustration" 
                 style={{ 
                   maxWidth: '200px',
@@ -6746,7 +6760,7 @@ export default function App() {
               
               <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 3, justifyContent: 'center' }}>
                 <TileComponent
-                  image={getImagePath("images/Creatives/Creative-InContent-Video.png")}
+                  image={CreativeIncontent}
                   title="In-content video"
                   description="In-content ads are commercials that run directly in content, they can be either simple video ads or interactive action ads."
                   onClick={() => {
@@ -6756,7 +6770,7 @@ export default function App() {
                   }}
                 />
                 <TileComponent
-                  image={getImagePath("images/Creatives/Creative-Marquee.png")}
+                  image={CreativeMarquee}
                   title="Marquee"
                   description="This premier ad is displayed on the Roku home screen, engaging users before they start streaming."
                   onClick={() => {
@@ -6765,7 +6779,7 @@ export default function App() {
                   }}
                 />
                 <TileComponent
-                  image={getImagePath("images/Creatives/Creative-Billboard.png")}
+                  image={CreativeBillboard}
                   title="Billboard"
                   description="Banner creative in Roku City that reach your audiences whenever they are seeing Roku City."
                   onClick={() => {
@@ -7108,7 +7122,7 @@ export default function App() {
                             {creative.type === 'In-content video' ? (
                               <Box
                                 component="video"
-                                src={getImagePath("images/Creatives/In-content_video.mp4")}
+                                src={IncontentVideo}
                                 sx={{
                                   width: '175px',
                                   aspectRatio: '16/9',
@@ -7121,7 +7135,7 @@ export default function App() {
                             ) : creative.type === 'Marquee' ? (
                               <Box
                                 component="img"
-                                src={getImagePath("images/Creatives/Marquee.png")}
+                                src={Marquee}
                                 alt={creative.name}
                                 sx={{
                                   width: '175px',
@@ -7133,7 +7147,7 @@ export default function App() {
                             ) : creative.type === 'Billboard' ? (
                               <Box
                                 component="img"
-                                src={getImagePath("images/Creatives/Billboard.png")}
+                                src={Billboard}
                                 alt={creative.name}
                                 sx={{
                                   width: '175px',
@@ -8145,7 +8159,7 @@ export default function App() {
           
           <Box sx={{ display: 'flex', gap: 2, mt: 3, justifyContent: 'center' }}>
             <TileComponent 
-              image={getImagePath("images/Awareness.png")}
+              image={Awareness}
               title="Awareness"
               description="An awareness ad campaign is a marketing effort designed to inform and educate your target audience about your brand, product, or cause to increase recognition."
               selected={selectedCampaignForDetails?.goal === 'Awareness' || selectedCampaignType === 'awareness'}
@@ -8167,7 +8181,7 @@ export default function App() {
               }}
             />
             <TileComponent 
-              image={getImagePath("images/Conversion.png")}
+              image={Conversion}
               title="Conversion"
               description="A conversion ad campaign is designed to motivate your target audience to take a specific action, such as making a purchase, signing up, or downloading an app."
               selected={selectedCampaignForDetails?.goal === 'Conversion' || selectedCampaignType === 'conversion'}
