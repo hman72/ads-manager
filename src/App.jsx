@@ -631,19 +631,19 @@ const AdGroupDetailsSkeleton = ({ adGroups, currentCampaign = 'Holiday Sale 2024
           underline="hover"
           color="primary"
           sx={{ 
-            display: 'flex',
+            cursor: 'pointer',
+            mb: 2,
+            display: 'inline-flex',
             alignItems: 'center',
-            gap: 1,
-            fontSize: '14px',
-            cursor: 'pointer'
+            gap: 0.5
           }}
           onClick={(e) => {
             e.preventDefault();
             // This would normally go back, but during loading we'll keep it static
           }}
         >
-          <ArrowBackIcon fontSize="small" />
-          Back to ad groups
+          <ArrowBackIcon fontSize="inherit" />
+          <Typography variant="body2" component="span">Back</Typography>
         </Link>
       </Box>
       
@@ -1702,6 +1702,31 @@ export default function App() {
     // Add the new campaign to the campaigns array
     setCampaigns(prev => [newCampaign, ...prev]);
 
+    // Create a single ad group with the same name as the campaign
+    const today = new Date();
+    const endDate = new Date();
+    endDate.setDate(today.getDate() + 30);
+    
+    const newAdGroup = {
+      id: Date.now() + 1, // Ensure unique ID
+      campaign: campaignName.trim(),
+      parentCampaign: campaignName.trim(),
+      status: "Draft",
+      spend: "$0.00",
+      impressions: "0",
+      cpm: "$0.00",
+      goalActions: "0",
+      goalCpa: "$0.00",
+      lifetimeBudget: "$500",
+      startDate: today,
+      endDate: endDate,
+      lastModified: new Date(),
+      dayparting: []
+    };
+
+    // Add the new ad group to the adGroups array
+    setAdGroups(prev => [...prev, newAdGroup]);
+
     // Show success message
     setToastMessage('Campaign created successfully');
     setToastOpen(true);
@@ -1709,7 +1734,7 @@ export default function App() {
     // Close the drawer
     setDrawerOpen(false);
 
-    // Navigate to campaign details
+    // Navigate to the newly created campaign's details page
     setSelectedCampaignForDetails(newCampaign);
     setSelectedAdGroupForDetails(null);
     setCurrentView('details');
@@ -1780,10 +1805,17 @@ export default function App() {
     setNewAdGroupName('');
     setMultipleAdGroupNameError(false); // Clear any error state
     
-    // Close the info drawer and stay on the table view
+    // Close the info drawer
     handleMultipleAdGroupsInfoDrawerClose();
+    
+    // Navigate to the newly created ad group's details page
     setSelectedCampaignForDetails(null);
-    // Don't change the current view - stay on the table
+    setSelectedAdGroupForDetails(newAdGroup);
+    setCurrentView('details');
+    
+    // Show a success toast
+    setToastMessage(`Created ad group "${adGroupName}"`);
+    setToastOpen(true);
   };
 
   const handleMultipleAdGroupsInfoDrawerOpen = (campaign) => {
@@ -1839,6 +1871,24 @@ export default function App() {
     }
   }, [multipleAdGroupsInfoDrawerOpen]);
 
+  // Initialize tempDayparting when schedule drawer opens
+  useEffect(() => {
+    if (scheduleEditDrawerOpen) {
+      // Load dayparts based on what's currently selected
+      if (selectedAdGroupForDetails) {
+        // We're in ad group details - load ad group dayparts from the current state
+        const freshAdGroup = adGroups.find(ag => ag.id === selectedAdGroupForDetails.id);
+        const existingDayparting = freshAdGroup?.dayparting ? new Set(freshAdGroup.dayparting) : new Set();
+        setTempDayparting(existingDayparting);
+      } else if (selectedCampaignForDetails) {
+        // We're in campaign details - load campaign dayparts from the current state
+        const freshCampaign = campaigns.find(c => c.id === selectedCampaignForDetails.id);
+        const existingDayparting = freshCampaign?.dayparting ? new Set(freshCampaign.dayparting) : new Set();
+        setTempDayparting(existingDayparting);
+      }
+    }
+  }, [scheduleEditDrawerOpen, campaigns, adGroups, selectedAdGroupForDetails, selectedCampaignForDetails]);
+
   const handleCreativesDrawerClose = () => {
     setCreativesDrawerOpen(false);
     setSelectedAdGroupForCreatives(null);
@@ -1884,14 +1934,14 @@ export default function App() {
 
   const handleCampaignClick = (campaign) => {
     console.log('Campaign clicked:', campaign);
-    // Check if this campaign has multiple ad groups
+    // Check if this campaign has ad groups
     const campaignAdGroups = adGroups.filter(ag => ag.parentCampaign === campaign.campaign);
     console.log('Campaign ad groups found:', campaignAdGroups.length);
     
-    if (campaignAdGroups.length > 1) {
-      // If multiple ad groups, navigate to the first ad group details (with sidebar) with loading
+    if (campaignAdGroups.length >= 2) {
+      // If 2 or more ad groups, navigate to the first ad group details page (shows ad group sidebar)
       const firstAdGroup = campaignAdGroups[0];
-      console.log('Multiple ad groups, navigating to first ad group:', firstAdGroup);
+      console.log('Multiple ad groups (2+), navigating to first ad group:', firstAdGroup);
       setIsLoadingAdGroupDetails(true);
       setSelectedAdGroupForDetails(null);
       setSelectedCampaignForDetails(null);
@@ -1902,13 +1952,18 @@ export default function App() {
         setSelectedAdGroupForDetails(firstAdGroup);
         setIsLoadingAdGroupDetails(false);
       }, 200);
-    } else {
-      // Single ad group or no ad groups, navigate to campaign details
-      console.log('Single/no ad groups, navigating to campaign details:', campaign);
+    } else if (campaignAdGroups.length === 1) {
+      // Single ad group, navigate to campaign details
+      console.log('Single ad group, navigating to campaign details:', campaign);
       setSelectedCampaignForDetails(campaign);
       setSelectedAdGroupForDetails(null);
       setCurrentView('details');
-      console.log('Set currentView to details and selectedCampaignForDetails');
+    } else {
+      // No ad groups, navigate to campaign details
+      console.log('No ad groups, navigating to campaign details:', campaign);
+      setSelectedCampaignForDetails(campaign);
+      setSelectedAdGroupForDetails(null);
+      setCurrentView('details');
     }
   };
 
@@ -2330,6 +2385,9 @@ export default function App() {
         </Container>
       );
     }
+
+    // Get fresh campaign data from campaigns array to ensure we have latest dayparting
+    const freshCampaign = campaigns.find(c => c.id === campaign.id) || campaign;
 
     const [campaignName, setCampaignName] = useState(campaign.campaign || '');
     const [lifetimeBudget, setLifetimeBudget] = useState(
@@ -2844,7 +2902,12 @@ export default function App() {
           <Button
             variant="outlined"
             size="small"
-            onClick={() => setScheduleEditDrawerOpen(true)}
+            onClick={() => {
+              // Load existing campaign dayparting into temp state for editing
+              const existingDayparting = campaign?.dayparting ? new Set(campaign.dayparting) : new Set();
+              setTempDayparting(existingDayparting);
+              setScheduleEditDrawerOpen(true);
+            }}
           >
             Edit
           </Button>
@@ -2860,8 +2923,8 @@ export default function App() {
           <DateRangeField sx={{ gap: '6px' }} />
         </Box>
         
-        {/* Only show Dayparts table if time slots are selected */}
-        {selectedTimeSlots.size > 0 && (
+        {/* Only show Dayparts table if dayparting is configured */}
+        {freshCampaign.dayparting && freshCampaign.dayparting.length > 0 && (
           <Box sx={{ mt: 2 }}>
             <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold' }}>
               Dayparts
@@ -2876,34 +2939,92 @@ export default function App() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {getSelectedTimeSlotsList().map(({ dayKey, dayName, timeDisplay, hours }) => (
-                    <TableRow key={dayKey}>
-                      <TableCell sx={{ py: 0.25, px: 0.5 }}>
-                        <Link 
-                          href="#" 
-                          underline="hover"
-                          color="primary"
-                          sx={{ cursor: 'pointer' }}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setScheduleEditDrawerOpen(true);
-                          }}
-                        >
-                          {dayName}
-                        </Link>
-                      </TableCell>
-                      <TableCell sx={{ py: 0.25, px: 0.5 }}>{timeDisplay}</TableCell>
-                      <TableCell sx={{ py: 0.25, px: 0.5 }}>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleRemoveDayTimeSlots(dayKey, hours)}
-                          sx={{ color: 'grey.500' }}
-                        >
-                          <RemoveCircleOutlineIcon fontSize="small" />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {(() => {
+                    // Group by day and create time ranges
+                    const daysOfWeek = [
+                      { key: 0, label: 'Monday' },
+                      { key: 1, label: 'Tuesday' },
+                      { key: 2, label: 'Wednesday' },
+                      { key: 3, label: 'Thursday' },
+                      { key: 4, label: 'Friday' },
+                      { key: 5, label: 'Saturday' },
+                      { key: 6, label: 'Sunday' }
+                    ];
+                    
+                    const formatHour = (h) => {
+                      if (h === 0) return '12AM';
+                      if (h < 12) return `${h}AM`;
+                      if (h === 12) return '12PM';
+                      return `${h - 12}PM`;
+                    };
+                    
+                    const dayGroups = {};
+                    freshCampaign.dayparting.forEach(cellKey => {
+                      const [dayKey, hour] = cellKey.split('-').map(Number);
+                      if (!dayGroups[dayKey]) {
+                        dayGroups[dayKey] = [];
+                      }
+                      dayGroups[dayKey].push(hour);
+                    });
+
+                    const result = [];
+                    Object.keys(dayGroups).forEach(dayKey => {
+                      const dayNum = parseInt(dayKey);
+                      const day = daysOfWeek.find(d => d.key === dayNum);
+                      const hours = dayGroups[dayKey].sort((a, b) => a - b);
+                      
+                      const ranges = [];
+                      let rangeStart = hours[0];
+                      let rangeEnd = hours[0];
+                      
+                      for (let i = 1; i < hours.length; i++) {
+                        if (hours[i] === rangeEnd + 1) {
+                          rangeEnd = hours[i];
+                        } else {
+                          ranges.push({ start: rangeStart, end: rangeEnd });
+                          rangeStart = hours[i];
+                          rangeEnd = hours[i];
+                        }
+                      }
+                      ranges.push({ start: rangeStart, end: rangeEnd });
+                      
+                      const timeRangeText = ranges.map(range => {
+                        if (range.start === range.end) {
+                          return formatHour(range.start);
+                        } else {
+                          return `${formatHour(range.start)}-${formatHour(range.end)}`;
+                        }
+                      }).join(', ');
+                      
+                      result.push({
+                        dayKey: dayNum,
+                        dayName: day?.label || '',
+                        timeDisplay: timeRangeText,
+                        hours: hours
+                      });
+                    });
+                    
+                    return result.sort((a, b) => a.dayKey - b.dayKey).map(({ dayKey, dayName, timeDisplay, hours }) => (
+                      <TableRow key={dayKey}>
+                        <TableCell sx={{ py: 0.25, px: 0.5 }}>{dayName}</TableCell>
+                        <TableCell sx={{ py: 0.25, px: 0.5 }}>{timeDisplay}</TableCell>
+                        <TableCell sx={{ py: 0.25, px: 0.5 }}>
+                          <IconButton
+                            size="small"
+                            onClick={() => {
+                              // Load existing campaign dayparting into temp state for editing
+                              const existingDayparting = freshCampaign?.dayparting ? new Set(freshCampaign.dayparting) : new Set();
+                              setTempDayparting(existingDayparting);
+                              setScheduleEditDrawerOpen(true);
+                            }}
+                            sx={{ color: 'grey.500' }}
+                          >
+                            <RemoveCircleOutlineIcon fontSize="small" />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ));
+                  })()}
                 </TableBody>
               </Table>
             </TableContainer>
@@ -3995,7 +4116,12 @@ export default function App() {
               <Button
                 variant="outlined"
                 size="small"
-                onClick={() => setScheduleEditDrawerOpen(true)}
+                onClick={() => {
+                  // Load existing ad group dayparting into temp state for editing
+                  const existingDayparting = adGroup?.dayparting ? new Set(adGroup.dayparting) : new Set();
+                  setTempDayparting(existingDayparting);
+                  setScheduleEditDrawerOpen(true);
+                }}
               >
                 Edit
               </Button>
@@ -4037,6 +4163,9 @@ export default function App() {
                               sx={{ cursor: 'pointer' }}
                               onClick={(e) => {
                                 e.preventDefault();
+                                // Load existing ad group dayparting into temp state for editing
+                                const existingDayparting = adGroup?.dayparting ? new Set(adGroup.dayparting) : new Set();
+                                setTempDayparting(existingDayparting);
                                 setScheduleEditDrawerOpen(true);
                               }}
                             >
@@ -4210,13 +4339,13 @@ export default function App() {
             </Box>
             
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px', mt: 2 }}>
-              <Box component="img" src={RokuTile} />
-              <Box component="img" src={DisneyTile} />
-              <Box component="img" src={HuluTile} />
-              <Box component="img" src={HBOTile} />
-              <Box component="img" src={PeacockTile} />
-              <Box component="img" src={TubiTile} />
-              <Box component="img" src={ESPNTile} />
+              <Box component="img" src={RokuTile} sx={{ width: 50, height: 38 }} />
+              <Box component="img" src={DisneyTile} sx={{ width: 50, height: 38 }} />
+              <Box component="img" src={HuluTile} sx={{ width: 50, height: 38 }} />
+              <Box component="img" src={HBOTile} sx={{ width: 50, height: 38 }} />
+              <Box component="img" src={PeacockTile} sx={{ width: 50, height: 38 }} />
+              <Box component="img" src={TubiTile} sx={{ width: 50, height: 38 }} />
+              <Box component="img" src={ESPNTile} sx={{ width: 50, height: 38 }} />
             </Box>
             
             <Link href="#" underline="hover" color="primary" sx={{ mt: 1, display: 'inline-block' }}>
@@ -7961,17 +8090,17 @@ export default function App() {
                       Selected day/time
                     </Typography>
                   </Box>
-                  {selectedTimeSlots.size > 0 && (
+                  {tempDayparting.size > 0 && (
                     <Typography variant="caption" color="text.secondary">
-                      {selectedTimeSlots.size} selected day/time slot{selectedTimeSlots.size !== 1 ? 's' : ''}
+                      {tempDayparting.size} selected day/time slot{tempDayparting.size !== 1 ? 's' : ''}
                     </Typography>
                   )}
                 </Box>
-                {selectedTimeSlots.size > 0 && (
+                {tempDayparting.size > 0 && (
                   <Button
                     variant="outlined"
                     size="small"
-                    onClick={() => setSelectedTimeSlots(new Set())}
+                    onClick={() => setTempDayparting(new Set())}
                     sx={{ fontSize: '11px', py: 0.25, px: 1, minWidth: 'auto' }}
                   >
                     Reset
@@ -7980,7 +8109,7 @@ export default function App() {
               </Box>
               
               {/* Selected times table */}
-              {selectedTimeSlots.size > 0 && (
+              {tempDayparting.size > 0 && (
                 <Box sx={{ mt: 3, marginLeft: '60px' }}>
                   <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold' }}>
                     Dayparts
@@ -8015,7 +8144,7 @@ export default function App() {
                           };
                           
                           const dayGroups = {};
-                          Array.from(selectedTimeSlots).forEach(cellKey => {
+                          Array.from(tempDayparting).forEach(cellKey => {
                             const [dayKey, hour] = cellKey.split('-').map(Number);
                             if (!dayGroups[dayKey]) {
                               dayGroups[dayKey] = [];
@@ -8119,9 +8248,12 @@ export default function App() {
               color="primary" 
               size="medium"
               onClick={() => {
-                console.log('Saving schedule changes:', {
-                  selectedTimeSlots: Array.from(selectedTimeSlots)
-                });
+                // Save the temporary dayparting to the campaign
+                if (selectedCampaignForDetails) {
+                  saveDayparting('campaign', selectedCampaignForDetails.id, tempDayparting);
+                } else if (selectedAdGroupForDetails) {
+                  saveDayparting('adGroup', selectedAdGroupForDetails.id, tempDayparting);
+                }
                 setScheduleEditDrawerOpen(false);
               }}
             >
