@@ -22,6 +22,9 @@ import SearchIcon from "@mui/icons-material/Search";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import DateRangeField from "./components/DateRangeField";
+import PlacementCard from "./components/PlacementCard";
+import DeliveryCard from "./components/DeliveryCard";
+import AudienceDrawer from "./components/AudienceDrawer";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -70,6 +73,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
+import FormGroup from "@mui/material/FormGroup";
 import Snackbar from "@mui/material/Snackbar";
 import Slide from "@mui/material/Slide";
 import Checkbox from "@mui/material/Checkbox";
@@ -2400,8 +2404,26 @@ export default function App() {
     const [isSaving, setIsSaving] = useState(false);
     const [isBudgetSaving, setIsBudgetSaving] = useState(false);
     const [autoBid, setAutoBid] = useState(true);
+    const [maxBid, setMaxBid] = useState("");
     const [automaticPlacement, setAutomaticPlacement] = useState(true);
     const [placementToggle, setPlacementToggle] = useState(true);
+    const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
+    const [audienceDrawerOpen, setAudienceDrawerOpen] = useState(false);
+    const [audienceSelection, setAudienceSelection] = useState("include");
+    const [selectedAgeRanges, setSelectedAgeRanges] = useState({
+      '18-24': false,
+      '25-34': false,
+      '35-44': false,
+      '45-54': false,
+      '55+': false
+    });
+    const [selectedIncomeRanges, setSelectedIncomeRanges] = useState({
+      'Under $50k': false,
+      '$50-$100k': false,
+      '$100-$150k': false,
+      '$150-$200k': false,
+      '$200k+': false
+    });
 
     // Format hour function for time display
     const formatHour = (h) => {
@@ -3104,7 +3126,11 @@ export default function App() {
           <Typography variant="h2">
             Audience
           </Typography>
-          <Button variant="outlined" size="small">
+          <Button 
+            variant="outlined" 
+            size="small"
+            onClick={() => setAudienceDrawerOpen(true)}
+          >
             Edit
           </Button>
         </Box>
@@ -3118,290 +3144,21 @@ export default function App() {
         </Typography>
       </Box>
       
-      <Box sx={{ 
-        boxShadow: '0 1px 6px rgba(0, 0, 0, 0.1)',
-        p: 3,
-        backgroundColor: 'white',
-        mb: 3
-      }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography variant="h2">
-            Placement
-          </Typography>
-          <Button variant="outlined" size="small">
-            Edit
-          </Button>
-        </Box>
-        
-        <Typography variant="caption" color="text.secondary">
-          Lets you select where your ads will be shown. <Link href="#" underline="hover" color="primary">Learn about ad placement.</Link>
-        </Typography>
-        
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px', width: '240px' }}>
-            <Typography variant="body1" color="text.secondary">
-              Automatic placement
-            </Typography>
-            <Tooltip 
-              title={
-                <Box>
-                  <Typography variant="body2" gutterBottom>
-                    Automatic placement optimizes your ad delivery across all available placements to get the best results for your campaign.
-                  </Typography>
-                </Box>
-              }
-              arrow
-              placement="top"
-              componentsProps={{
-                tooltip: {
-                  sx: {
-                    backgroundColor: 'white',
-                    border: '1px solid #ccc',
-                    color: 'text.primary',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-                    maxWidth: 300
-                  }
-                },
-                arrow: {
-                  sx: {
-                    color: 'white',
-                    '&::before': {
-                      border: '1px solid #ccc'
-                    }
-                  }
-                }
-              }}
-            >
-              <HelpOutlineIcon fontSize="small" color="action" />
-            </Tooltip>
-          </Box>
-          <Switch size="small" defaultChecked checked={automaticPlacement} onChange={(e) => setAutomaticPlacement(e.target.checked)} />
-          <Typography variant="caption" color="text.secondary" sx={{ ml: '1px' }}>
-            CPM estimate (all ad types): $8-$30
-          </Typography>
-        </Box>
-        
-        {!automaticPlacement && (
-          <Box sx={{ 
-            mt: 3,
-            animation: 'fadeIn 0.3s ease-in',
-            '@keyframes fadeIn': {
-              '0%': {
-                opacity: 0,
-              },
-              '100%': {
-                opacity: 1,
-              },
-            },
-          }}>
-            <Typography variant="h3" sx={{ fontSize: '16px', fontWeight: 'bold', mb: 1 }}>
-              App selection
-            </Typography>
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-              Place ads across Roku and other streaming apps. Selecting both options may allow Roku to place your ads on more apps, which can help you reach your campaign goal. <Link href="#" underline="hover" color="primary">See a complete list of apps.</Link>
-            </Typography>
-          </Box>
-        )}
-        
-        {automaticPlacement && (
-          <Box sx={{ 
-            animation: 'fadeIn 0.3s ease-in',
-            '@keyframes fadeIn': {
-              '0%': {
-                opacity: 0,
-              },
-              '100%': {
-                opacity: 1,
-              },
-            },
-          }}>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px', mt: 2 }}>
-              <Box component="img" src={RokuTile} alt="Roku Channel" sx={{ width: 50, height: 38 }} />
-              <Box component="img" src={DisneyTile} alt="Disney" sx={{ width: 50, height: 38 }} />
-              <Box component="img" src={HuluTile} alt="Hulu" sx={{ width: 50, height: 38 }} />
-              <Box component="img" src={HBOTile} alt="HBO" sx={{ width: 50, height: 38 }} />
-              <Box component="img" src={PeacockTile} alt="Peacock" sx={{ width: 50, height: 38 }} />
-              <Box component="img" src={TubiTile} alt="Tubi" sx={{ width: 50, height: 38 }} />
-              <Box component="img" src={ESPNTile} alt="ESPN" sx={{ width: 50, height: 38 }} />
-            </Box>
-            
-            <Link href="#" underline="hover" color="primary" sx={{ mt: 1, display: 'inline-block' }}>
-              See more
-            </Link>
-          </Box>
-        )}
-        
-        {!automaticPlacement && (
-          <Box sx={{ 
-            mt: 3,
-            display: 'flex',
-            gap: 2,
-            width: '100%',
-            animation: 'fadeInScale 0.4s ease-out',
-            '@keyframes fadeInScale': {
-              '0%': {
-                opacity: 0,
-                transform: 'translateY(-10px)',
-              },
-              '100%': {
-                opacity: 1,
-                transform: 'translateY(0)',
-              },
-            },
-          }}>
-            <Box sx={{ 
-              flex: 1,
-              backgroundImage: `url(${RokuChannelPlacement})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              borderRadius: '4px',
-              overflow: 'hidden'
-            }}>
-              <Box sx={{
-                height: '180px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'flex-end',
-                padding: '16px'
-              }}>
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="h3" sx={{ fontSize: '16px', fontWeight: 'bold', mb: 0.5, color: 'white' }}>
-                    Roku
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: 'white', display: 'block' }}>
-                    CPM estimate (all ad types): $8-$22
-                  </Typography>
-                </Box>
-                
-                <Box sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}>
-                  <Switch
-                    size="small"
-                    checked={placementToggle}
-                    onChange={(e) => setPlacementToggle(e.target.checked)}
-                  />
-                  <Typography variant="body2" sx={{ color: 'white', fontWeight: 'bold', minWidth: '60px' }}>
-                    {placementToggle ? 'Include' : 'Exclude'}
-                  </Typography>
-                </Box>
-              </Box>
-            </Box>
+      <PlacementCard
+        automaticPlacement={automaticPlacement}
+        setAutomaticPlacement={setAutomaticPlacement}
+        placementToggle={placementToggle}
+        setPlacementToggle={setPlacementToggle}
+      />
 
-            <Box sx={{ 
-              flex: 1,
-              border: '1px solid #ccc',
-              borderRadius: '4px',
-              overflow: 'hidden'
-            }}>
-              <Box sx={{
-                height: '180px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'flex-end',
-                padding: '16px'
-              }}>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px', mb: 2 }}>
-                  <Box component="img" src={Paramount} alt="Paramount" sx={{ width: 50, height: 38 }} />
-                  <Box component="img" src={DisneyTile} alt="Disney" sx={{ width: 50, height: 38 }} />
-                  <Box component="img" src={HuluTile} alt="Hulu" sx={{ width: 50, height: 38 }} />
-                  <Box component="img" src={HBOTile} alt="HBO" sx={{ width: 50, height: 38 }} />
-                  <Box component="img" src={PeacockTile} alt="Peacock" sx={{ width: 50, height: 38 }} />
-                  <Box component="img" src={TubiTile} alt="Tubi" sx={{ width: 50, height: 38 }} />
-                  <Box component="img" src={ESPNTile} alt="ESPN" sx={{ width: 50, height: 38 }} />
-                </Box>
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="h3" sx={{ fontSize: '16px', fontWeight: 'bold', mb: 0.5, color: 'text.primary' }}>
-                    Other streaming apps
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
-                    CPM estimate: $10-$30
-                  </Typography>
-                </Box>
-                
-                <Box sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}>
-                  <Switch
-                    size="small"
-                    checked={placementToggle}
-                    onChange={(e) => setPlacementToggle(e.target.checked)}
-                  />
-                  <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 'bold', minWidth: '60px' }}>
-                    {placementToggle ? 'Include' : 'Exclude'}
-                  </Typography>
-                </Box>
-              </Box>
-            </Box>
-          </Box>
-        )}
-      </Box>
-
-      {/* Delivery Card */}
-      <Box sx={{ 
-        boxShadow: '0 1px 6px rgba(0, 0, 0, 0.1)',
-        p: 3,
-        backgroundColor: 'white',
-        mb: 3
-      }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography variant="h2">
-            Delivery
-          </Typography>
-          <Button variant="outlined" size="small">
-            Edit
-          </Button>
-        </Box>
-        
-        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-          Campaigns are billed on delivered impressions
-        </Typography>
-        
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px', width: '150px' }}>
-            <Typography variant="body1" color="text.secondary">
-              Auto bid
-            </Typography>
-            <Tooltip 
-              title={
-                <Box>
-                  <Typography variant="body2" gutterBottom>
-                    Allows the system to optimize your bid based on your advertising objective
-                  </Typography>
-                </Box>
-              }
-              arrow
-              placement="top"
-              componentsProps={{
-                tooltip: {
-                  sx: {
-                    backgroundColor: 'white',
-                    border: '1px solid #ccc',
-                    color: 'text.primary',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-                    maxWidth: 300
-                  }
-                },
-                arrow: {
-                  sx: {
-                    color: 'white',
-                    '&::before': {
-                      border: '1px solid #ccc'
-                    }
-                  }
-                }
-              }}
-            >
-              <HelpOutlineIcon fontSize="small" color="action" />
-            </Tooltip>
-          </Box>
-          <Switch size="small" checked={autoBid} onChange={(e) => setAutoBid(e.target.checked)} />
-        </Box>
-      </Box>
+      <DeliveryCard
+        autoBid={autoBid}
+        setAutoBid={setAutoBid}
+        maxBid={maxBid}
+        setMaxBid={setMaxBid}
+        showAdvancedSettings={showAdvancedSettings}
+        setShowAdvancedSettings={setShowAdvancedSettings}
+      />
 
       {/* Creatives Card for Campaign */}
       <Box sx={{ 
@@ -3661,6 +3418,174 @@ export default function App() {
         </Box>
       </Box>
     </Box>
+
+    {/* Audience Drawer */}
+    <Drawer
+      anchor="right"
+      open={audienceDrawerOpen}
+      onClose={() => setAudienceDrawerOpen(false)}
+      PaperProps={{
+        sx: {
+          width: '95%',
+          maxWidth: '95vw'
+        }
+      }}
+    >
+      <Box sx={{ p: 3, height: '100%', overflow: 'auto' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+          <Typography variant="h2" sx={{ fontWeight: 'bold' }}>
+            Audience
+          </Typography>
+          <IconButton 
+            onClick={() => setAudienceDrawerOpen(false)}
+            sx={{ color: 'text.secondary' }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </Box>
+
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            Your campaign will be optimized toward your objective whether you build an audience or not. Building an audience may reduce scale but will ensure your ads are delivered and optimized only within your selected audience group.{' '}
+            <Link href="#" underline="hover" color="primary">
+              Learn more about audience targeting
+            </Link>
+          </Typography>
+        </Box>
+
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h5" sx={{ mb: 1 }}>
+            Build an audience
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+            Choose to include or exclude a specific audience based on selected criteria.
+          </Typography>
+          <Select
+            value={audienceSelection}
+            onChange={(e) => setAudienceSelection(e.target.value)}
+            variant="outlined"
+            size="small"
+            sx={{ width: '100%', fontSize: '0.875rem' }}
+            renderValue={(value) => (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                {value === 'include' ? (
+                  <CheckCircleOutlineIcon sx={{ color: '#4caf50', fontSize: '20px' }} />
+                ) : (
+                  <RemoveCircleOutlineIcon sx={{ color: '#f44336', fontSize: '20px' }} />
+                )}
+                <span>{value === 'include' ? 'Include' : 'Exclude'}</span>
+              </Box>
+            )}
+          >
+            <MenuItem value="include" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <CheckCircleOutlineIcon sx={{ color: '#4caf50', fontSize: '20px' }} />
+              <span>Include</span>
+            </MenuItem>
+            <MenuItem value="exclude" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <RemoveCircleOutlineIcon sx={{ color: '#f44336', fontSize: '20px' }} />
+              <span>Exclude</span>
+            </MenuItem>
+          </Select>
+        </Box>
+
+        <Box sx={{ border: '1px solid #ccc', borderRadius: '6px', p: 2, mb: 3 }}>
+          <FormControl variant="outlined" size="small" fullWidth>
+            <InputLabel>Gender</InputLabel>
+            <Select
+              label="Gender"
+              defaultValue="all"
+              sx={{ fontSize: '0.875rem' }}
+            >
+              <MenuItem value="all">All</MenuItem>
+              <MenuItem value="female">Female</MenuItem>
+              <MenuItem value="male">Male</MenuItem>
+            </Select>
+          </FormControl>
+          
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 3, display: 'block' }}>
+            Age
+          </Typography>
+          
+          <FormGroup row sx={{ gap: 3 }}>
+            {['18-24', '25-34', '35-44', '45-54', '55+'].map((ageRange) => (
+              <Box key={ageRange} sx={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+                <Checkbox
+                  checked={selectedAgeRanges[ageRange]}
+                  onChange={(e) => setSelectedAgeRanges(prev => ({
+                    ...prev,
+                    [ageRange]: e.target.checked
+                  }))}
+                  size="small"
+                />
+                <Typography variant="body2">{ageRange}</Typography>
+              </Box>
+            ))}
+          </FormGroup>
+
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 3, display: 'block' }}>
+            Income
+          </Typography>
+
+          <FormGroup row sx={{ gap: 3 }}>
+            {['Under $50k', '$50-$100k', '$100-$150k', '$150-$200k', '$200k+'].map((incomeRange) => (
+              <Box key={incomeRange} sx={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+                <Checkbox
+                  checked={selectedIncomeRanges[incomeRange]}
+                  onChange={(e) => setSelectedIncomeRanges(prev => ({
+                    ...prev,
+                    [incomeRange]: e.target.checked
+                  }))}
+                  size="small"
+                />
+                <Typography variant="body2">{incomeRange}</Typography>
+              </Box>
+            ))}
+          </FormGroup>
+
+          <FormControl variant="outlined" size="small" fullWidth sx={{ mt: 3 }}>
+            <InputLabel>Advanced demographics</InputLabel>
+            <Select
+              label="Advanced demographics"
+              defaultValue="All"
+              sx={{ fontSize: '0.875rem' }}
+            >
+              <MenuItem value="All">All</MenuItem>
+            </Select>
+          </FormControl>
+
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mt: 3 }}>
+            <FormControl variant="outlined" size="small" sx={{ flex: 1 }}>
+              <InputLabel>Custom audience</InputLabel>
+              <Select
+                label="Custom audience"
+                defaultValue="Select"
+                sx={{ fontSize: '0.875rem' }}
+              >
+                <MenuItem value="Select">Select</MenuItem>
+              </Select>
+            </FormControl>
+            <Button
+              variant="contained"
+              color="primary"
+              size="small"
+              sx={{ mt: 0.5 }}
+            >
+              Create new
+            </Button>
+          </Box>
+        </Box>
+      </Box>
+    </Drawer>
+    <AudienceDrawer
+      open={audienceDrawerOpen}
+      onClose={() => setAudienceDrawerOpen(false)}
+      audienceSelection={audienceSelection}
+      setAudienceSelection={setAudienceSelection}
+      selectedAgeRanges={selectedAgeRanges}
+      setSelectedAgeRanges={setSelectedAgeRanges}
+      selectedIncomeRanges={selectedIncomeRanges}
+      setSelectedIncomeRanges={setSelectedIncomeRanges}
+    />
     </>
     );
   };
@@ -3676,7 +3601,26 @@ export default function App() {
     const [isResizing, setIsResizing] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [autoBid, setAutoBid] = useState(true);
+    const [maxBid, setMaxBid] = useState("");
     const [automaticPlacement, setAutomaticPlacement] = useState(true);
+    const [placementToggle, setPlacementToggle] = useState(true);
+    const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
+    const [audienceDrawerOpen, setAudienceDrawerOpen] = useState(false);
+    const [audienceSelection, setAudienceSelection] = useState("include");
+    const [selectedAgeRanges, setSelectedAgeRanges] = useState({
+      '18-24': false,
+      '25-34': false,
+      '35-44': false,
+      '45-54': false,
+      '55+': false
+    });
+    const [selectedIncomeRanges, setSelectedIncomeRanges] = useState({
+      'Under $50k': false,
+      '$50-$100k': false,
+      '$100-$150k': false,
+      '$150-$200k': false,
+      '$200k+': false
+    });
     const endDateRef = useRef(null);
 
     const toggleCampaignDetailsExpanded = () => {
@@ -4411,7 +4355,11 @@ export default function App() {
               <Typography variant="h2">
                 Audience
               </Typography>
-              <Button variant="outlined" size="small">
+              <Button 
+                variant="outlined" 
+                size="small"
+                onClick={() => setAudienceDrawerOpen(true)}
+              >
                 Edit
               </Button>
             </Box>
@@ -4425,156 +4373,22 @@ export default function App() {
             </Typography>
           </Box>
           
-          <Box sx={{ 
-            boxShadow: '0 1px 6px rgba(0, 0, 0, 0.1)',
-            p: 3,
-            backgroundColor: 'white',
-            mb: 3
-          }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Typography variant="h2">
-                Placement
-              </Typography>
-              <Button variant="outlined" size="small">
-                Edit
-              </Button>
-            </Box>
-            
-            <Typography variant="caption" color="text.secondary">
-              Lets you select where your ads will be shown. <Link href="#" underline="hover" color="primary">Learn about ad placement.</Link>
-            </Typography>
-            
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px', width: '240px' }}>
-                <Typography variant="body1" color="text.secondary">
-                  Automatic placement
-                </Typography>
-                <Tooltip 
-                  title={
-                    <Box>
-                      <Typography variant="body2" gutterBottom>
-                        Automatic placement optimizes your ad delivery across all available placements to get the best results for your campaign.
-                      </Typography>
-                    </Box>
-                  }
-                  arrow
-                  placement="top"
-                  componentsProps={{
-                    tooltip: {
-                      sx: {
-                        backgroundColor: 'white',
-                        border: '1px solid #ccc',
-                        color: 'text.primary',
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-                        maxWidth: 300
-                      }
-                    },
-                    arrow: {
-                      sx: {
-                        color: 'white',
-                        '&::before': {
-                          border: '1px solid #ccc'
-                        }
-                      }
-                    }
-                  }}
-                >
-                  <HelpOutlineIcon fontSize="small" color="action" />
-                </Tooltip>
-              </Box>
-              <Switch size="small" defaultChecked checked={automaticPlacement} onChange={(e) => setAutomaticPlacement(e.target.checked)} />
-              <Typography variant="caption" color="text.secondary" sx={{ ml: '1px' }}>
-                CPM estimate (all ad types): $8-$30
-              </Typography>
-            </Box>
-            
-            {!automaticPlacement && (
-              <Box sx={{ mt: 3 }}>
-                <Typography variant="h3" sx={{ fontSize: '16px', fontWeight: 'bold', mb: 1 }}>
-                  App selection
-                </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-                  Place ads across Roku and other streaming apps. Selecting both options may allow Roku to place your ads on more apps, which can help you reach your campaign goal. <Link href="#" underline="hover" color="primary">See a complete list of apps.</Link>
-                </Typography>
-              </Box>
-            )}
-            
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px', mt: 2 }}>
-              <Box component="img" src={RokuTile} sx={{ width: 50, height: 38 }} />
-              <Box component="img" src={DisneyTile} sx={{ width: 50, height: 38 }} />
-              <Box component="img" src={HuluTile} sx={{ width: 50, height: 38 }} />
-              <Box component="img" src={HBOTile} sx={{ width: 50, height: 38 }} />
-              <Box component="img" src={PeacockTile} sx={{ width: 50, height: 38 }} />
-              <Box component="img" src={TubiTile} sx={{ width: 50, height: 38 }} />
-              <Box component="img" src={ESPNTile} sx={{ width: 50, height: 38 }} />
-            </Box>
-            
-            <Link href="#" underline="hover" color="primary" sx={{ mt: 1, display: 'inline-block' }}>
-              See more
-            </Link>
-          </Box>
+          <PlacementCard
+            automaticPlacement={automaticPlacement}
+            setAutomaticPlacement={setAutomaticPlacement}
+            placementToggle={placementToggle}
+            setPlacementToggle={setPlacementToggle}
+          />
 
           {/* Delivery Card */}
-          <Box sx={{ 
-            boxShadow: '0 1px 6px rgba(0, 0, 0, 0.1)',
-            p: 3,
-            backgroundColor: 'white',
-            mb: 3
-          }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Typography variant="h2">
-                Delivery
-              </Typography>
-              <Button variant="outlined" size="small">
-                Edit
-              </Button>
-            </Box>
-            
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-              Campaigns are billed on delivered impressions
-            </Typography>
-            
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px', width: '150px' }}>
-                <Typography variant="body1" color="text.secondary">
-                  Auto bid
-                </Typography>
-                <Tooltip 
-                  title={
-                    <Box>
-                      <Typography variant="body2" gutterBottom>
-                        Allows the system to optimize your bid based on your advertising objective
-                      </Typography>
-                    </Box>
-                  }
-                  arrow
-                  placement="top"
-                  componentsProps={{
-                    tooltip: {
-                      sx: {
-                        backgroundColor: 'white',
-                        border: '1px solid #ccc',
-                        color: 'text.primary',
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-                        maxWidth: 300
-                      }
-                    },
-                    arrow: {
-                      sx: {
-                        color: 'white',
-                        '&::before': {
-                          border: '1px solid #ccc'
-                        }
-                      }
-                    }
-                  }}
-                >
-                  <HelpOutlineIcon fontSize="small" color="action" />
-                </Tooltip>
-              </Box>
-              <Switch size="small" checked={autoBid} onChange={(e) => setAutoBid(e.target.checked)} />
-            </Box>
-          </Box>
+          <DeliveryCard
+            autoBid={autoBid}
+            setAutoBid={setAutoBid}
+            maxBid={maxBid}
+            setMaxBid={setMaxBid}
+            showAdvancedSettings={showAdvancedSettings}
+            setShowAdvancedSettings={setShowAdvancedSettings}
+          />
 
           {/* Creatives Card */}
           <CreativesCard 
@@ -4635,6 +4449,17 @@ export default function App() {
         </Box>
       </Box>
     </Box>
+    
+    <AudienceDrawer
+      open={audienceDrawerOpen}
+      onClose={() => setAudienceDrawerOpen(false)}
+      audienceSelection={audienceSelection}
+      setAudienceSelection={setAudienceSelection}
+      selectedAgeRanges={selectedAgeRanges}
+      setSelectedAgeRanges={setSelectedAgeRanges}
+      selectedIncomeRanges={selectedIncomeRanges}
+      setSelectedIncomeRanges={setSelectedIncomeRanges}
+    />
     </>
     );
   };
