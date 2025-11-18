@@ -2018,16 +2018,26 @@ export default function App() {
       campaign: adGroupName,
       parentCampaign: parentCampaign,
       status: 'Draft',
-      impressions: 0,
-      cpm: 0,
-      goalActions: 0,
-      goalCPA: 0,
+      spend: "$0.00",
+      impressions: "0",
+      cpm: "$0.00",
+      goalActions: "0",
+      goalCpa: "$0.00",
       lifetimeBudget: "$500",
-      lastModified: new Date().toISOString()
+      lastModified: new Date().toISOString(),
+      creatives: []
     };
     
+    console.log('Creating ad group:', newAdGroup);
+    console.log('Parent campaign:', parentCampaign);
+    console.log('selectedAdGroupForDetails:', selectedAdGroupForDetails);
+    
     // Add the new ad group to the top of the adGroups array
-    setAdGroups(prev => [newAdGroup, ...prev]);
+    setAdGroups(prev => {
+      const updated = [newAdGroup, ...prev];
+      console.log('Updated adGroups:', updated);
+      return updated;
+    });
     
     // Clear the input field
     setNewAdGroupName('');
@@ -2036,11 +2046,16 @@ export default function App() {
     setToastMessage('Your ad group has been created');
     setToastOpen(true);
     
-    // Close the drawer and stay on the table view
+    // Close the drawer
     setAdGroupsDrawerOpen(false);
     // Clear the target campaign after creation
     setTargetCampaignForMultipleAdGroups(null);
-    // Don't change the current view - stay on the table
+    
+    // Navigate to the details view and select the newly created ad group
+    console.log('Setting selectedAdGroupForDetails to:', newAdGroup);
+    setSelectedAdGroupForDetails(newAdGroup);
+    setSelectedCampaignForDetails(null);
+    setCurrentView('details');
   };
 
   const handleBackToList = () => {
@@ -3987,7 +4002,23 @@ export default function App() {
                 {adGroups
                   .filter(ag => ag.parentCampaign === (selectedAdGroupForDetails?.parentCampaign || adGroup.parentCampaign))
                   .sort((a, b) => {
-                    // Primary sort: by last modified date (most recent first) - if available
+                    // Primary sort: by status priority (Draft appears first)
+                    const statusPriority = {
+                      'Draft': 0,
+                      'Active': 1,
+                      'Paused': 2,
+                      'Approval required': 3,
+                      'Stopped': 4
+                    };
+                    
+                    const priorityA = statusPriority[a.status] !== undefined ? statusPriority[a.status] : 999;
+                    const priorityB = statusPriority[b.status] !== undefined ? statusPriority[b.status] : 999;
+                    
+                    if (priorityA !== priorityB) {
+                      return priorityA - priorityB;
+                    }
+                    
+                    // Secondary sort: by last modified date (most recent first) - if available
                     if (a.lastModified && b.lastModified) {
                       const dateA = new Date(a.lastModified);
                       const dateB = new Date(b.lastModified);
@@ -3995,21 +4026,6 @@ export default function App() {
                       if (dateA.getTime() !== dateB.getTime()) {
                         return dateB.getTime() - dateA.getTime(); // Descending order (most recent first)
                       }
-                    }
-                    
-                    // Secondary sort: by status priority
-                    const statusPriority = {
-                      'Active': 1,
-                      'Paused': 2,
-                      'Approval required': 3,
-                      'Stopped': 4
-                    };
-                    
-                    const priorityA = statusPriority[a.status] || 999;
-                    const priorityB = statusPriority[b.status] || 999;
-                    
-                    if (priorityA !== priorityB) {
-                      return priorityA - priorityB;
                     }
                     
                     // Tertiary sort by campaign name
@@ -4021,13 +4037,13 @@ export default function App() {
                     onClick={() => handleAdGroupClick(ag)}
                     sx={{
                       p: 1.5,
-                      borderRadius: selectedAdGroupForDetails?.id === ag.id ? 0 : 1,
+                      borderRadius: adGroup?.id === ag.id ? 0 : 1,
                       cursor: 'pointer',
-                      backgroundColor: selectedAdGroupForDetails?.id === ag.id ? '#EDE7F6' : 'transparent',
-                      borderTop: selectedAdGroupForDetails?.id === ag.id ? '1px solid #20004C' : '1px solid transparent',
-                      borderRight: selectedAdGroupForDetails?.id === ag.id ? '1px solid #20004C' : '1px solid transparent',
-                      borderBottom: selectedAdGroupForDetails?.id === ag.id ? '1px solid #20004C' : '1px solid transparent',
-                      borderLeft: selectedAdGroupForDetails?.id === ag.id ? '3px solid #20004C' : '1px solid transparent',
+                      backgroundColor: adGroup?.id === ag.id ? '#EDE7F6' : 'transparent',
+                      borderTop: adGroup?.id === ag.id ? '1px solid #20004C' : '1px solid transparent',
+                      borderRight: adGroup?.id === ag.id ? '1px solid #20004C' : '1px solid transparent',
+                      borderBottom: adGroup?.id === ag.id ? '1px solid #20004C' : '1px solid transparent',
+                      borderLeft: adGroup?.id === ag.id ? '3px solid #20004C' : '1px solid transparent',
                       '&:hover': {
                         backgroundColor: '#f5f5f5'
                       }
