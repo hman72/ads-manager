@@ -1382,6 +1382,22 @@ export default function App() {
   const [selectedCreativesForAssignment, setSelectedCreativesForAssignment] = useState([]);
   const [creativeSearchTerm, setCreativeSearchTerm] = useState('');
   const [selectedAdGroupForCreatives, setSelectedAdGroupForCreatives] = useState(null);
+  const [adGroupAudienceDrawerOpen, setAdGroupAudienceDrawerOpen] = useState(false);
+  const [adGroupAudienceSelection, setAdGroupAudienceSelection] = useState("include");
+  const [adGroupSelectedAgeRanges, setAdGroupSelectedAgeRanges] = useState({
+    '18-24': false,
+    '25-34': false,
+    '35-44': false,
+    '45-54': false,
+    '55+': false
+  });
+  const [adGroupSelectedIncomeRanges, setAdGroupSelectedIncomeRanges] = useState({
+    'Under $50k': false,
+    '$50-$100k': false,
+    '$100-$150k': false,
+    '$150-$200k': false,
+    '$200k+': false
+  });
   const [visibleFilters, setVisibleFilters] = useState(['status']);
   const [filterMenuAnchor, setFilterMenuAnchor] = useState(null);
   const [statusSelectOpen, setStatusSelectOpen] = useState(false);
@@ -1599,9 +1615,9 @@ export default function App() {
   };
 
   const collapseAllCreativeGroups = () => {
-    // Get all unique campaign names from ad groups data
-    const allCampaignNames = [...new Set(adGroupsData.map(adGroup => adGroup.campaign))];
-    setCollapsedCampaigns(new Set(allCampaignNames));
+    // Get all unique parent campaign names from ad groups data (these are the grouping keys)
+    const allParentCampaigns = [...new Set(adGroups.map(adGroup => adGroup.parentCampaign))];
+    setCollapsedCampaigns(new Set(allParentCampaigns));
   };
 
   const handleCampaignGroupSelect = (campaignName, adGroups, isSelected) => {
@@ -2151,7 +2167,7 @@ export default function App() {
       [selectedTab]: []
     }));
     // Reset show selected only mode when deselecting all
-    if (selectedTab === 0) {
+    if (selectedTab === 0 || selectedTab === 1) {
       setShowSelectedOnly(false);
     }
   };
@@ -2179,8 +2195,8 @@ export default function App() {
       [selectedTab]: newSelected
     }));
     
-    // Reset show selected only mode when no campaigns are selected
-    if (selectedTab === 0 && newSelected.length === 0) {
+    // Reset show selected only mode when no items are selected
+    if ((selectedTab === 0 || selectedTab === 1) && newSelected.length === 0) {
       setShowSelectedOnly(false);
     }
   };
@@ -2308,7 +2324,15 @@ export default function App() {
         .filter(camp => selectedCampaignIds.includes(camp.id))
         .map(camp => camp.campaign);
       const belongsToSelectedCampaign = selectedCampaignNames.includes(adGroup.parentCampaign);
-      return matchesSearch && matchesStatus && matchesCreativeType && belongsToSelectedCampaign;
+      if (!belongsToSelectedCampaign) {
+        return false;
+      }
+    }
+    
+    // If in "show selected only" mode, only show selected ad groups
+    if (showSelectedOnly && selectedCampaigns[1]?.length > 0) {
+      const isSelected = selectedCampaigns[1].includes(adGroup.id);
+      return matchesSearch && matchesStatus && matchesCreativeType && isSelected;
     }
     
     return matchesSearch && matchesStatus && matchesCreativeType;
@@ -4880,7 +4904,7 @@ export default function App() {
             </Box>
           </Box>
           
-          <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 0 }}>
             <Tabs 
               value={selectedTab} 
               onChange={handleTabChange} 
@@ -4953,11 +4977,10 @@ export default function App() {
             <Box sx={{ 
               display: 'flex', 
               alignItems: 'center', 
-              gap: 2,
+              gap: 0.75,
               p: 2, 
               backgroundColor: '#f5f5f5', 
-              borderRadius: 1, 
-              mb: 2 
+              mb: 0 
             }}>
               <Typography variant="body2" color="text.secondary">
                 {selectedCampaigns[0].length} selected campaign{selectedCampaigns[0].length > 1 ? 's' : ''}
@@ -5377,12 +5400,11 @@ export default function App() {
                   display: 'flex', 
                   justifyContent: 'space-between',
                   alignItems: 'center', 
-                  mb: 2,
+                  mb: 0,
                   p: selectedCampaigns[1].length > 0 ? 1.5 : 0,
-                  backgroundColor: selectedCampaigns[1].length > 0 ? '#f5f5f5' : 'transparent',
-                  borderRadius: '4px'
+                  backgroundColor: selectedCampaigns[1].length > 0 ? '#f5f5f5' : 'transparent'
                 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                     {selectedCampaigns[1].length > 0 && (
                       <>
                         <Typography variant="body2" color="text.secondary">
@@ -5424,37 +5446,40 @@ export default function App() {
                         >
                           Add creatives
                         </Button>
+                        <Button 
+                          variant="outlined" 
+                          size="small"
+                        >
+                          Edit Budget/Schedule
+                        </Button>
+                        <Button 
+                          variant="outlined" 
+                          size="small"
+                        >
+                          Edit delivery
+                        </Button>
+                        <Button 
+                          variant="outlined" 
+                          size="small"
+                          onClick={() => setAdGroupAudienceDrawerOpen(true)}
+                        >
+                          Edit audience
+                        </Button>
+                        <Button 
+                          variant="outlined" 
+                          size="small"
+                        >
+                          Edit location
+                        </Button>
+                        <Button 
+                          variant="outlined" 
+                          size="small"
+                        >
+                          Edit Placement
+                        </Button>
                       </>
                     )}
                   </Box>
-                  {/* Expand/Collapse All Control for Ad Groups */}
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={() => {
-                      // Check if any groups are collapsed for Ad Groups
-                      const allParentCampaigns = [...new Set(getFilteredData().map(adGroup => adGroup.parentCampaign))];
-                      const hasCollapsedGroups = allParentCampaigns.some(campaign => collapsedCampaigns.has(campaign));
-                      
-                      if (hasCollapsedGroups) {
-                        expandAllCreativeGroups();
-                      } else {
-                        collapseAllCreativeGroups();
-                      }
-                    }}
-                    startIcon={(() => {
-                      const allParentCampaigns = [...new Set(getFilteredData().map(adGroup => adGroup.parentCampaign))];
-                      const hasCollapsedGroups = allParentCampaigns.some(campaign => collapsedCampaigns.has(campaign));
-                      return hasCollapsedGroups ? <KeyboardArrowDownIcon /> : <KeyboardArrowUpIcon />;
-                    })()}
-                    sx={{ textTransform: 'none' }}
-                  >
-                    {(() => {
-                      const allParentCampaigns = [...new Set(getFilteredData().map(adGroup => adGroup.parentCampaign))];
-                      const hasCollapsedGroups = allParentCampaigns.some(campaign => collapsedCampaigns.has(campaign));
-                      return hasCollapsedGroups ? 'Expand all' : 'Collapse all';
-                    })()}
-                  </Button>
                 </Box>
               )}
               
@@ -5471,7 +5496,43 @@ export default function App() {
                     />
                   </TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>
-                    {selectedTab === 0 ? 'Campaign' : 'Ad group'}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      {selectedTab === 1 && (
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            // Get all unique parent campaigns from the FILTERED dataset (what's displayed)
+                            const filteredData = getFilteredData();
+                            const displayedParentCampaigns = [...new Set(filteredData.map(adGroup => adGroup.parentCampaign))];
+                            // Check if ALL displayed groups are collapsed
+                            const allGroupsCollapsed = displayedParentCampaigns.every(campaign => collapsedCampaigns.has(campaign));
+                            
+                            if (allGroupsCollapsed) {
+                              // If all displayed groups are collapsed, expand all
+                              expandAllCreativeGroups();
+                            } else {
+                              // If not all displayed groups are collapsed, collapse all
+                              collapseAllCreativeGroups();
+                            }
+                          }}
+                          sx={{ p: 0.5, minWidth: 'auto' }}
+                          title={(() => {
+                            const filteredData = getFilteredData();
+                            const displayedParentCampaigns = [...new Set(filteredData.map(adGroup => adGroup.parentCampaign))];
+                            const allGroupsCollapsed = displayedParentCampaigns.every(campaign => collapsedCampaigns.has(campaign));
+                            return allGroupsCollapsed ? 'Expand all' : 'Collapse all';
+                          })()}
+                        >
+                          {(() => {
+                            const filteredData = getFilteredData();
+                            const displayedParentCampaigns = [...new Set(filteredData.map(adGroup => adGroup.parentCampaign))];
+                            const allGroupsCollapsed = displayedParentCampaigns.every(campaign => collapsedCampaigns.has(campaign));
+                            return allGroupsCollapsed ? <KeyboardArrowDownIcon fontSize="small" /> : <KeyboardArrowUpIcon fontSize="small" />;
+                          })()}
+                        </IconButton>
+                      )}
+                      <span>{selectedTab === 0 ? 'Campaign' : 'Ad group'}</span>
+                    </Box>
                   </TableCell>
                   {selectedTab === 0 && <TableCell sx={{ fontWeight: 'bold' }}>Objective</TableCell>}
                   <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
@@ -5825,6 +5886,18 @@ export default function App() {
           </TableContainer>
           </>
           )}
+
+          {/* Audience Drawer for Ad Groups */}
+          <AudienceDrawer
+            open={adGroupAudienceDrawerOpen}
+            onClose={() => setAdGroupAudienceDrawerOpen(false)}
+            audienceSelection={adGroupAudienceSelection}
+            setAudienceSelection={setAdGroupAudienceSelection}
+            selectedAgeRanges={adGroupSelectedAgeRanges}
+            setSelectedAgeRanges={setAdGroupSelectedAgeRanges}
+            selectedIncomeRanges={adGroupSelectedIncomeRanges}
+            setSelectedIncomeRanges={setAdGroupSelectedIncomeRanges}
+          />
         </Container>
       ) : currentView === 'reports' ? (
         <Container maxWidth={false} sx={{ p: "20px" }}>
