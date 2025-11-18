@@ -57,48 +57,64 @@ const DateRangeField = ({
     }
   };
 
+  // Get user's timezone
+  const getUserTimezone = () => {
+    try {
+      return Intl.DateTimeFormat().resolvedOptions().timeZone;
+    } catch (e) {
+      return 'UTC';
+    }
+  };
+
+  const timezone = getUserTimezone();
+
   return (
-    <Box 
-      sx={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        gap: 1,
-        ...sx 
-      }}
-    >
-      <TextField
-        type="date"
-        label={startLabel}
-        variant="outlined"
-        size={size}
-        value={startDate}
-        disabled={disabled}
-        InputLabelProps={{
-          shrink: true,
+    <Box>
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 1,
+          ...sx 
         }}
-        onFocus={(e) => e.target.showPicker && e.target.showPicker()}
-        onChange={handleStartDateChange}
-        sx={{ width }}
-      />
-      <Typography variant="body1" color="text.secondary">
-        to
+      >
+        <TextField
+          type="date"
+          label={startLabel}
+          variant="outlined"
+          size={size}
+          value={startDate}
+          disabled={disabled}
+          InputLabelProps={{
+            shrink: true,
+          }}
+          onFocus={(e) => e.target.showPicker && e.target.showPicker()}
+          onChange={handleStartDateChange}
+          sx={{ width }}
+        />
+        <Typography variant="body1" color="text.secondary">
+          to
+        </Typography>
+        <TextField
+          type="date"
+          label={endLabel}
+          variant="outlined"
+          size={size}
+          value={endDate}
+          disabled={disabled}
+          inputRef={endDateRef}
+          InputLabelProps={{
+            shrink: true,
+          }}
+          onFocus={(e) => e.target.showPicker && e.target.showPicker()}
+          onClick={(e) => e.target.showPicker && e.target.showPicker()}
+          onChange={handleEndDateChange}
+          sx={{ width }}
+        />
+      </Box>
+      <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+        Timezone: {timezone}
       </Typography>
-      <TextField
-        type="date"
-        label={endLabel}
-        variant="outlined"
-        size={size}
-        value={endDate}
-        disabled={disabled}
-        inputRef={endDateRef}
-        InputLabelProps={{
-          shrink: true,
-        }}
-        onFocus={(e) => e.target.showPicker && e.target.showPicker()}
-        onClick={(e) => e.target.showPicker && e.target.showPicker()}
-        onChange={handleEndDateChange}
-        sx={{ width }}
-      />
     </Box>
   );
 };

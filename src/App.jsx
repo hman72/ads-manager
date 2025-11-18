@@ -4,6 +4,7 @@ import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
+import RokuChannelPlacement from "./images/roku_channel_placement.png";
 import Button from "@mui/material/Button";
 import ButtonGroup from "@mui/material/ButtonGroup";
 import Grid from "@mui/material/Grid";
@@ -112,6 +113,7 @@ import ESPNTile from "./images/Channels/espn.png";
 import HuluTile from "./images/Channels/hulu.png";
 import PeacockTile from "./images/Channels/peacock.png";
 import TubiTile from "./images/Channels/tubi.png";
+import Paramount from "./images/Channels/paramount.png";
 import Billboard from "./images/Creatives/Billboard.png";
 import CreativeBillboard from "./images/Creatives/Creative-Billboard.png";
 import Marquee from "./images/Creatives/Marquee.png";
@@ -2398,6 +2400,8 @@ export default function App() {
     const [isSaving, setIsSaving] = useState(false);
     const [isBudgetSaving, setIsBudgetSaving] = useState(false);
     const [autoBid, setAutoBid] = useState(true);
+    const [automaticPlacement, setAutomaticPlacement] = useState(true);
+    const [placementToggle, setPlacementToggle] = useState(true);
 
     // Format hour function for time display
     const formatHour = (h) => {
@@ -3171,25 +3175,170 @@ export default function App() {
               <HelpOutlineIcon fontSize="small" color="action" />
             </Tooltip>
           </Box>
-          <Switch size="small" defaultChecked />
+          <Switch size="small" defaultChecked checked={automaticPlacement} onChange={(e) => setAutomaticPlacement(e.target.checked)} />
           <Typography variant="caption" color="text.secondary" sx={{ ml: '1px' }}>
             CPM estimate (all ad types): $8-$30
           </Typography>
         </Box>
         
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px', mt: 2 }}>
-          <Box component="img" src={RokuTile} alt="Roku Channel" sx={{ width: 50, height: 38 }} />
-          <Box component="img" src={DisneyTile} alt="Disney" sx={{ width: 50, height: 38 }} />
-          <Box component="img" src={HuluTile} alt="Hulu" sx={{ width: 50, height: 38 }} />
-          <Box component="img" src={HBOTile} alt="HBO" sx={{ width: 50, height: 38 }} />
-          <Box component="img" src={PeacockTile} alt="Peacock" sx={{ width: 50, height: 38 }} />
-          <Box component="img" src={TubiTile} alt="Tubi" sx={{ width: 50, height: 38 }} />
-          <Box component="img" src={ESPNTile} alt="ESPN" sx={{ width: 50, height: 38 }} />
-        </Box>
+        {!automaticPlacement && (
+          <Box sx={{ 
+            mt: 3,
+            animation: 'fadeIn 0.3s ease-in',
+            '@keyframes fadeIn': {
+              '0%': {
+                opacity: 0,
+              },
+              '100%': {
+                opacity: 1,
+              },
+            },
+          }}>
+            <Typography variant="h3" sx={{ fontSize: '16px', fontWeight: 'bold', mb: 1 }}>
+              App selection
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+              Place ads across Roku and other streaming apps. Selecting both options may allow Roku to place your ads on more apps, which can help you reach your campaign goal. <Link href="#" underline="hover" color="primary">See a complete list of apps.</Link>
+            </Typography>
+          </Box>
+        )}
         
-        <Link href="#" underline="hover" color="primary" sx={{ mt: 1, display: 'inline-block' }}>
-          See more
-        </Link>
+        {automaticPlacement && (
+          <Box sx={{ 
+            animation: 'fadeIn 0.3s ease-in',
+            '@keyframes fadeIn': {
+              '0%': {
+                opacity: 0,
+              },
+              '100%': {
+                opacity: 1,
+              },
+            },
+          }}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px', mt: 2 }}>
+              <Box component="img" src={RokuTile} alt="Roku Channel" sx={{ width: 50, height: 38 }} />
+              <Box component="img" src={DisneyTile} alt="Disney" sx={{ width: 50, height: 38 }} />
+              <Box component="img" src={HuluTile} alt="Hulu" sx={{ width: 50, height: 38 }} />
+              <Box component="img" src={HBOTile} alt="HBO" sx={{ width: 50, height: 38 }} />
+              <Box component="img" src={PeacockTile} alt="Peacock" sx={{ width: 50, height: 38 }} />
+              <Box component="img" src={TubiTile} alt="Tubi" sx={{ width: 50, height: 38 }} />
+              <Box component="img" src={ESPNTile} alt="ESPN" sx={{ width: 50, height: 38 }} />
+            </Box>
+            
+            <Link href="#" underline="hover" color="primary" sx={{ mt: 1, display: 'inline-block' }}>
+              See more
+            </Link>
+          </Box>
+        )}
+        
+        {!automaticPlacement && (
+          <Box sx={{ 
+            mt: 3,
+            display: 'flex',
+            gap: 2,
+            width: '100%',
+            animation: 'fadeInScale 0.4s ease-out',
+            '@keyframes fadeInScale': {
+              '0%': {
+                opacity: 0,
+                transform: 'translateY(-10px)',
+              },
+              '100%': {
+                opacity: 1,
+                transform: 'translateY(0)',
+              },
+            },
+          }}>
+            <Box sx={{ 
+              flex: 1,
+              backgroundImage: `url(${RokuChannelPlacement})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              borderRadius: '4px',
+              overflow: 'hidden'
+            }}>
+              <Box sx={{
+                height: '180px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-end',
+                padding: '16px'
+              }}>
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="h3" sx={{ fontSize: '16px', fontWeight: 'bold', mb: 0.5, color: 'white' }}>
+                    Roku
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: 'white', display: 'block' }}>
+                    CPM estimate (all ad types): $8-$22
+                  </Typography>
+                </Box>
+                
+                <Box sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <Switch
+                    size="small"
+                    checked={placementToggle}
+                    onChange={(e) => setPlacementToggle(e.target.checked)}
+                  />
+                  <Typography variant="body2" sx={{ color: 'white', fontWeight: 'bold', minWidth: '60px' }}>
+                    {placementToggle ? 'Include' : 'Exclude'}
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+
+            <Box sx={{ 
+              flex: 1,
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+              overflow: 'hidden'
+            }}>
+              <Box sx={{
+                height: '180px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-end',
+                padding: '16px'
+              }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px', mb: 2 }}>
+                  <Box component="img" src={Paramount} alt="Paramount" sx={{ width: 50, height: 38 }} />
+                  <Box component="img" src={DisneyTile} alt="Disney" sx={{ width: 50, height: 38 }} />
+                  <Box component="img" src={HuluTile} alt="Hulu" sx={{ width: 50, height: 38 }} />
+                  <Box component="img" src={HBOTile} alt="HBO" sx={{ width: 50, height: 38 }} />
+                  <Box component="img" src={PeacockTile} alt="Peacock" sx={{ width: 50, height: 38 }} />
+                  <Box component="img" src={TubiTile} alt="Tubi" sx={{ width: 50, height: 38 }} />
+                  <Box component="img" src={ESPNTile} alt="ESPN" sx={{ width: 50, height: 38 }} />
+                </Box>
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="h3" sx={{ fontSize: '16px', fontWeight: 'bold', mb: 0.5, color: 'text.primary' }}>
+                    Other streaming apps
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
+                    CPM estimate: $10-$30
+                  </Typography>
+                </Box>
+                
+                <Box sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <Switch
+                    size="small"
+                    checked={placementToggle}
+                    onChange={(e) => setPlacementToggle(e.target.checked)}
+                  />
+                  <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 'bold', minWidth: '60px' }}>
+                    {placementToggle ? 'Include' : 'Exclude'}
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          </Box>
+        )}
       </Box>
 
       {/* Delivery Card */}
@@ -3527,6 +3676,7 @@ export default function App() {
     const [isResizing, setIsResizing] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [autoBid, setAutoBid] = useState(true);
+    const [automaticPlacement, setAutomaticPlacement] = useState(true);
     const endDateRef = useRef(null);
 
     const toggleCampaignDetailsExpanded = () => {
@@ -4332,11 +4482,22 @@ export default function App() {
                   <HelpOutlineIcon fontSize="small" color="action" />
                 </Tooltip>
               </Box>
-              <Switch size="small" defaultChecked />
+              <Switch size="small" defaultChecked checked={automaticPlacement} onChange={(e) => setAutomaticPlacement(e.target.checked)} />
               <Typography variant="caption" color="text.secondary" sx={{ ml: '1px' }}>
                 CPM estimate (all ad types): $8-$30
               </Typography>
             </Box>
+            
+            {!automaticPlacement && (
+              <Box sx={{ mt: 3 }}>
+                <Typography variant="h3" sx={{ fontSize: '16px', fontWeight: 'bold', mb: 1 }}>
+                  App selection
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+                  Place ads across Roku and other streaming apps. Selecting both options may allow Roku to place your ads on more apps, which can help you reach your campaign goal. <Link href="#" underline="hover" color="primary">See a complete list of apps.</Link>
+                </Typography>
+              </Box>
+            )}
             
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px', mt: 2 }}>
               <Box component="img" src={RokuTile} sx={{ width: 50, height: 38 }} />
@@ -5842,11 +6003,6 @@ export default function App() {
         </Container>
       ) : currentView === 'reports' ? (
         <Container maxWidth={false} sx={{ p: "20px" }}>
-          {/* Reports Header */}
-          <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>
-            Reports
-          </Typography>
-          
           {/* Filter Controls */}
           <Box sx={{ display: "flex", gap: 2, mb: 4, flexWrap: 'wrap' }}>
             {/* Campaign Multi-select */}
