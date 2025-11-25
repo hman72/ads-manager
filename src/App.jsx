@@ -84,6 +84,9 @@ import Modal from "@mui/material/Modal";
 import Tooltip from "@mui/material/Tooltip";
 import Divider from "@mui/material/Divider";
 import Skeleton from "@mui/material/Skeleton";
+import Accordion from "@mui/material/Accordion";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import AccordionDetails from "@mui/material/AccordionDetails";
 import MotionPhotosOffIcon from "@mui/icons-material/MotionPhotosOff";
 import StopCircleIcon from "@mui/icons-material/StopCircle";
 import ImageSearchIcon from "@mui/icons-material/ImageSearch";
@@ -274,7 +277,7 @@ const TileComponent = ({ image, title, description, onClick, selected = false })
 };
 
 // Reusable Creatives Card Component
-const CreativesCard = ({ adGroup, isSelected, handleCampaignCheckboxClick, onAddCreative, getCreativesForAdGroup }) => {
+const CreativesCard = ({ adGroup, isSelected, handleCampaignCheckboxClick, onAddCreative, getCreativesForAdGroup, onEditCreative }) => {
   const creativesToShow = getCreativesForAdGroup(adGroup);
 
   return (
@@ -468,7 +471,18 @@ const CreativesCard = ({ adGroup, isSelected, handleCampaignCheckboxClick, onAdd
                   )}
                 </TableCell>
                 <TableCell component="th" scope="row" sx={{ width: '100%' }}>
-                  <Link href="#" underline="hover" color="primary">
+                  <Link 
+                    href="#" 
+                    underline="hover" 
+                    color="primary"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (creative.type === 'In-content video' && onEditCreative) {
+                        onEditCreative(creative);
+                      }
+                    }}
+                    sx={{ cursor: 'pointer' }}
+                  >
                     {creative.name}
                   </Link>
                 </TableCell>
@@ -481,6 +495,89 @@ const CreativesCard = ({ adGroup, isSelected, handleCampaignCheckboxClick, onAdd
           </TableBody>
         </Table>
       )}
+    </Box>
+  );
+};
+
+// Reusable Empty Creatives State Component
+const EmptyCreativesState = ({ adGroup, onOpenCreativeDrawer, onSelectCreativeType, onOpenAssignCreativeDrawer }) => {
+  return (
+    <Box sx={{ backgroundColor: 'white', padding: 3 }}>
+      <Typography variant="h5" sx={{ mb: 2, textAlign: 'left' }}>
+        Select the type of creative you want this ad group to run, ad groups only support a single creative type:
+      </Typography>
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        gap: 2,
+        flexWrap: 'wrap'
+      }}>
+        <TileComponent
+          image={CreativeIncontent}
+          title="In-content video"
+          description="Video ads that play within content feeds"
+          isSelected={false}
+          onClick={() => {
+            onSelectCreativeType('in-content-video');
+            onOpenCreativeDrawer(adGroup);
+          }}
+        />
+        <TileComponent
+          image={CreativeMarquee}
+          title="Marquee"
+          description="Banner ads displayed at the top of content"
+          isSelected={false}
+          onClick={() => {
+            onSelectCreativeType('marquee');
+            onOpenCreativeDrawer(adGroup);
+          }}
+        />
+        <TileComponent
+          image={CreativeBillboard}
+          title="Billboard"
+          description="Large format display ads for maximum impact"
+          isSelected={false}
+          onClick={() => {
+            onSelectCreativeType('billboard');
+            onOpenCreativeDrawer(adGroup);
+          }}
+        />
+        <Card 
+          sx={{ 
+            width: '280px', 
+            height: '275px', 
+            cursor: 'pointer',
+            border: '1px solid #ccc',
+            borderRadius: 0,
+            backgroundColor: '#FAFAFA',
+            boxShadow: 'none'
+          }}
+          onClick={() => onOpenAssignCreativeDrawer(adGroup)}
+        >
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            height: '100%',
+            p: 2
+          }}>
+            <Box sx={{ 
+              width: '100%', 
+              height: 140, 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              mb: 2
+            }}>
+              <ImageIcon sx={{ fontSize: 64, color: 'primary.main' }} />
+            </Box>
+            <Typography variant="body1" sx={{ mb: 1, textAlign: 'center' }}>
+              Select an existing creative from your creative library
+            </Typography>
+          </Box>
+        </Card>
+      </Box>
     </Box>
   );
 };
@@ -1030,7 +1127,7 @@ const adGroupsData = [
     accessType: "managed", // This is managed
     creatives: [
       { id: 10001, name: "Vandelay Industries Banner 1", type: "Billboard", status: "Approved" },
-      { id: 10002, name: "Radio Shack Video 1", type: "In-content video", status: "Approved" }
+      { id: 10002, name: "Vandelay Industries Banner 2", type: "Billboard", status: "Approved" }
     ]
   },
   { 
@@ -1046,7 +1143,7 @@ const adGroupsData = [
     accessType: "managed", // This is managed
     creatives: [
       { id: 101, name: "Desktop Banner 1", type: "Billboard", status: "Approved" },
-      { id: 102, name: "Desktop Video 1", type: "In-content video", status: "Approved" }
+      { id: 102, name: "Desktop Banner 2", type: "Billboard", status: "Approved" }
     ]
   },
   { 
@@ -1062,8 +1159,8 @@ const adGroupsData = [
     accessType: "self", // This is your own
     creatives: [
       { id: 201, name: "Mobile Banner 1", type: "Marquee", status: "Approved" },
-      { id: 202, name: "Mobile Video 1", type: "In-content video", status: "In review" },
-      { id: 203, name: "Mobile Banner 2", type: "Billboard", status: "Draft" }
+      { id: 202, name: "Mobile Banner 2", type: "Marquee", status: "Approved" },
+      { id: 203, name: "Mobile Banner 3", type: "Marquee", status: "Approved" }
     ]
   },
   { 
@@ -1076,9 +1173,7 @@ const adGroupsData = [
     cpm: "$3.46", 
     goalActions: "234", 
     goalCpa: "$10.02",
-    creatives: [
-      { id: 301, name: "Sports Banner 1", type: "Billboard", status: "Approved" }
-    ]
+    creatives: []
   },
   { 
     id: 4, 
@@ -1106,8 +1201,8 @@ const adGroupsData = [
     goalCpa: "$10.02",
     creatives: [
       { id: 501, name: "Electronics Video 1", type: "In-content video", status: "Approved" },
-      { id: 502, name: "Electronics Banner 1", type: "Billboard", status: "Approved" },
-      { id: 503, name: "Electronics Banner 2", type: "Marquee", status: "Approved" }
+      { id: 502, name: "Electronics Video 2", type: "In-content video", status: "Approved" },
+      { id: 503, name: "Electronics Video 3", type: "In-content video", status: "Approved" }
     ]
   },
   { 
@@ -1122,11 +1217,11 @@ const adGroupsData = [
     goalCpa: "$10.03",
     creatives: [
       { id: 601, name: "Fashion Video 1", type: "In-content video", status: "Rejected" },
-      { id: 602, name: "Fashion Banner 1", type: "Billboard", status: "Approved" }
+      { id: 602, name: "Fashion Video 2", type: "In-content video", status: "Approved" }
     ]
   },
-  { id: 7, campaign: "High Income - Luxury Goods", parentCampaign: "Holiday Sale 2024", status: "Active", spend: "$1,678.90", impressions: "54,321", cpm: "$3.09", goalActions: "167", goalCpa: "$10.05", creatives: [{ id: 701, name: "Luxury Banner 1", type: "Billboard", status: "In review" }, { id: 702, name: "Luxury Video 1", type: "In-content video", status: "Draft" }] },
-  { id: 8, campaign: "432264404_Brand Showcase_Native Ads (Marquee)_50% SOVTakeover_1 (TFL0277361)", parentCampaign: "Caldor Upfront Holiday 2025", status: "Active", spend: "$1,789.01", impressions: "58,765", cpm: "$3.04", goalActions: "178", goalCpa: "$10.06", creatives: [{ id: 801, name: "Brand Showcase Marquee 1", type: "Marquee", status: "Approved" }] },
+  { id: 7, campaign: "High Income - Luxury Goods", parentCampaign: "Holiday Sale 2024", status: "Active", spend: "$1,678.90", impressions: "54,321", cpm: "$3.09", goalActions: "167", goalCpa: "$10.05", creatives: [{ id: 701, name: "Luxury Banner 1", type: "Billboard", status: "In review" }, { id: 702, name: "Luxury Banner 2", type: "Billboard", status: "Approved" }] },
+  { id: 8, campaign: "432264404_Brand Showcase_Native Ads (Marquee)_50% SOVTakeover_1 (TFL0277361)", parentCampaign: "Caldor Upfront Holiday 2025", status: "Active", spend: "$1,789.01", impressions: "58,765", cpm: "$3.04", goalActions: "178", goalCpa: "$10.06", creatives: [{ id: 801, name: "Brand Showcase Marquee 1", type: "Marquee", status: "Approved" }, { id: 802, name: "Brand Showcase Marquee 2", type: "Marquee", status: "Approved" }] },
   // Sterling Cooper US Campaign Ad Groups
   { id: 9001, campaign: "Video - TRC Targeted Base - AMARILLO (AMR) 30s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Active", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90001, name: "DeLorean DMC-12 Amarillo 30s Video", type: "In-content video", status: "Active" }] },
   { id: 9002, campaign: "Video - TRC Targeted Base - CORPUS CHRISTI (CC) 30s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Active", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90002, name: "DeLorean DMC-12 Corpus Christi 30s Video", type: "In-content video", status: "Active" }] },
@@ -1202,11 +1297,11 @@ const adGroupsData = [
   { id: 9072, campaign: "Video - TRC Targeted Base - TYLER, LONGVIEW (TYL) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Inactive", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90072, name: "DeLorean DMC-12 Tyler Longview 15s Video", type: "In-content video", status: "Draft" }] },
   { id: 9073, campaign: "Video - TRC Targeted Base - WCO, TMPL, KILN (WAC) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Inactive", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90073, name: "DeLorean DMC-12 Waco Temple Killeen 15s Video", type: "In-content video", status: "Draft" }] },
   { id: 9074, campaign: "Video - TRC Targeted Base - WCHT FLLS, LWTN (WIF) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Inactive", budget: "$1,630.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90074, name: "DeLorean DMC-12 Wichita Falls Lawton 15s Video", type: "In-content video", status: "Draft" }] },
-  { id: 10, campaign: "432264404_Brand Showcase_Native Ads (Marquee)_50% SOVTakeover_1 (TFL0277361)", parentCampaign: "Kmart Upfront Holiday Total Plan 2025", status: "Draft", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 1001, name: "Tech Banner 1", type: "Marquee", status: "Rejected" }, { id: 1002, name: "Tech Video 1", type: "In-content video", status: "In review" }, { id: 1003, name: "Tech Banner 2", type: "Billboard", status: "Draft" }] },
-  { id: 11, campaign: "Cart Abandoners - Retarget", parentCampaign: "Paused Brand Campaign", status: "Active", spend: "$892.34", impressions: "29,876", cpm: "$2.99", goalActions: "89", goalCpa: "$10.03", creatives: [{ id: 1101, name: "Retarget Banner 1", type: "Billboard", status: "Approved" }, { id: 1102, name: "Retarget Video 1", type: "In-content video", status: "Approved" }] },
+  { id: 10, campaign: "432264404_Brand Showcase_Native Ads (Marquee)_50% SOVTakeover_1 (TFL0277361)", parentCampaign: "Kmart Upfront Holiday Total Plan 2025", status: "Draft", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 1001, name: "Tech Banner 1", type: "Marquee", status: "Rejected" }, { id: 1002, name: "Tech Banner 2", type: "Marquee", status: "Approved" }, { id: 1003, name: "Tech Banner 3", type: "Marquee", status: "Approved" }] },
+  { id: 11, campaign: "Cart Abandoners - Retarget", parentCampaign: "Paused Brand Campaign", status: "Active", spend: "$892.34", impressions: "29,876", cpm: "$2.99", goalActions: "89", goalCpa: "$10.03", creatives: [{ id: 1101, name: "Retarget Banner 1", type: "Billboard", status: "Approved" }, { id: 1102, name: "Retarget Banner 2", type: "Billboard", status: "Approved" }] },
   { id: 12, campaign: "Website Visitors - Retarget", parentCampaign: "Paused Brand Campaign", status: "Active", spend: "$1,123.45", impressions: "38,901", cpm: "$2.89", goalActions: "112", goalCpa: "$10.03", creatives: [{ id: 1201, name: "Website Banner 1", type: "Marquee", status: "In review" }] },
-  { id: 13, campaign: "High Value Customers - Lookalike", parentCampaign: "Holiday Sale 2024", status: "Active", spend: "$1,567.89", impressions: "49,234", cpm: "$3.18", goalActions: "156", goalCpa: "$10.05", creatives: [{ id: 1301, name: "Lookalike Banner 1", type: "Billboard", status: "Approved" }, { id: 1302, name: "Lookalike Video 1", type: "In-content video", status: "Approved" }, { id: 1303, name: "Lookalike Banner 2", type: "Marquee", status: "Draft" }] },
-  { id: 14, campaign: "Frequent Buyers - Lookalike", parentCampaign: "Holiday Sale 2024", status: "Active", spend: "$1,345.67", impressions: "42,108", cpm: "$3.20", goalActions: "134", goalCpa: "$10.04", creatives: [{ id: 1401, name: "Buyers Banner 1", type: "Billboard", status: "Rejected" }, { id: 1402, name: "Buyers Video 1", type: "In-content video", status: "In review" }] },
+  { id: 13, campaign: "High Value Customers - Lookalike", parentCampaign: "Holiday Sale 2024", status: "Active", spend: "$1,567.89", impressions: "49,234", cpm: "$3.18", goalActions: "156", goalCpa: "$10.05", creatives: [{ id: 1301, name: "Lookalike Banner 1", type: "Billboard", status: "Approved" }, { id: 1302, name: "Lookalike Banner 2", type: "Billboard", status: "Approved" }, { id: 1303, name: "Lookalike Banner 3", type: "Billboard", status: "In review" }] },
+  { id: 14, campaign: "Frequent Buyers - Lookalike", parentCampaign: "Holiday Sale 2024", status: "Active", spend: "$1,345.67", impressions: "42,108", cpm: "$3.20", goalActions: "134", goalCpa: "$10.04", creatives: [{ id: 1401, name: "Buyers Banner 1", type: "Billboard", status: "Rejected" }, { id: 1402, name: "Buyers Banner 2", type: "Billboard", status: "Approved" }] },
   { id: 15, campaign: "Sports Fans - Weekend", parentCampaign: "Failed Campaign Test", status: "Inactive", spend: "$678.90", impressions: "21,567", cpm: "$3.15", goalActions: "67", goalCpa: "$10.13" },
   { id: 16, campaign: "ALL-ALL-US_RTG-S3LINE2_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277228)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$987.65", impressions: "31,234", cpm: "$3.16", goalActions: "98", goalCpa: "$10.08", creatives: [{ id: 1601, name: "Howdy S3 Home Banner 2", type: "Billboard", status: "Approved" }] },
   { id: 30, campaign: "ALL-ALL-US_RTG-S3LINE3_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277233)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3001, name: "Howdy S3 Home Banner 3", type: "Billboard", status: "Approved" }] },
@@ -1220,7 +1315,7 @@ const adGroupsData = [
   { id: 38, campaign: "ALL-ALL-US_RTG-S3LINE11_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277259)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3801, name: "Howdy S3 Home Banner 11", type: "Billboard", status: "Approved" }] },
   { id: 39, campaign: "ALL-ALL-US_RTG-S3LINE12_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - October (TFL0277263)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Scheduled", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3901, name: "Howdy S3 Home Banner 12 Oct", type: "Billboard", status: "Draft" }] },
   { id: 40, campaign: "ALL-ALL-US_RTG-S3LINE20_CPM_HOME-SPOTLIGHT_ALL_ROKU_NA_ROT-G_NA- November (TFL0277299)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cmp: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 4001, name: "Howdy S3 Home Spotlight", type: "Billboard", status: "Approved" }] },
-  { id: 17, campaign: "Urban Areas - Commute Hours", parentCampaign: "Q3 Product Archive", status: "Active", spend: "$1,234.56", impressions: "39,876", cpm: "$3.10", goalActions: "123", goalCpa: "$10.04", creatives: [{ id: 1701, name: "Urban Video 1", type: "In-content video", status: "Approved" }, { id: 1702, name: "Urban Banner 1", type: "Billboard", status: "Draft" }, { id: 1703, name: "Urban Banner 2", type: "Marquee", status: "In review" }] },
+  { id: 17, campaign: "Urban Areas - Commute Hours", parentCampaign: "Q3 Product Archive", status: "Active", spend: "$1,234.56", impressions: "39,876", cpm: "$3.10", goalActions: "123", goalCpa: "$10.04", creatives: [{ id: 1701, name: "Urban Video 1", type: "In-content video", status: "Approved" }, { id: 1702, name: "Urban Video 2", type: "In-content video", status: "Approved" }, { id: 1703, name: "Urban Video 3", type: "In-content video", status: "In review" }] },
   { id: 18, campaign: "Suburban Areas - Evening", parentCampaign: "Q3 Product Archive", status: "Active", spend: "$1,456.78", impressions: "46,543", cpm: "$3.13", goalActions: "145", goalCpa: "$10.05", creatives: [{ id: 1801, name: "Suburban Banner 1", type: "Billboard", status: "Approved" }] },
   { id: 19, campaign: "432015535_Brand Showcase_Native Ads (Marquee)_50% SOVTakeover_2 (TFL0277363)", parentCampaign: "Caldor Upfront Holiday 2025", status: "Scheduled", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 1901, name: "Brand Showcase Marquee 2", type: "Marquee", status: "Draft" }] },
   { id: 25, campaign: "432015526_Brand Showcase_Native Ads (Marquee)_50% SOVTakeover_3 (TFL0277366)", parentCampaign: "Caldor Upfront Holiday 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 2501, name: "Brand Showcase Marquee 3", type: "Marquee", status: "Approved" }] },
@@ -1229,8 +1324,8 @@ const adGroupsData = [
   { id: 28, campaign: "432604569_Season's Streamings_Season's Streaming_Native Ads (Marquee + Billboard) (TFL0288538)", parentCampaign: "Caldor Upfront Holiday 2025", status: "Scheduled", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 2801, name: "Season's Streamings Marquee + Billboard", type: "Billboard", status: "Draft" }] },
   { id: 29, campaign: "432262595_Season's Streamings_Season's Streaming_Premiere Tile_1A (TFL0288539)", parentCampaign: "Caldor Upfront Holiday 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 2901, name: "Season's Streamings Premiere Tile", type: "Billboard", status: "Approved" }] },
   { id: 21, campaign: "Electronics Cross-sell", parentCampaign: "Black Friday 2023", status: "Active", spend: "$789.01", impressions: "25,432", cpm: "$3.10", goalActions: "78", goalCpa: "$10.12", creatives: [{ id: 2101, name: "Electronics Banner 1", type: "Billboard", status: "Approved" }] },
-  { id: 22, campaign: "Accessories Cross-sell", parentCampaign: "Holiday Sale 2024", status: "Active", spend: "$654.32", impressions: "21,098", cpm: "$3.10", goalActions: "65", goalCpa: "$10.07", creatives: [{ id: 2201, name: "Accessories Video 1", type: "In-content video", status: "In review" }, { id: 2202, name: "Accessories Banner 1", type: "Marquee", status: "Approved" }, { id: 2203, name: "Accessories Banner 2", type: "Billboard", status: "Draft" }, { id: 2204, name: "Accessories Video 2", type: "In-content video", status: "Rejected" }] },
-  { id: 23, campaign: "Premium Products Upsell", parentCampaign: "Holiday Sale 2024", status: "Active", spend: "$1,098.76", impressions: "35,467", cpm: "$3.10", goalActions: "109", goalCpa: "$10.08", creatives: Array.from({length: 37}, (_, i) => ({ id: 2300 + i + 1, name: `Premium Creative ${i + 1}`, type: ['In-content video', 'Billboard', 'Marquee'][i % 3], status: ['Approved', 'In review', 'Draft', 'Rejected'][i % 4] })) },
+  { id: 22, campaign: "Accessories Cross-sell", parentCampaign: "Holiday Sale 2024", status: "Active", spend: "$654.32", impressions: "21,098", cpm: "$3.10", goalActions: "65", goalCpa: "$10.07", creatives: [{ id: 2201, name: "Accessories Video 1", type: "In-content video", status: "In review" }, { id: 2202, name: "Accessories Video 2", type: "In-content video", status: "Approved" }, { id: 2203, name: "Accessories Video 3", type: "In-content video", status: "Approved" }, { id: 2204, name: "Accessories Video 4", type: "In-content video", status: "Approved" }] },
+  { id: 23, campaign: "Premium Products Upsell", parentCampaign: "Holiday Sale 2024", status: "Active", spend: "$1,098.76", impressions: "35,467", cpm: "$3.10", goalActions: "109", goalCpa: "$10.08", creatives: [{ id: 2301, name: "Premium Creative 1", type: "In-content video", status: "Approved" }, { id: 2302, name: "Premium Creative 2", type: "In-content video", status: "Approved" }] },
   { id: 24, campaign: "432015535_Brand Showcase_Native Ads (Marquee)_50% SOVTakeover_2 (TFL0277363)", parentCampaign: "Kmart Upfront Holiday Total Plan 2025", status: "Creative in review", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 2401, name: "Brand Showcase Marquee 2", type: "Marquee", status: "In review" }] },
   { id: 25, campaign: "432015526_Brand Showcase_Native Ads (Marquee)_50% SOVTakeover_3 (TFL0277366)", parentCampaign: "Kmart Upfront Holiday Total Plan 2025", status: "Draft", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 2501, name: "Brand Showcase Marquee 3", type: "Marquee", status: "Draft" }] },
   { id: 26, campaign: "432603873_BILLABLE_Theme_BETA_Sponsorship Display_Theme (TFL0277386)", parentCampaign: "Kmart Upfront Holiday Total Plan 2025", status: "Draft", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 2601, name: "Theme Sponsorship Billboard", type: "Billboard", status: "Draft" }] },
@@ -1355,6 +1450,7 @@ export default function App() {
   const [selectedCampaignId, setSelectedCampaignId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState('Performance');
+  const [dateRange, setDateRange] = useState('Last 7 days');
   const [statusFilter, setStatusFilter] = useState([
     'Active', 
     'Creative in review', 
@@ -1428,6 +1524,12 @@ export default function App() {
   const [creativeGridActiveTab, setCreativeGridActiveTab] = useState(0);
   const [selectedCreativeType, setSelectedCreativeType] = useState(null);
   const [selectedCampaignType, setSelectedCampaignType] = useState(null);
+  const [selectedAction, setSelectedAction] = useState('none');
+  const [impressionTags, setImpressionTags] = useState(['']);
+  const [creativeDrawerTab, setCreativeDrawerTab] = useState(0);
+  const [selectedCreativeFile, setSelectedCreativeFile] = useState(null);
+  const [editCreativeDrawerOpen, setEditCreativeDrawerOpen] = useState(false);
+  const [selectedCreativeToEdit, setSelectedCreativeToEdit] = useState(null);
   const [specialCategories, setSpecialCategories] = useState({
     credit: false,
     employment: false,
@@ -1924,6 +2026,25 @@ export default function App() {
     setSelectedCreativeStatuses([]);
     setSelectedCreativesForAssignment([]);
     setCreativeSearchTerm('');
+  };
+
+  const handleEditCreativeDrawerClose = () => {
+    setEditCreativeDrawerOpen(false);
+    setSelectedCreativeToEdit(null);
+    setSelectedAction('none');
+    setImpressionTags(['']);
+  };
+
+  const handleEditCreativeDrawerOpen = (creative) => {
+    setSelectedCreativeToEdit(creative);
+    setEditCreativeDrawerOpen(true);
+    // Pre-populate form fields with creative data if available
+    if (creative.action) {
+      setSelectedAction(creative.action);
+    }
+    if (creative.impressionTags) {
+      setImpressionTags(creative.impressionTags);
+    }
   };
 
   const handleCreativeSelection = (creativeId) => {
@@ -4440,6 +4561,7 @@ export default function App() {
               setCreativesDrawerOpen(true);
             }}
             getCreativesForAdGroup={getCreativesForAdGroup}
+            onEditCreative={handleEditCreativeDrawerOpen}
           />
         </Box>
       </Box>
@@ -4869,7 +4991,7 @@ export default function App() {
             </div>
             )}
             </Box>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2, pl: "20px" }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, pl: "20px" }}>
               <FormControl sx={{ minWidth: 150, height: "40px" }} variant="outlined">
               <InputLabel id="view-label" sx={{ fontSize: "14px" }}>View</InputLabel>
               <Select
@@ -4912,15 +5034,31 @@ export default function App() {
                 </MenuItem>
               </Select>
             </FormControl>
-            {selectedProfileOption !== 'Managed' && (
-              <Button variant="contained" color="primary" sx={{ height: "40px", whiteSpace: "nowrap" }} onClick={handleCreateCampaign}>
-                Create campaign
-              </Button>
-            )}
+            <FormControl sx={{ minWidth: 150, height: "40px" }} variant="outlined">
+              <InputLabel id="daterange-label" sx={{ fontSize: "14px" }}>Date range</InputLabel>
+              <Select
+                labelId="daterange-label"
+                value={dateRange}
+                onChange={(e) => setDateRange(e.target.value)}
+                label="Date range"
+                variant="outlined"
+                sx={{ 
+                  height: "40px",
+                  color: "primary.main"
+                }}
+              >
+                <MenuItem value="Yesterday">Yesterday</MenuItem>
+                <MenuItem value="Last 7 days">Last 7 days</MenuItem>
+                <MenuItem value="Last 14 days">Last 14 days</MenuItem>
+                <MenuItem value="Last 30 days">Last 30 days</MenuItem>
+                <MenuItem value="Last 90 days">Last 90 days</MenuItem>
+                <MenuItem value="Custom">Custom</MenuItem>
+              </Select>
+            </FormControl>
             </Box>
           </Box>
           
-          <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 0 }}>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
             <Tabs 
               value={selectedTab} 
               onChange={handleTabChange} 
@@ -4986,7 +5124,77 @@ export default function App() {
                 }
               />
             </Tabs>
+            
+            {/* Create Campaign Button - only show when Campaigns tab is selected */}
+            {selectedTab === 0 && selectedProfileOption !== 'Managed' && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pr: 1, pb: 1 }}>
+                <Button 
+                  variant="contained" 
+                  color="primary" 
+                  size="small"
+                  onClick={handleCreateCampaign}
+                >
+                  Create campaign
+                </Button>
+              </Box>
+            )}
+            
+            {/* View Creatives Grid Control - only show when Creatives tab is selected */}
+            {selectedTab === 2 && selectedProfileOption !== 'Self' && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pr: 1, pb: 1 }}>
+                <ButtonGroup variant="outlined" size="small">
+                  <Button
+                    onClick={() => {
+                      setShowCreativeGridOverlay(true);
+                    }}
+                  >
+                    View creatives grid
+                  </Button>
+                  <Button
+                    size="small"
+                    onClick={(event) => setCreativesMenuAnchorEl(event.currentTarget)}
+                    sx={{ px: 1, minWidth: 'auto' }}
+                  >
+                    <ArrowDropDownIcon />
+                  </Button>
+                </ButtonGroup>
+              </Box>
+            )}
           </Box>
+          
+          {/* Creatives Menu for Import/Export */}
+          <Menu
+            anchorEl={creativesMenuAnchorEl}
+            open={Boolean(creativesMenuAnchorEl)}
+            onClose={() => setCreativesMenuAnchorEl(null)}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+          >
+            <MenuItem 
+              onClick={() => {
+                setCreativesMenuAnchorEl(null);
+                // TODO: Implement import functionality
+                console.log('Import creatives clicked');
+              }}
+            >
+              Import
+            </MenuItem>
+            <MenuItem 
+              onClick={() => {
+                setCreativesMenuAnchorEl(null);
+                // TODO: Implement export functionality
+                console.log('Export creatives clicked');
+              }}
+            >
+              Export
+            </MenuItem>
+          </Menu>
           
           {/* Campaign Selection Toolbar */}
           {selectedTab === 0 && selectedCampaigns[0]?.length > 0 && (
@@ -5071,99 +5279,36 @@ export default function App() {
             </Box>
           )}
           
-          {selectedTab === 2 && (
-            <Box sx={{ 
-              display: 'flex', 
-              justifyContent: 'flex-end', 
-              alignItems: 'center', 
-              mb: 2,
-              gap: 1
-            }}>
-              {/* Expand/Collapse All Control */}
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => {
-                  // Check if any groups are collapsed
-                  const allCampaignNames = [...new Set(adGroupsData.map(adGroup => adGroup.campaign))];
-                  const hasCollapsedGroups = allCampaignNames.some(campaign => collapsedCampaigns.has(campaign));
-                  
-                  if (hasCollapsedGroups) {
-                    expandAllCreativeGroups();
-                  } else {
-                    collapseAllCreativeGroups();
-                  }
-                }}
-                startIcon={(() => {
-                  const allCampaignNames = [...new Set(adGroupsData.map(adGroup => adGroup.campaign))];
-                  const hasCollapsedGroups = allCampaignNames.some(campaign => collapsedCampaigns.has(campaign));
-                  return hasCollapsedGroups ? <KeyboardArrowDownIcon /> : <KeyboardArrowUpIcon />;
-                })()}
-                sx={{ textTransform: 'none' }}
-              >
-                {(() => {
-                  const allCampaignNames = [...new Set(adGroupsData.map(adGroup => adGroup.campaign))];
-                  const hasCollapsedGroups = allCampaignNames.some(campaign => collapsedCampaigns.has(campaign));
-                  return hasCollapsedGroups ? 'Expand all' : 'Collapse all';
-                })()}
-              </Button>
-
-              {/* View Creatives Grid Control */}
-              {selectedProfileOption !== 'Self' && (
-                <ButtonGroup variant="outlined" size="small">
-                  <Button
+          {selectedTab === 2 ? (
+            <>
+              {/* Creatives Selection Toolbar */}
+              {selectedCreativesForAssignment?.length > 0 && (
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 0.75,
+                  p: 2, 
+                  backgroundColor: '#f5f5f5', 
+                  mb: 0 
+                }}>
+                  <Typography variant="body2" color="text.secondary">
+                    {selectedCreativesForAssignment.length} selected creative{selectedCreativesForAssignment.length > 1 ? 's' : ''}
+                  </Typography>
+                  <Button 
+                    variant="contained" 
+                    size="small"
                     onClick={() => {
-                      setShowCreativeGridOverlay(true);
+                      if (showSelectedOnly) {
+                        setShowSelectedOnly(false);
+                      } else {
+                        setShowSelectedOnly(true);
+                      }
                     }}
                   >
-                    View creatives grid
+                    {showSelectedOnly ? 'Show all' : 'Show selected'}
                   </Button>
-                  <Button
-                    size="small"
-                    onClick={(event) => setCreativesMenuAnchorEl(event.currentTarget)}
-                    sx={{ px: 1, minWidth: 'auto' }}
-                  >
-                    <ArrowDropDownIcon />
-                  </Button>
-                </ButtonGroup>
+                </Box>
               )}
-              
-              <Menu
-                anchorEl={creativesMenuAnchorEl}
-                open={Boolean(creativesMenuAnchorEl)}
-                onClose={() => setCreativesMenuAnchorEl(null)}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'right',
-                }}
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-              >
-                <MenuItem 
-                  onClick={() => {
-                    setCreativesMenuAnchorEl(null);
-                    // TODO: Implement import functionality
-                    console.log('Import creatives clicked');
-                  }}
-                >
-                  Import
-                </MenuItem>
-                <MenuItem 
-                  onClick={() => {
-                    setCreativesMenuAnchorEl(null);
-                    // TODO: Implement export functionality
-                    console.log('Export creatives clicked');
-                  }}
-                >
-                  Export
-                </MenuItem>
-              </Menu>
-            </Box>
-          )}
-          
-          {selectedTab === 2 ? (
             <TableContainer component={Paper} sx={{ width: "100%", borderRadius: "0px", boxShadow: "none" }}>
               <Table size="small">
                 <TableHead>
@@ -5176,7 +5321,29 @@ export default function App() {
                         onChange={handleSelectAllCreatives}
                       />
                     </TableCell>
-                    <TableCell sx={{ width: '175px', padding: '8px' }}>Preview</TableCell>
+                    <TableCell sx={{ width: '175px', padding: '8px', display: 'flex', alignItems: 'center', gap: 1, borderBottom: 'none' }}>
+                      <IconButton
+                        size="small"
+                        onClick={() => {
+                          const allCampaignNames = [...new Set(adGroupsData.map(adGroup => adGroup.campaign))];
+                          const hasCollapsedGroups = allCampaignNames.some(campaign => collapsedCampaigns.has(campaign));
+                          
+                          if (hasCollapsedGroups) {
+                            setCollapsedCampaigns(new Set());
+                          } else {
+                            setCollapsedCampaigns(new Set(allCampaignNames));
+                          }
+                        }}
+                        sx={{ p: 0.5 }}
+                      >
+                        {(() => {
+                          const allCampaignNames = [...new Set(adGroupsData.map(adGroup => adGroup.campaign))];
+                          const hasCollapsedGroups = allCampaignNames.some(campaign => collapsedCampaigns.has(campaign));
+                          return hasCollapsedGroups ? <KeyboardArrowDownIcon fontSize="small" /> : <KeyboardArrowUpIcon fontSize="small" />;
+                        })()}
+                      </IconButton>
+                      <span>Preview</span>
+                    </TableCell>
                     <TableCell sx={{ width: '100%' }}>Creative Name</TableCell>
                     <TableCell sx={{ whiteSpace: 'nowrap' }}>Status</TableCell>
                     <TableCell sx={{ whiteSpace: 'nowrap' }}>Type</TableCell>
@@ -5195,8 +5362,10 @@ export default function App() {
                          creative.name.toLowerCase().includes(creativeSearchTerm.toLowerCase()))
                       );
                     
-                    // Don't render ad group header if no creatives match the filter
-                    if (creativesForAdGroup.length === 0) {
+                    // Show ad group header even if no creatives match the filter
+                    // Only hide if there's an active search/filter that excludes all creatives AND the ad group has no creatives at all
+                    const hasAnyCreatives = getCreativesForAdGroup(adGroup).length > 0;
+                    if (creativesForAdGroup.length === 0 && hasAnyCreatives) {
                       return null;
                     }
 
@@ -5233,7 +5402,7 @@ export default function App() {
                             fontWeight: 'bold', 
                             fontSize: '0.9rem',
                             backgroundColor: '#f5f5f5',
-                            borderTop: '2px solid #e0e0e0',
+                            borderTop: '1px solid #e0e0e0',
                             cursor: 'pointer',
                             '&:hover': {
                               backgroundColor: '#eeeeee'
@@ -5311,6 +5480,9 @@ export default function App() {
                                     </Box>
                                   ));
                                 })()}
+                                {creativesForAdGroup.length === 0 && (
+                                  <StatusComponent status="Creatives required" />
+                                )}
                               </Box>
                               <Button 
                                 variant="outlined" 
@@ -5331,7 +5503,7 @@ export default function App() {
                         </TableRow>
                         
                         {/* Creative Rows - Only show if not collapsed */}
-                        {!collapsedCampaigns.has(adGroup.campaign) && creativesForAdGroup.map((creative) => (
+                        {!collapsedCampaigns.has(adGroup.campaign) && creativesForAdGroup.length > 0 && creativesForAdGroup.map((creative) => (
                           <TableRow key={creative.id}>
                             <TableCell padding="checkbox">
                               <Checkbox
@@ -5393,7 +5565,18 @@ export default function App() {
                               )}
                             </TableCell>
                             <TableCell component="th" scope="row" sx={{ width: '100%' }}>
-                              <Link href="#" underline="hover" color="primary">
+                              <Link 
+                                href="#" 
+                                underline="hover" 
+                                color="primary"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  if (creative.type === 'In-content video') {
+                                    handleEditCreativeDrawerOpen(creative);
+                                  }
+                                }}
+                                sx={{ cursor: 'pointer' }}
+                              >
                                 {creative.name}
                               </Link>
                             </TableCell>
@@ -5403,12 +5586,33 @@ export default function App() {
                             <TableCell sx={{ whiteSpace: 'nowrap' }}>{creative.type}</TableCell>
                           </TableRow>
                         ))}
+                        
+                        {/* Empty state when no creatives - show creative tiles */}
+                        {!collapsedCampaigns.has(adGroup.campaign) && creativesForAdGroup.length === 0 && (
+                          <TableRow>
+                            <TableCell colSpan={5} sx={{ padding: 3, backgroundColor: 'white' }}>
+                              <EmptyCreativesState 
+                                adGroup={adGroup}
+                                onOpenCreativeDrawer={(ag) => {
+                                  setSelectedAdGroupForCreatives(ag);
+                                  setCreativesDrawerOpen(true);
+                                }}
+                                onSelectCreativeType={setSelectedCreativeType}
+                                onOpenAssignCreativeDrawer={(ag) => {
+                                  setSelectedAdGroupForCreatives(ag);
+                                  setAssignCreativeDrawerOpen(true);
+                                }}
+                              />
+                            </TableCell>
+                          </TableRow>
+                        )}
                       </React.Fragment>
                     );
                   })}
                 </TableBody>
               </Table>
             </TableContainer>
+            </>
           ) : (
             <>
               {selectedTab === 1 && (
@@ -5465,8 +5669,9 @@ export default function App() {
                         <Button 
                           variant="outlined" 
                           size="small"
+                          onClick={() => setScheduleEditDrawerOpen(true)}
                         >
-                          Edit Budget/Schedule
+                          Edit schedule
                         </Button>
                         <Button 
                           variant="outlined" 
@@ -6896,8 +7101,8 @@ export default function App() {
         }}
       >
         <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <Box sx={{ p: 3, flex: 1, overflow: 'auto' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Box sx={{ p: 3, flex: 0, borderBottom: selectedCreativeType === 'in-content-video' && ['sms-email', 'shop-tv', 'microsite'].includes(selectedAction) ? 'none' : '1px solid #e0e0e0' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0 }}>
               <Typography variant="h2">
                 {selectedCreativeType === 'in-content-video' 
                   ? 'Create In-content video creative' 
@@ -6907,88 +7112,372 @@ export default function App() {
               <CloseIcon />
             </IconButton>
           </Box>
-          
-          {selectedCreativeType === 'in-content-video' ? (
-            // Two-column layout for In-content video
-            <Box sx={{ display: 'flex', gap: 3, height: 'calc(100vh - 200px)' }}>
-              {/* Column 1 - 2/3 width */}
-              <Box sx={{ flex: 2, pr: 2, backgroundColor: 'grey-50', p: 2, borderRadius: 1 }}>
-                <Typography variant="h3" sx={{ mb: 2 }}>
-                  In-content Video Details
-                </Typography>
-                <Typography variant="body1" sx={{ mb: 3 }}>
-                  Configure your in-content video creative settings.
-                </Typography>
-                {/* Add form fields or content here */}
-                <Box sx={{ p: 4, border: '1px dashed #ccc', borderRadius: 1, textAlign: 'center', mb: 3, backgroundColor: 'white' }}>
-                  <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 'bold' }}>
-                    Drag and drop or <Link href="#" onClick={(e) => e.preventDefault()} sx={{ fontWeight: 'bold' }}>Choose file</Link> to upload
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 2, lineHeight: 1.6 }}>
-                    Upload a single file<br />
-                    Format: .mov or .mp4<br />
-                    File name length: 170<br />
-                    Duration: 6-92 seconds<br />
-                    Max file size: 1 GB
-                  </Typography>
-                </Box>
-              </Box>
-              
-              {/* Column 2 - 1/3 width */}
-              <Box sx={{ flex: 1, pl: 2, borderLeft: '1px solid #e0e0e0' }}>
-                <Typography variant="h4" sx={{ mb: 2 }}>
-                  Creative details
-                </Typography>
-                <Typography variant="body2" sx={{ mb: 3 }}>
-                  If your creative is in a different category than your business, change it here.
-                </Typography>
-                {/* Add settings content here */}
-                <Box sx={{ p: 3, backgroundColor: '#f5f5f5', borderRadius: 1 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    Settings panel - Content will go here
-                  </Typography>
-                </Box>
-              </Box>
+          </Box>
+
+          {/* Tabs for special actions */}
+          {selectedCreativeType === 'in-content-video' && ['sms-email', 'shop-tv', 'microsite'].includes(selectedAction) && (
+            <Box sx={{ borderBottom: '1px solid #e0e0e0' }}>
+              <Tabs value={creativeDrawerTab} onChange={(e, newValue) => setCreativeDrawerTab(newValue)}>
+                <Tab label="Creative" sx={{ textTransform: 'none' }} />
+                <Tab label="Call to action" sx={{ textTransform: 'none' }} />
+                <Tab label="Destination" sx={{ textTransform: 'none' }} />
+              </Tabs>
             </Box>
-          ) : (
-            // Original tile selection layout
-            <>
-              <Typography variant="body1" sx={{ mb: 2 }}>
-                Select the type of creative you want to add to this ad group.
-              </Typography>
-              
-              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 3, justifyContent: 'center' }}>
-                <TileComponent
-                  image={CreativeIncontent}
-                  title="In-content video"
-                  description="In-content ads are commercials that run directly in content, they can be either simple video ads or interactive action ads."
-                  onClick={() => {
-                    // Handle In-content video selection
-                    setSelectedCreativeType('in-content-video');
-                    console.log('Selected In-content video');
-                  }}
-                />
-                <TileComponent
-                  image={CreativeMarquee}
-                  title="Marquee"
-                  description="This premier ad is displayed on the Roku home screen, engaging users before they start streaming."
-                  onClick={() => {
-                    // Handle Marquee selection
-                    console.log('Selected Marquee');
-                  }}
-                />
-                <TileComponent
-                  image={CreativeBillboard}
-                  title="Billboard"
-                  description="Banner creative in Roku City that reach your audiences whenever they are seeing Roku City."
-                  onClick={() => {
-                    // Handle Billboard selection
-                    console.log('Selected Billboard');
-                  }}
-                />
-                <Card 
-                  sx={{ 
-                    width: 280, 
+          )}
+          
+          <Box sx={{ flex: 1, overflow: 'auto' }}>
+            {selectedCreativeType === 'in-content-video' ? (
+              // Two-column layout for In-content video
+              <Box sx={{ display: 'flex', height: '100%' }}>
+                {/* Column 1 - 2/3 width */}
+                <Box sx={{ flex: 2, backgroundColor: '#f5f5f5', p: 3 }}>
+                  <Box 
+                    sx={{ p: 4, border: '1px dashed #ccc', borderRadius: 1, textAlign: 'center', mb: 0.75, backgroundColor: 'white', cursor: 'pointer', '&:hover': { backgroundColor: '#fafafa' }, transition: 'background-color 0.2s' }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.currentTarget.style.backgroundColor = '#f0f0f0';
+                    }}
+                    onDragLeave={(e) => {
+                      e.preventDefault();
+                      e.currentTarget.style.backgroundColor = 'white';
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      e.currentTarget.style.backgroundColor = 'white';
+                      const files = e.dataTransfer.files;
+                      if (files && files.length > 0) {
+                        setSelectedCreativeFile(files[0]);
+                        console.log('File dropped:', files[0].name);
+                      }
+                    }}
+                    onClick={() => document.getElementById('creative-file-input').click()}
+                  >
+                    {selectedCreativeFile ? (
+                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                        <Box 
+                          component="video"
+                          src={URL.createObjectURL(selectedCreativeFile)}
+                          sx={{
+                            width: '100%',
+                            maxWidth: '100%',
+                            height: 'auto',
+                            aspectRatio: '16/9',
+                            objectFit: 'contain',
+                            backgroundColor: '#000',
+                            borderRadius: 1
+                          }}
+                          controls
+                        />
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, width: '100%' }}>
+                          <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
+                            ✓ {selectedCreativeFile.name}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {(selectedCreativeFile.size / (1024 * 1024)).toFixed(2)} MB
+                          </Typography>
+                          <Link href="#" onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setSelectedCreativeFile(null);
+                          }} sx={{ fontWeight: 'bold', mt: 1 }}>
+                            Change file
+                          </Link>
+                        </Box>
+                      </Box>
+                    ) : (
+                      <>
+                        <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                          Drag and drop or <Link href="#" onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            document.getElementById('creative-file-input').click();
+                          }} sx={{ fontWeight: 'bold' }}>Choose file</Link> to upload
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mt: 2, lineHeight: 1.6 }}>
+                          Upload a single file<br />
+                          Format: .mov or .mp4<br />
+                          File name length: 170<br />
+                          Duration: 6-92 seconds<br />
+                          Max file size: 1 GB
+                        </Typography>
+                      </>
+                    )}
+                    <input
+                      id="creative-file-input"
+                      type="file"
+                      accept="video/mp4,video/quicktime,.mov,.mp4"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setSelectedCreativeFile(file);
+                          console.log('File selected:', file.name);
+                        }
+                      }}
+                    />
+                  </Box>
+
+                  <Typography variant="body2" sx={{ mb: 1 }}>
+                    Before you upload, check <Link href="#" onClick={(e) => e.preventDefault()} sx={{ fontWeight: 'bold' }}>technical requirements</Link>, <Link href="#" onClick={(e) => e.preventDefault()} sx={{ fontWeight: 'bold' }}>Download specs</Link>
+                  </Typography>
+                </Box>
+                
+                {/* Column 2 - 1/3 width */}
+                <Box sx={{ flex: 1, p: 3, borderLeft: '1px solid #e0e0e0', overflow: 'auto' }}>
+                  <Typography variant="h4" sx={{ mb: 2 }}>
+                    Creative details
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 3 }}>
+                    If your creative is in a different category than your business, change it here.
+                  </Typography>
+                  
+                  {/* Business Category Select */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+                    <FormControl sx={{ flex: 1 }} size="small">
+                      <InputLabel>Business category</InputLabel>
+                      <Select
+                        label="Business category"
+                        value="Automotive"
+                      >
+                        <MenuItem value="Automotive">Automotive</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <Tooltip title="This is the category your business is listed as with the Interactive Advertising Bureau (IAB)">
+                      <HelpOutlineIcon sx={{ color: 'text.secondary', cursor: 'pointer' }} />
+                    </Tooltip>
+                  </Box>
+
+                  {/* Language Select */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+                    <FormControl sx={{ flex: 1 }} size="small">
+                      <InputLabel>Language</InputLabel>
+                      <Select
+                        label="Language"
+                        value="English"
+                      >
+                        <MenuItem value="English">English</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Box>
+
+                  {/* Destination Title */}
+                  <Typography variant="h4" sx={{ mb: 2 }}>
+                    Destination
+                  </Typography>
+
+                  <Typography variant="body2" sx={{ mb: 3 }}>
+                    This determines whether or not you would like this video ad to be actionable.
+                  </Typography>
+
+                  {/* Action Select */}
+                  <FormControl sx={{ width: '100%', mb: 3 }} size="small">
+                    <InputLabel>Action</InputLabel>
+                    <Select
+                      label="Action"
+                      value={selectedAction}
+                      onChange={(e) => setSelectedAction(e.target.value)}
+                      renderValue={(selected) => {
+                        if (!selected) return '';
+                        const actionTexts = {
+                          'none': 'None',
+                          'landing-page': 'Landing page (URL)',
+                          'sms-email': 'Send SMS/Email',
+                          'shop-tv': 'Shop on TV',
+                          'microsite': 'Microsite',
+                        };
+                        return actionTexts[selected] || '';
+                      }}
+                    >
+                      <MenuItem value="none">
+                        <Typography variant="body2">None</Typography>
+                      </MenuItem>
+                      <MenuItem value="landing-page">
+                        <Box>
+                          <Typography variant="body2">Landing page (URL)</Typography>
+                          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                            Link to to a URL (only when applicable)
+                          </Typography>
+                        </Box>
+                      </MenuItem>
+                      <MenuItem value="sms-email">
+                        <Box>
+                          <Typography variant="body2">Send SMS/Email</Typography>
+                          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                            Audience would have the option to get a text message and/or email about your advertisement.
+                          </Typography>
+                        </Box>
+                      </MenuItem>
+                      <MenuItem value="shop-tv">
+                        <Box>
+                          <Typography variant="body2">Shop on TV</Typography>
+                          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                            Audience would have the option to shop directly on their TV for your product.
+                          </Typography>
+                        </Box>
+                      </MenuItem>
+                      <MenuItem value="microsite">
+                        <Box>
+                          <Typography variant="body2">Microsite</Typography>
+                          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                            Create a microsite on to further engage your audience about your message.
+                          </Typography>
+                        </Box>
+                      </MenuItem>
+                    </Select>
+                  </FormControl>
+
+                  {/* Landing Page URL TextField - Only show when landing-page action is selected */}
+                  {selectedAction === 'landing-page' && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+                      <TextField
+                        label="Landing page URL"
+                        placeholder="(Optional)"
+                        variant="outlined"
+                        size="small"
+                        sx={{ flex: 1 }}
+                        InputLabelProps={{ shrink: true }}
+                      />
+                      <Tooltip title="The URL must match the brand in the creative. Note: URLs appear only in clickable environments (e.g., web, mobile).">
+                        <HelpOutlineIcon sx={{ color: 'text.secondary', cursor: 'pointer' }} />
+                      </Tooltip>
+                    </Box>
+                  )}
+
+                  {/* Advanced Settings Accordion */}
+                  <Accordion>
+                    <AccordionSummary expandIcon={<KeyboardArrowDownIcon />}>
+                      <Typography>Advanced settings</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails sx={{ flexDirection: 'column', gap: 2 }}>
+                      <Typography variant="h5" sx={{ mb: 1 }}>
+                        Does your ad include special ad categories? (optional)
+                      </Typography>
+                      
+                      <Typography variant="caption" sx={{ color: 'grey', mb: 2 }}>
+                        These categories help to prevent discrimination in advertising. Check all that apply to expedite your ad approval. Learn more about special ad categories
+                      </Typography>
+                      
+                      <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <CheckboxOptionCleanComponent
+                          icon={<CreditCardIcon sx={{ fontSize: 24, color: 'black' }} />}
+                          title="Credit"
+                          description="This campaign promotes credit-related products or services"
+                          selected={specialCategories.credit}
+                          onClick={() => setSpecialCategories(prev => ({ ...prev, credit: !prev.credit }))}
+                        />
+                        <CheckboxOptionCleanComponent
+                          icon={<WorkIcon sx={{ fontSize: 24, color: 'black' }} />}
+                          title="Employment"
+                          description="This campaign is related to employment opportunities or services"
+                          selected={specialCategories.employment}
+                          onClick={() => setSpecialCategories(prev => ({ ...prev, employment: !prev.employment }))}
+                        />
+                        <CheckboxOptionCleanComponent
+                          icon={<HomeIcon sx={{ fontSize: 24, color: 'black' }} />}
+                          title="Housing"
+                          description="This campaign promotes housing-related products or services"
+                          selected={specialCategories.housing}
+                          onClick={() => setSpecialCategories(prev => ({ ...prev, housing: !prev.housing }))}
+                        />
+                      </Box>
+                    </AccordionDetails>
+                  </Accordion>
+
+                  {/* Tracking Settings Accordion */}
+                  <Accordion>
+                    <AccordionSummary expandIcon={<KeyboardArrowDownIcon />}>
+                      <Typography>Tracking settings</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails sx={{ flexDirection: 'column', gap: 2 }}>
+                      <Typography variant="h5" sx={{ mb: 1 }}>
+                        Do you have impression tags?
+                      </Typography>
+                      
+                      <Typography variant="caption" sx={{ color: 'grey', mb: 4 }}>
+                        Add your tags below. Note that only authorized vendors are permitted. Learn more about tag formatting and macros. Maximum 20 tags.
+                      </Typography>
+
+                      {impressionTags.map((tag, index) => (
+                        <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                          <TextField
+                            placeholder="Enter impression tag"
+                            variant="outlined"
+                            size="small"
+                            fullWidth
+                            value={tag}
+                            onChange={(e) => {
+                              const newTags = [...impressionTags];
+                              newTags[index] = e.target.value;
+                              setImpressionTags(newTags);
+                            }}
+                            sx={{ my: 0.75 }}
+                          />
+                          {impressionTags.length > 1 && (
+                            <IconButton
+                              size="small"
+                              onClick={() => {
+                                setImpressionTags(impressionTags.filter((_, i) => i !== index));
+                              }}
+                              sx={{ color: 'text.secondary' }}
+                            >
+                              <RemoveCircleOutlineIcon fontSize="small" />
+                            </IconButton>
+                          )}
+                        </Box>
+                      ))}
+
+                      <Button
+                        variant="text"
+                        size="small"
+                        startIcon={<AddIcon />}
+                        onClick={() => setImpressionTags([...impressionTags, ''])}
+                        sx={{ justifyContent: 'flex-start', pl: 0, mt: 2 }}
+                      >
+                        Add another impression tag
+                      </Button>
+                    </AccordionDetails>
+                  </Accordion>
+                </Box>
+              </Box>
+            ) : (
+              // Original tile selection layout
+              <Box sx={{ p: 3 }}>
+                <Typography variant="body1" sx={{ mb: 2 }}>
+                  Select the type of creative you want to add to this ad group.
+                </Typography>
+                
+                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 3, justifyContent: 'center' }}>
+                  <TileComponent
+                    image={CreativeIncontent}
+                    title="In-content video"
+                    description="In-content ads are commercials that run directly in content, they can be either simple video ads or interactive action ads."
+                    onClick={() => {
+                      // Handle In-content video selection
+                      setSelectedCreativeType('in-content-video');
+                      console.log('Selected In-content video');
+                    }}
+                  />
+                  <TileComponent
+                    image={CreativeMarquee}
+                    title="Marquee"
+                    description="This premier ad is displayed on the Roku home screen, engaging users before they start streaming."
+                    onClick={() => {
+                      // Handle Marquee selection
+                      console.log('Selected Marquee');
+                    }}
+                  />
+                  <TileComponent
+                    image={CreativeBillboard}
+                    title="Billboard"
+                    description="Banner creative in Roku City that reach your audiences whenever they are seeing Roku City."
+                    onClick={() => {
+                      // Handle Billboard selection
+                      console.log('Selected Billboard');
+                    }}
+                  />
+                  <Card 
+                    sx={{ 
+                      width: 280, 
                     height: 275, 
                     cursor: 'pointer',
                     border: '1px solid #ccc',
@@ -7025,8 +7514,8 @@ export default function App() {
                   </Box>
                 </Card>
               </Box>
-            </>
-          )}
+              </Box>
+            )}
           </Box>
         </Box>
         
@@ -7061,7 +7550,7 @@ export default function App() {
                 handleCreativesDrawerClose();
               }}
             >
-              Upload Creative
+              Submit for review
             </Button>
           </Box>
         </Box>
@@ -7223,8 +7712,10 @@ export default function App() {
                        creative.name.toLowerCase().includes(creativeSearchTerm.toLowerCase()))
                     );
                   
-                  // Don't render ad group header if no creatives match the filter
-                  if (creativesForAdGroup.length === 0) {
+                  // Show ad group header even if no creatives match the filter
+                  // Only hide if there's an active search/filter that excludes all creatives AND the ad group has no creatives at all
+                  const hasAnyCreatives = getCreativesForAdGroup(adGroup).length > 0;
+                  if (creativesForAdGroup.length === 0 && hasAnyCreatives) {
                     return null;
                   }
 
@@ -7308,7 +7799,7 @@ export default function App() {
                       </TableRow>
                       
                       {/* Creative Rows - Only show if not collapsed */}
-                      {!collapsedCampaigns.has(adGroup.campaign) && creativesForAdGroup.map((creative) => (
+                      {!collapsedCampaigns.has(adGroup.campaign) && creativesForAdGroup.length > 0 && creativesForAdGroup.map((creative) => (
                         <TableRow key={creative.id}>
                           <TableCell padding="checkbox">
                             <Checkbox
@@ -7370,7 +7861,18 @@ export default function App() {
                             )}
                           </TableCell>
                           <TableCell component="th" scope="row" sx={{ width: '100%' }}>
-                            <Link href="#" underline="hover" color="primary">
+                            <Link 
+                              href="#" 
+                              underline="hover" 
+                              color="primary"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                if (creative.type === 'In-content video') {
+                                  handleEditCreativeDrawerOpen(creative);
+                                }
+                              }}
+                              sx={{ cursor: 'pointer' }}
+                            >
                               {creative.name}
                             </Link>
                           </TableCell>
@@ -7380,6 +7882,26 @@ export default function App() {
                           <TableCell sx={{ whiteSpace: 'nowrap' }}>{creative.type}</TableCell>
                         </TableRow>
                       ))}
+                      
+                      {/* Empty state when no creatives - show creative tiles */}
+                      {!collapsedCampaigns.has(adGroup.campaign) && creativesForAdGroup.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={5} sx={{ padding: 3, backgroundColor: 'white' }}>
+                            <EmptyCreativesState 
+                              adGroup={adGroup}
+                              onOpenCreativeDrawer={(ag) => {
+                                setSelectedAdGroupForCreatives(ag);
+                                setCreativesDrawerOpen(true);
+                              }}
+                              onSelectCreativeType={setSelectedCreativeType}
+                              onOpenAssignCreativeDrawer={(ag) => {
+                                setSelectedAdGroupForCreatives(ag);
+                                setAssignCreativeDrawerOpen(true);
+                              }}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      )}
                     </React.Fragment>
                   );
                 })}
@@ -7416,6 +7938,317 @@ export default function App() {
           </Box>
         </Box>
       </Box>
+      </Drawer>
+
+      {/* Edit In-content Video Creative Drawer */}
+      <Drawer
+        anchor="right"
+        open={editCreativeDrawerOpen}
+        onClose={handleEditCreativeDrawerClose}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: '95vw',
+            boxSizing: 'border-box',
+          },
+        }}
+      >
+        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          {/* Header */}
+          <Box sx={{ p: 3, flex: 0, borderBottom: '1px solid #e0e0e0' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
+                <StatusComponent status={selectedCreativeToEdit?.status || 'Active'} />
+                <TextField
+                  size="small"
+                  variant="outlined"
+                  value={selectedCreativeToEdit?.name || ''}
+                  onChange={(e) => setSelectedCreativeToEdit({ ...selectedCreativeToEdit, name: e.target.value })}
+                  sx={{ flex: 1 }}
+                />
+              </Box>
+              <IconButton size="small" onClick={handleEditCreativeDrawerClose}>
+                <CloseIcon />
+              </IconButton>
+            </Box>
+          </Box>
+
+          {/* Content */}
+          <Box sx={{ flex: 1, overflow: 'auto' }}>
+            <Box sx={{ display: 'flex', height: '100%' }}>
+              {/* Column 1 - 2/3 width */}
+              <Box sx={{ flex: 2, backgroundColor: '#f5f5f5', p: 3 }}>
+                <Box sx={{ borderRadius: 1, textAlign: 'center', mb: 0.75, backgroundColor: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '300px' }}>
+                  <Box
+                    component="video"
+                    src={IncontentVideo}
+                    sx={{
+                      width: '100%',
+                      maxWidth: '100%',
+                      height: 'auto',
+                      aspectRatio: '16/9',
+                      objectFit: 'contain',
+                      backgroundColor: '#000'
+                    }}
+                    controls
+                    muted
+                  />
+                </Box>
+              </Box>
+
+              {/* Column 2 - 1/3 width */}
+              <Box sx={{ flex: 1, p: 3, borderLeft: '1px solid #e0e0e0', overflow: 'auto' }}>
+                <Typography variant="h4" sx={{ mb: 2 }}>
+                  Creative details
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 3 }}>
+                  If your creative is in a different category than your business, change it here.
+                </Typography>
+
+                {/* Business Category Select */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+                  <FormControl sx={{ flex: 1 }} size="small">
+                    <InputLabel>Business category</InputLabel>
+                    <Select
+                      label="Business category"
+                      value="Automotive"
+                    >
+                      <MenuItem value="Automotive">Automotive</MenuItem>
+                    </Select>
+                  </FormControl>
+                  <Tooltip title="This is the category your business is listed as with the Interactive Advertising Bureau (IAB)">
+                    <HelpOutlineIcon sx={{ color: 'text.secondary', cursor: 'pointer' }} />
+                  </Tooltip>
+                </Box>
+
+                {/* Language Select */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+                  <FormControl sx={{ flex: 1 }} size="small">
+                    <InputLabel>Language</InputLabel>
+                    <Select
+                      label="Language"
+                      value="English"
+                    >
+                      <MenuItem value="English">English</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Box>
+
+                {/* Destination Title */}
+                <Typography variant="h4" sx={{ mb: 2 }}>
+                  Destination
+                </Typography>
+
+                <Typography variant="body2" sx={{ mb: 3 }}>
+                  This determines whether or not you would like this video ad to be actionable.
+                </Typography>
+
+                {/* Action Select */}
+                <FormControl sx={{ width: '100%', mb: 3 }} size="small">
+                  <InputLabel>Action</InputLabel>
+                  <Select
+                    label="Action"
+                    value={selectedAction}
+                    onChange={(e) => setSelectedAction(e.target.value)}
+                    renderValue={(selected) => {
+                      if (!selected) return '';
+                      const actionTexts = {
+                        'none': 'None',
+                        'landing-page': 'Landing page (URL)',
+                        'sms-email': 'Send SMS/Email',
+                        'shop-tv': 'Shop on TV',
+                        'microsite': 'Microsite',
+                      };
+                      return actionTexts[selected] || '';
+                    }}
+                  >
+                    <MenuItem value="none">
+                      <Typography variant="body2">None</Typography>
+                    </MenuItem>
+                    <MenuItem value="landing-page">
+                      <Box>
+                        <Typography variant="body2">Landing page (URL)</Typography>
+                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                          Link to to a URL (only when applicable)
+                        </Typography>
+                      </Box>
+                    </MenuItem>
+                    <MenuItem value="sms-email">
+                      <Box>
+                        <Typography variant="body2">Send SMS/Email</Typography>
+                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                          Audience would have the option to get a text message and/or email about your advertisement.
+                        </Typography>
+                      </Box>
+                    </MenuItem>
+                    <MenuItem value="shop-tv">
+                      <Box>
+                        <Typography variant="body2">Shop on TV</Typography>
+                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                          Audience would have the option to shop directly on their TV for your product.
+                        </Typography>
+                      </Box>
+                    </MenuItem>
+                    <MenuItem value="microsite">
+                      <Box>
+                        <Typography variant="body2">Microsite</Typography>
+                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                          Create a microsite on to further engage your audience about your message.
+                        </Typography>
+                      </Box>
+                    </MenuItem>
+                  </Select>
+                </FormControl>
+
+                {/* Landing Page URL TextField - Only show when landing-page action is selected */}
+                {selectedAction === 'landing-page' && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+                    <TextField
+                      label="Landing page URL"
+                      placeholder="(Optional)"
+                      variant="outlined"
+                      size="small"
+                      sx={{ flex: 1 }}
+                      InputLabelProps={{ shrink: true }}
+                    />
+                    <Tooltip title="The URL must match the brand in the creative. Note: URLs appear only in clickable environments (e.g., web, mobile).">
+                      <HelpOutlineIcon sx={{ color: 'text.secondary', cursor: 'pointer' }} />
+                    </Tooltip>
+                  </Box>
+                )}
+
+                {/* Advanced Settings Accordion */}
+                <Accordion>
+                  <AccordionSummary expandIcon={<KeyboardArrowDownIcon />}>
+                    <Typography>Advanced settings</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ flexDirection: 'column', gap: 2 }}>
+                    <Typography variant="h5" sx={{ mb: 1 }}>
+                      Does your ad include special ad categories? (optional)
+                    </Typography>
+
+                    <Typography variant="caption" sx={{ color: 'grey', mb: 2 }}>
+                      These categories help to prevent discrimination in advertising. Check all that apply to expedite your ad approval. Learn more about special ad categories
+                    </Typography>
+
+                    <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <CheckboxOptionCleanComponent
+                        icon={<CreditCardIcon sx={{ fontSize: 24, color: 'black' }} />}
+                        title="Credit"
+                        description="This campaign promotes credit-related products or services"
+                        selected={specialCategories.credit}
+                        onClick={() => setSpecialCategories(prev => ({ ...prev, credit: !prev.credit }))}
+                      />
+                      <CheckboxOptionCleanComponent
+                        icon={<WorkIcon sx={{ fontSize: 24, color: 'black' }} />}
+                        title="Employment"
+                        description="This campaign is related to employment opportunities or services"
+                        selected={specialCategories.employment}
+                        onClick={() => setSpecialCategories(prev => ({ ...prev, employment: !prev.employment }))}
+                      />
+                      <CheckboxOptionCleanComponent
+                        icon={<HomeIcon sx={{ fontSize: 24, color: 'black' }} />}
+                        title="Housing"
+                        description="This campaign promotes housing-related products or services"
+                        selected={specialCategories.housing}
+                        onClick={() => setSpecialCategories(prev => ({ ...prev, housing: !prev.housing }))}
+                      />
+                    </Box>
+                  </AccordionDetails>
+                </Accordion>
+
+                {/* Tracking Settings Accordion */}
+                <Accordion>
+                  <AccordionSummary expandIcon={<KeyboardArrowDownIcon />}>
+                    <Typography>Tracking settings</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ flexDirection: 'column', gap: 2 }}>
+                    <Typography variant="h5" sx={{ mb: 1 }}>
+                      Do you have impression tags?
+                    </Typography>
+
+                    <Typography variant="caption" sx={{ color: 'grey', mb: 4 }}>
+                      Add your tags below. Note that only authorized vendors are permitted. Learn more about tag formatting and macros. Maximum 20 tags.
+                    </Typography>
+
+                    {impressionTags.map((tag, index) => (
+                      <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                        <TextField
+                          placeholder="Enter impression tag"
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          value={tag}
+                          onChange={(e) => {
+                            const newTags = [...impressionTags];
+                            newTags[index] = e.target.value;
+                            setImpressionTags(newTags);
+                          }}
+                          sx={{ my: 0.75 }}
+                        />
+                        {impressionTags.length > 1 && (
+                          <IconButton
+                            size="small"
+                            onClick={() => {
+                              setImpressionTags(impressionTags.filter((_, i) => i !== index));
+                            }}
+                            sx={{ color: 'text.secondary' }}
+                          >
+                            <RemoveCircleOutlineIcon fontSize="small" />
+                          </IconButton>
+                        )}
+                      </Box>
+                    ))}
+
+                    <Button
+                      variant="text"
+                      size="small"
+                      startIcon={<AddIcon />}
+                      onClick={() => setImpressionTags([...impressionTags, ''])}
+                      sx={{ justifyContent: 'flex-start', pl: 0, mt: 2 }}
+                    >
+                      Add another impression tag
+                    </Button>
+                  </AccordionDetails>
+                </Accordion>
+              </Box>
+            </Box>
+          </Box>
+
+          {/* Bottom Toolbar for Edit Creative Drawer */}
+          <Box sx={{
+            position: 'fixed',
+            bottom: 0,
+            right: 0,
+            width: '95vw',
+            backgroundColor: 'white',
+            borderTop: '1px solid #e0e0e0',
+            p: 2,
+            boxShadow: '0 -2px 8px rgba(0, 0, 0, 0.1)',
+            zIndex: 1001
+          }}>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 2, maxWidth: 'none', mx: 'auto' }}>
+              <Button 
+                variant="outlined" 
+                color="primary" 
+                size="medium"
+                onClick={handleEditCreativeDrawerClose}
+              >
+                Cancel
+              </Button>
+              <Button 
+                variant="contained" 
+                color="primary" 
+                size="medium"
+                onClick={() => {
+                  console.log('Update creative:', selectedCreativeToEdit?.id);
+                  handleEditCreativeDrawerClose();
+                }}
+              >
+                Save changes
+              </Button>
+            </Box>
+          </Box>
+        </Box>
       </Drawer>
 
       {/* Creative Grid Overlay */}
@@ -7500,24 +8333,6 @@ export default function App() {
               <Table size="small" stickyHeader>
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#f5f5f5', border: '1px solid #e0e0e0', minWidth: 100 }}>
-                      <TableSortLabel
-                        active={creativeGridSortConfig.key === 'status'}
-                        direction={creativeGridSortConfig.key === 'status' ? creativeGridSortConfig.direction : 'asc'}
-                        onClick={() => handleCreativeGridSort('status')}
-                      >
-                        Status
-                      </TableSortLabel>
-                    </TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#f5f5f5', border: '1px solid #e0e0e0', minWidth: 120 }}>
-                      <TableSortLabel
-                        active={creativeGridSortConfig.key === 'adGroupId'}
-                        direction={creativeGridSortConfig.key === 'adGroupId' ? creativeGridSortConfig.direction : 'asc'}
-                        onClick={() => handleCreativeGridSort('adGroupId')}
-                      >
-                        Ad group ID
-                      </TableSortLabel>
-                    </TableCell>
                     <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#f5f5f5', border: '1px solid #e0e0e0', minWidth: 150 }}>
                       <TableSortLabel
                         active={creativeGridSortConfig.key === 'file'}
@@ -7602,316 +8417,266 @@ export default function App() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {/* Create sample data for sorting based on active tab */}
+                  {/* Display creatives assigned to this campaign, grouped by ad group */}
                   {(() => {
-                    let sampleData = [];
+                    // Get the parent campaign name
+                    const campaignName = selectedAdGroupForDetails?.parentCampaign || 'Holiday Sale 2024';
                     
-                    // Different data for each tab
-                    if (creativeGridActiveTab === 0) { // Native
-                      sampleData = [
-                        { status: 'Active', adGroupId: 'AG001', file: 'native_banner.jpg', ctaMessage: 'Shop Now - Native Ad', startDate: '2024-11-01', endDate: '2024-12-31', daypart: 'All Day', deeplink: 'https://example.com/native', pixel: 'native_pixel.gif', rotation: 'Sequential', rotationPercent: '100%' },
-                        { status: 'Draft', adGroupId: 'AG002', file: 'native_card.png', ctaMessage: 'Learn More - Native Content', startDate: '2024-11-15', endDate: '2024-12-15', daypart: 'Prime Time', deeplink: 'https://example.com/native-features', pixel: 'native_track.gif', rotation: 'Random', rotationPercent: '80%' },
-                        { status: 'Paused', adGroupId: 'AG003', file: 'native_feed.jpg', ctaMessage: 'Discover Now - Native Feed', startDate: '2024-10-01', endDate: '2024-11-30', daypart: 'Morning', deeplink: 'https://example.com/native-discover', pixel: 'native_conversion.gif', rotation: 'Weighted', rotationPercent: '60%' },
-                        { status: 'Active', adGroupId: 'AG004', file: 'native_story.png', ctaMessage: 'Read More - Native Story', startDate: '2024-11-01', endDate: '2025-01-31', daypart: 'Evening', deeplink: 'https://example.com/native-story', pixel: 'native_mobile.gif', rotation: 'Sequential', rotationPercent: '95%' },
-                        { status: 'Ended', adGroupId: 'AG005', file: 'native_article.jpg', ctaMessage: 'View Article - Native Content', startDate: '2024-09-01', endDate: '2024-10-31', daypart: 'Weekend', deeplink: 'https://example.com/native-article', pixel: 'native_promo.gif', rotation: 'Random', rotationPercent: '40%' },
-                      ];
-                    } else if (creativeGridActiveTab === 1) { // In-content video
-                      sampleData = [
-                        { status: 'Active', adGroupId: 'VG001', file: 'video_15s_hd.mp4', ctaMessage: 'Watch Now - Product Demo', startDate: '2024-11-01', endDate: '2024-12-31', daypart: 'All Day', deeplink: 'https://example.com/video-demo', pixel: 'video_pixel.gif', rotation: 'Sequential', rotationPercent: '100%' },
-                        { status: 'Draft', adGroupId: 'VG002', file: 'video_30s_story.mp4', ctaMessage: 'Play Video - Brand Story', startDate: '2024-11-15', endDate: '2024-12-15', daypart: 'Prime Time', deeplink: 'https://example.com/video-story', pixel: 'video_track.gif', rotation: 'Random', rotationPercent: '85%' },
-                        { status: 'Paused', adGroupId: 'VG003', file: 'video_10s_teaser.mp4', ctaMessage: 'See Teaser - Coming Soon', startDate: '2024-10-01', endDate: '2024-11-30', daypart: 'Evening', deeplink: 'https://example.com/video-teaser', pixel: 'video_conversion.gif', rotation: 'Weighted', rotationPercent: '70%' },
-                        { status: 'Active', adGroupId: 'VG004', file: 'video_20s_tutorial.mp4', ctaMessage: 'Learn How - Step by Step', startDate: '2024-11-01', endDate: '2025-01-31', daypart: 'Morning', deeplink: 'https://example.com/video-tutorial', pixel: 'video_mobile.gif', rotation: 'Sequential', rotationPercent: '90%' },
-                        { status: 'Ended', adGroupId: 'VG005', file: 'video_45s_review.mp4', ctaMessage: 'Watch Review - Customer Stories', startDate: '2024-09-01', endDate: '2024-10-31', daypart: 'Weekend', deeplink: 'https://example.com/video-review', pixel: 'video_promo.gif', rotation: 'Random', rotationPercent: '55%' },
-                      ];
-                    } else { // Custom
-                      sampleData = [
-                        { status: 'Active', adGroupId: 'CG001', file: 'custom_interactive.html', ctaMessage: 'Interact Now - Dynamic Content', startDate: '2024-11-01', endDate: '2024-12-31', daypart: 'All Day', deeplink: 'https://example.com/custom-interactive', pixel: 'custom_pixel.gif', rotation: 'Sequential', rotationPercent: '100%' },
-                        { status: 'Draft', adGroupId: 'CG002', file: 'custom_animation.css', ctaMessage: 'Animate - Custom Experience', startDate: '2024-11-15', endDate: '2024-12-15', daypart: 'Prime Time', deeplink: 'https://example.com/custom-animation', pixel: 'custom_track.gif', rotation: 'Random', rotationPercent: '75%' },
-                        { status: 'Paused', adGroupId: 'CG003', file: 'custom_widget.js', ctaMessage: 'Try Widget - Interactive Tool', startDate: '2024-10-01', endDate: '2024-11-30', daypart: 'Evening', deeplink: 'https://example.com/custom-widget', pixel: 'custom_conversion.gif', rotation: 'Weighted', rotationPercent: '65%' },
-                        { status: 'Active', adGroupId: 'CG004', file: 'custom_carousel.json', ctaMessage: 'Browse Carousel - Multi-Product', startDate: '2024-11-01', endDate: '2025-01-31', daypart: 'Morning', deeplink: 'https://example.com/custom-carousel', pixel: 'custom_mobile.gif', rotation: 'Sequential', rotationPercent: '88%' },
-                        { status: 'Ended', adGroupId: 'CG005', file: 'custom_form.php', ctaMessage: 'Fill Form - Lead Generation', startDate: '2024-09-01', endDate: '2024-10-31', daypart: 'Weekend', deeplink: 'https://example.com/custom-form', pixel: 'custom_promo.gif', rotation: 'Random', rotationPercent: '45%' },
-                      ];
-                    }
-
-                    // Add empty rows to reach 10 total
-                    const emptyRows = Array.from({ length: 5 }, (_, index) => ({
-                      status: '', adGroupId: '', file: '', ctaMessage: '', startDate: '', endDate: '', daypart: '', deeplink: '', pixel: '', rotation: '', rotationPercent: ''
-                    }));
+                    // Get all ad groups for this campaign
+                    const campaignAdGroups = adGroupsData.filter(ag => ag.parentCampaign === campaignName);
                     
-                    const allData = [...sampleData, ...emptyRows];
+                    // Group creatives by ad group
+                    const groupedCreatives = {};
+                    campaignAdGroups.forEach(adGroup => {
+                      const creativesForAdGroup = getCreativesForAdGroup(adGroup);
+                      groupedCreatives[adGroup.id] = {
+                        adGroup: adGroup,
+                        creatives: creativesForAdGroup
+                      };
+                    });
 
-                    // Sort data if sort is active
-                    if (creativeGridSortConfig.key) {
-                      allData.sort((a, b) => {
-                        const aVal = a[creativeGridSortConfig.key] || '';
-                        const bVal = b[creativeGridSortConfig.key] || '';
+                    // Render grouped rows
+                    return Object.entries(groupedCreatives).map(([adGroupId, { adGroup, creatives }]) => (
+                      <React.Fragment key={adGroupId}>
+                        {/* Ad Group Header Row */}
+                        <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                          <TableCell colSpan={9} sx={{ 
+                            fontWeight: 'bold', 
+                            fontSize: '0.9rem',
+                            backgroundColor: '#f5f5f5',
+                            border: '1px solid #e0e0e0',
+                            py: 1
+                          }}>
+                            {adGroup.campaign} ({adGroupId})
+                          </TableCell>
+                        </TableRow>
                         
-                        if (creativeGridSortConfig.direction === 'asc') {
-                          return aVal.localeCompare(bVal);
-                        } else {
-                          return bVal.localeCompare(aVal);
-                        }
-                      });
-                    }
-
-                    return allData.map((row, index) => (
-                    <TableRow key={index}>
-                      <TableCell sx={{ border: '1px solid #e0e0e0', p: 0 }}>
-                        <TextField
-                          variant="standard"
-                          size="small"
-                          fullWidth
-                          defaultValue={row.status}
-                          InputProps={{
-                            disableUnderline: true,
-                            sx: { 
-                              px: 1, 
-                              py: 0.5,
-                              fontSize: '0.8125rem',
-                              '& input': { 
-                                border: 'none',
-                                outline: 'none',
-                                '&:focus': {
-                                  backgroundColor: '#f0f8ff'
-                                }
-                              }
-                            }
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell sx={{ border: '1px solid #e0e0e0', p: 0 }}>
-                        <TextField
-                          variant="standard"
-                          size="small"
-                          fullWidth
-                          defaultValue={row.adGroupId}
-                          InputProps={{
-                            disableUnderline: true,
-                            sx: { 
-                              px: 1, 
-                              py: 0.5,
-                              fontSize: '0.8125rem',
-                              '& input': { 
-                                border: 'none',
-                                outline: 'none',
-                                '&:focus': {
-                                  backgroundColor: '#f0f8ff'
-                                }
-                              }
-                            }
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell sx={{ border: '1px solid #e0e0e0', p: 0 }}>
-                        <TextField
-                          variant="standard"
-                          size="small"
-                          fullWidth
-                          defaultValue={row.file}
-                          InputProps={{
-                            disableUnderline: true,
-                            sx: { 
-                              px: 1, 
-                              py: 0.5,
-                              fontSize: '0.8125rem',
-                              '& input': { 
-                                border: 'none',
-                                outline: 'none',
-                                '&:focus': {
-                                  backgroundColor: '#f0f8ff'
-                                }
-                              }
-                            }
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell sx={{ border: '1px solid #e0e0e0', p: 0 }}>
-                        <TextField
-                          variant="standard"
-                          size="small"
-                          fullWidth
-                          defaultValue={row.ctaMessage}
-                          InputProps={{
-                            disableUnderline: true,
-                            sx: { 
-                              px: 1, 
-                              py: 0.5,
-                              fontSize: '0.8125rem',
-                              '& input': { 
-                                border: 'none',
-                                outline: 'none',
-                                '&:focus': {
-                                  backgroundColor: '#f0f8ff'
-                                }
-                              }
-                            }
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell sx={{ border: '1px solid #e0e0e0', p: 0 }}>
-                        <TextField
-                          variant="standard"
-                          size="small"
-                          fullWidth
-                          type="date"
-                          defaultValue={row.startDate}
-                          InputProps={{
-                            disableUnderline: true,
-                            sx: { 
-                              px: 1, 
-                              py: 0.5,
-                              fontSize: '0.8125rem',
-                              '& input': { 
-                                border: 'none',
-                                outline: 'none',
-                                '&:focus': {
-                                  backgroundColor: '#f0f8ff'
-                                }
-                              }
-                            }
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell sx={{ border: '1px solid #e0e0e0', p: 0 }}>
-                        <TextField
-                          variant="standard"
-                          size="small"
-                          fullWidth
-                          type="date"
-                          defaultValue={row.endDate}
-                          InputProps={{
-                            disableUnderline: true,
-                            sx: { 
-                              px: 1, 
-                              py: 0.5,
-                              fontSize: '0.8125rem',
-                              '& input': { 
-                                border: 'none',
-                                outline: 'none',
-                                '&:focus': {
-                                  backgroundColor: '#f0f8ff'
-                                }
-                              }
-                            }
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell sx={{ border: '1px solid #e0e0e0', p: 0 }}>
-                        <TextField
-                          variant="standard"
-                          size="small"
-                          fullWidth
-                          defaultValue={row.daypart}
-                          InputProps={{
-                            disableUnderline: true,
-                            sx: { 
-                              px: 1, 
-                              py: 0.5,
-                              fontSize: '0.8125rem',
-                              '& input': { 
-                                border: 'none',
-                                outline: 'none',
-                                '&:focus': {
-                                  backgroundColor: '#f0f8ff'
-                                }
-                              }
-                            }
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell sx={{ border: '1px solid #e0e0e0', p: 0 }}>
-                        <TextField
-                          variant="standard"
-                          size="small"
-                          fullWidth
-                          defaultValue={row.deeplink}
-                          InputProps={{
-                            disableUnderline: true,
-                            sx: { 
-                              px: 1, 
-                              py: 0.5,
-                              fontSize: '0.8125rem',
-                              '& input': { 
-                                border: 'none',
-                                outline: 'none',
-                                '&:focus': {
-                                  backgroundColor: '#f0f8ff'
-                                }
-                              }
-                            }
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell sx={{ border: '1px solid #e0e0e0', p: 0 }}>
-                        <TextField
-                          variant="standard"
-                          size="small"
-                          fullWidth
-                          defaultValue={row.pixel}
-                          InputProps={{
-                            disableUnderline: true,
-                            sx: { 
-                              px: 1, 
-                              py: 0.5,
-                              fontSize: '0.8125rem',
-                              '& input': { 
-                                border: 'none',
-                                outline: 'none',
-                                '&:focus': {
-                                  backgroundColor: '#f0f8ff'
-                                }
-                              }
-                            }
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell sx={{ border: '1px solid #e0e0e0', p: 0 }}>
-                        <TextField
-                          variant="standard"
-                          size="small"
-                          fullWidth
-                          defaultValue={row.rotation}
-                          InputProps={{
-                            disableUnderline: true,
-                            sx: { 
-                              px: 1, 
-                              py: 0.5,
-                              fontSize: '0.8125rem',
-                              '& input': { 
-                                border: 'none',
-                                outline: 'none',
-                                '&:focus': {
-                                  backgroundColor: '#f0f8ff'
-                                }
-                              }
-                            }
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell sx={{ border: '1px solid #e0e0e0', p: 0 }}>
-                        <TextField
-                          variant="standard"
-                          size="small"
-                          fullWidth
-                          defaultValue={row.rotationPercent}
-                          InputProps={{
-                            disableUnderline: true,
-                            sx: { 
-                              px: 1, 
-                              py: 0.5,
-                              fontSize: '0.8125rem',
-                              '& input': { 
-                                border: 'none',
-                                outline: 'none',
-                                '&:focus': {
-                                  backgroundColor: '#f0f8ff'
-                                }
-                              }
-                            }
-                          }}
-                        />
-                      </TableCell>
-                    </TableRow>
+                        {/* Creative Rows for this Ad Group */}
+                        {creatives.length > 0 ? (
+                          creatives.map((creative, index) => (
+                            <TableRow key={`${adGroupId}-creative-${index}`}>
+                              <TableCell sx={{ border: '1px solid #e0e0e0', p: 0 }}>
+                                <TextField
+                                  variant="standard"
+                                  size="small"
+                                  fullWidth
+                                  defaultValue={creative.name}
+                                  InputProps={{
+                                    disableUnderline: true,
+                                    sx: { 
+                                      px: 1, 
+                                      py: 0.5,
+                                      fontSize: '0.8125rem',
+                                      '& input': { 
+                                        border: 'none',
+                                        outline: 'none',
+                                        '&:focus': {
+                                          backgroundColor: '#f0f8ff'
+                                        }
+                                      }
+                                    }
+                                  }}
+                                />
+                              </TableCell>
+                              <TableCell sx={{ border: '1px solid #e0e0e0', p: 0 }}>
+                                <TextField
+                                  variant="standard"
+                                  size="small"
+                                  fullWidth
+                                  defaultValue={creative.type}
+                                  InputProps={{
+                                    disableUnderline: true,
+                                    sx: { 
+                                      px: 1, 
+                                      py: 0.5,
+                                      fontSize: '0.8125rem',
+                                      '& input': { 
+                                        border: 'none',
+                                        outline: 'none',
+                                        '&:focus': {
+                                          backgroundColor: '#f0f8ff'
+                                        }
+                                      }
+                                    }
+                                  }}
+                                />
+                              </TableCell>
+                              <TableCell sx={{ border: '1px solid #e0e0e0', p: 0 }}>
+                                <TextField
+                                  variant="standard"
+                                  size="small"
+                                  fullWidth
+                                  type="date"
+                                  defaultValue=""
+                                  InputProps={{
+                                    disableUnderline: true,
+                                    sx: { 
+                                      px: 1, 
+                                      py: 0.5,
+                                      fontSize: '0.8125rem',
+                                      '& input': { 
+                                        border: 'none',
+                                        outline: 'none',
+                                        '&:focus': {
+                                          backgroundColor: '#f0f8ff'
+                                        }
+                                      }
+                                    }
+                                  }}
+                                />
+                              </TableCell>
+                              <TableCell sx={{ border: '1px solid #e0e0e0', p: 0 }}>
+                                <TextField
+                                  variant="standard"
+                                  size="small"
+                                  fullWidth
+                                  type="date"
+                                  defaultValue=""
+                                  InputProps={{
+                                    disableUnderline: true,
+                                    sx: { 
+                                      px: 1, 
+                                      py: 0.5,
+                                      fontSize: '0.8125rem',
+                                      '& input': { 
+                                        border: 'none',
+                                        outline: 'none',
+                                        '&:focus': {
+                                          backgroundColor: '#f0f8ff'
+                                        }
+                                      }
+                                    }
+                                  }}
+                                />
+                              </TableCell>
+                              <TableCell sx={{ border: '1px solid #e0e0e0', p: 0 }}>
+                                <TextField
+                                  variant="standard"
+                                  size="small"
+                                  fullWidth
+                                  defaultValue="All Day"
+                                  InputProps={{
+                                    disableUnderline: true,
+                                    sx: { 
+                                      px: 1, 
+                                      py: 0.5,
+                                      fontSize: '0.8125rem',
+                                      '& input': { 
+                                        border: 'none',
+                                        outline: 'none',
+                                        '&:focus': {
+                                          backgroundColor: '#f0f8ff'
+                                        }
+                                      }
+                                    }
+                                  }}
+                                />
+                              </TableCell>
+                              <TableCell sx={{ border: '1px solid #e0e0e0', p: 0 }}>
+                                <TextField
+                                  variant="standard"
+                                  size="small"
+                                  fullWidth
+                                  defaultValue=""
+                                  placeholder="Enter deeplink"
+                                  InputProps={{
+                                    disableUnderline: true,
+                                    sx: { 
+                                      px: 1, 
+                                      py: 0.5,
+                                      fontSize: '0.8125rem',
+                                      '& input': { 
+                                        border: 'none',
+                                        outline: 'none',
+                                        '&:focus': {
+                                          backgroundColor: '#f0f8ff'
+                                        }
+                                      }
+                                    }
+                                  }}
+                                />
+                              </TableCell>
+                              <TableCell sx={{ border: '1px solid #e0e0e0', p: 0 }}>
+                                <TextField
+                                  variant="standard"
+                                  size="small"
+                                  fullWidth
+                                  defaultValue=""
+                                  placeholder="Enter pixel"
+                                  InputProps={{
+                                    disableUnderline: true,
+                                    sx: { 
+                                      px: 1, 
+                                      py: 0.5,
+                                      fontSize: '0.8125rem',
+                                      '& input': { 
+                                        border: 'none',
+                                        outline: 'none',
+                                        '&:focus': {
+                                          backgroundColor: '#f0f8ff'
+                                        }
+                                      }
+                                    }
+                                  }}
+                                />
+                              </TableCell>
+                              <TableCell sx={{ border: '1px solid #e0e0e0', p: 0 }}>
+                                <TextField
+                                  variant="standard"
+                                  size="small"
+                                  fullWidth
+                                  defaultValue="Sequential"
+                                  InputProps={{
+                                    disableUnderline: true,
+                                    sx: { 
+                                      px: 1, 
+                                      py: 0.5,
+                                      fontSize: '0.8125rem',
+                                      '& input': { 
+                                        border: 'none',
+                                        outline: 'none',
+                                        '&:focus': {
+                                          backgroundColor: '#f0f8ff'
+                                        }
+                                      }
+                                    }
+                                  }}
+                                />
+                              </TableCell>
+                              <TableCell sx={{ border: '1px solid #e0e0e0', p: 0 }}>
+                                <TextField
+                                  variant="standard"
+                                  size="small"
+                                  fullWidth
+                                  defaultValue="100%"
+                                  InputProps={{
+                                    disableUnderline: true,
+                                    sx: { 
+                                      px: 1, 
+                                      py: 0.5,
+                                      fontSize: '0.8125rem',
+                                      '& input': { 
+                                        border: 'none',
+                                        outline: 'none',
+                                        '&:focus': {
+                                          backgroundColor: '#f0f8ff'
+                                        }
+                                      }
+                                    }
+                                  }}
+                                />
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        ) : (
+                          // Empty row for this ad group
+                          <TableRow>
+                            <TableCell colSpan={10} sx={{ border: '1px solid #e0e0e0', p: 0, textAlign: 'center', color: '#999' }}>
+                              No creatives assigned
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </React.Fragment>
                     ));
                   })()}
                 </TableBody>
