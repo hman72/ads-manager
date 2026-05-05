@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useTheme } from "@mui/material/styles";
+import ShowChartIcon from "@mui/icons-material/ShowChart";
+import NotificationsActiveOutlinedIcon from "@mui/icons-material/NotificationsActiveOutlined";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
@@ -18,23 +20,30 @@ import Tab from "@mui/material/Tab";
 import MenuIcon from "@mui/icons-material/Menu";
 import PersonIcon from "@mui/icons-material/Person";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import SearchIcon from "@mui/icons-material/Search";
+import SettingsIcon from "@mui/icons-material/Settings";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import DateRangeField from "./components/DateRangeField";
 import PlacementCard from "./components/PlacementCard";
 import DeliveryCard from "./components/DeliveryCard";
 import AudienceDrawer from "./components/AudienceDrawer";
+import LandingPage from "./components/LandingPage";
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
   BarElement,
+  LineElement,
+  PointElement,
+  ArcElement,
+  Filler,
   Title,
   Tooltip as ChartTooltip,
   Legend,
 } from 'chart.js';
-import { Bar } from 'react-chartjs-2';
+import { Bar, Doughnut, Line, Pie } from 'react-chartjs-2';
 import ArchiveIcon from "@mui/icons-material/Archive";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
@@ -46,8 +55,10 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import TableChartIcon from "@mui/icons-material/TableChart";
+import SlideshowIcon from "@mui/icons-material/Slideshow";
 import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import FilterListIcon from "@mui/icons-material/FilterList";
 import Collapse from "@mui/material/Collapse";
 import BlockIcon from "@mui/icons-material/Block";
 import DraftsIcon from "@mui/icons-material/Drafts";
@@ -67,11 +78,16 @@ import TableSortLabel from "@mui/material/TableSortLabel";
 import Paper from "@mui/material/Paper";
 import Switch from "@mui/material/Switch";
 import Chip from "@mui/material/Chip";
+import Popover from "@mui/material/Popover";
+import Avatar from "@mui/material/Avatar";
 import Link from "@mui/material/Link";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import FormControl from "@mui/material/FormControl";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Radio from "@mui/material/Radio";
+import RadioGroup from "@mui/material/RadioGroup";
 import InputLabel from "@mui/material/InputLabel";
 import FormGroup from "@mui/material/FormGroup";
 import Snackbar from "@mui/material/Snackbar";
@@ -81,6 +97,11 @@ import ListItemText from "@mui/material/ListItemText";
 import InputAdornment from "@mui/material/InputAdornment";
 import Drawer from "@mui/material/Drawer";
 import Modal from "@mui/material/Modal";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContentText from "@mui/material/DialogContentText";
 import Tooltip from "@mui/material/Tooltip";
 import Divider from "@mui/material/Divider";
 import Skeleton from "@mui/material/Skeleton";
@@ -127,16 +148,66 @@ import Marquee from "./images/Creatives/Marquee.png";
 import CreativeMarquee from "./images/Creatives/Creative-Marquee.png";
 import CreativeIncontent from "./images/Creatives/Creative-InContent-Video.png";
 import IncontentVideo from "./images/Creatives/In-content_video.mp4";
+import ActionAdventure from "./images/genre/action adventure illo.png";
+import Comedy from "./images/genre/Comedy2.png";
+import Drama from "./images/genre/Drama.png";
+import Education from "./images/genre/AdsManager_Education 1.png";
+import Holiday from "./images/genre/Holiday- Ads Manager 1.png";
+import Lifestyle from "./images/genre/AdsManager_Lifestyle 1.png";
+import Music from "./images/genre/AdsManager_Music 1.png";
+import News from "./images/genre/AdsManager_News 1.png";
+import RealityPopculture from "./images/genre/realityPopculture_illo.png";
+import Romance from "./images/genre/Romance_illo.png";
+import SciFi from "./images/genre/AdsManager_SciFi 1.png";
+import Sports from "./images/genre/AdsManager_Sports 1.png";
 
 // Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
   BarElement,
+  LineElement,
+  PointElement,
+  ArcElement,
+  Filler,
   Title,
   ChartTooltip,
   Legend
 );
+
+// Register custom plugin for pie chart labels
+const pieChartLabelsPlugin = {
+  id: 'pieChartLabels',
+  afterDatasetsDraw(chart) {
+    const { ctx, data } = chart;
+    const meta = chart.getDatasetMeta(0);
+    
+    if (!meta || !meta.data || chart.config.type !== 'pie') return;
+    
+    ctx.save();
+    ctx.font = 'bold 18px Arial';
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    meta.data.forEach((arc, index) => {
+      const value = data.datasets[0].data[index];
+      const startAngle = arc.startAngle;
+      const endAngle = arc.endAngle;
+      const midAngle = startAngle + (endAngle - startAngle) / 2;
+      
+      const radius = (arc.outerRadius + arc.innerRadius) / 2;
+      const x = arc.x + Math.cos(midAngle) * radius * 0.7;
+      const y = arc.y + Math.sin(midAngle) * radius * 0.7;
+      
+      ctx.fillText(value + '%', x, y);
+    });
+    
+    ctx.restore();
+  }
+};
+
+ChartJS.register(pieChartLabelsPlugin);
 
 // Helper function to get the correct image path for both dev and production
 const getImagePath = (imagePath) => {
@@ -276,8 +347,2388 @@ const TileComponent = ({ image, title, description, onClick, selected = false })
   );
 };
 
+// Ad Group Overview Tile Component for Reports
+const AdGroupOverviewTile = ({ adGroup, campaign, creatives = [], destinations = [] }) => {
+  const [entryPointSearch, setEntryPointSearch] = React.useState('');
+  const [columnMenuAnchor, setColumnMenuAnchor] = React.useState(null);
+  const [visibleColumns, setVisibleColumns] = React.useState({
+    impressions: true,
+    clicks: true,
+    goalActions: true,
+    reach: true,
+    cpa: true,
+    cpm: true
+  });
+  
+  const [contentSearch, setContentSearch] = React.useState('');
+  const [selectedTypes, setSelectedTypes] = React.useState([]);
+  const [contentColumnMenuAnchor, setContentColumnMenuAnchor] = React.useState(null);
+  const [visibleContentColumns, setVisibleContentColumns] = React.useState({
+    type: true,
+    impressions: true,
+    ctr: true,
+    vcr: true,
+    reach: true,
+    frequency: true,
+    totalMinutesPerHousehold: true
+  });
+  
+  const [sectionMenuAnchor, setSectionMenuAnchor] = React.useState(null);
+  const [visibleSections, setVisibleSections] = React.useState({
+    metrics: true,
+    entryPoints: true,
+    content: true
+  });
+  
+  // Get unique types from destinations
+  const uniqueTypes = React.useMemo(() => {
+    const types = new Set(destinations.map(d => d.type).filter(Boolean));
+    return Array.from(types);
+  }, [destinations]);
+  
+  const handleColumnMenuOpen = (event) => {
+    setColumnMenuAnchor(event.currentTarget);
+  };
+  
+  const handleColumnMenuClose = () => {
+    setColumnMenuAnchor(null);
+  };
+  
+  const handleColumnToggle = (columnKey) => {
+    setVisibleColumns(prev => ({
+      ...prev,
+      [columnKey]: !prev[columnKey]
+    }));
+  };
+  
+  const handleContentColumnMenuOpen = (event) => {
+    setContentColumnMenuAnchor(event.currentTarget);
+  };
+  
+  const handleSectionMenuOpen = (event) => {
+    setSectionMenuAnchor(event.currentTarget);
+  };
+  
+  const handleSectionMenuClose = () => {
+    setSectionMenuAnchor(null);
+  };
+  
+  const handleSectionToggle = (sectionKey) => {
+    setVisibleSections(prev => ({
+      ...prev,
+      [sectionKey]: !prev[sectionKey]
+    }));
+  };
+  
+  const handleContentColumnMenuClose = () => {
+    setContentColumnMenuAnchor(null);
+  };
+  
+  const handleContentColumnToggle = (columnKey) => {
+    setVisibleContentColumns(prev => ({
+      ...prev,
+      [columnKey]: !prev[columnKey]
+    }));
+  };
+  
+  // Sample metrics for the ad group
+  const adGroupMetrics = {
+    impressions: adGroup.impressions || '0',
+    clicks: adGroup.clicks || '0',
+    goalActions: adGroup.goalActions || '0',
+    reach: adGroup.reach || '0',
+    cpa: adGroup.goalCpa || '$0.00',
+    cpm: adGroup.cpm || '$0.00'
+  };
+
+  return (
+    <Box sx={{ 
+      boxShadow: '0 1px 6px rgba(0, 0, 0, 0.1)',
+      p: 3,
+      backgroundColor: 'white',
+      mb: 3,
+      borderRadius: 1
+    }}>
+      {/* Title */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 0.25 }}>
+        <Typography variant="h2" sx={{ fontWeight: 'bold' }}>
+          {adGroup.campaign}
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography variant="caption" color="text.secondary">
+            Last updated: {new Date().toLocaleDateString()} {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </Typography>
+          <IconButton size="small" onClick={handleSectionMenuOpen}>
+            <MoreHorizIcon />
+          </IconButton>
+          <Menu
+            anchorEl={sectionMenuAnchor}
+            open={Boolean(sectionMenuAnchor)}
+            onClose={handleSectionMenuClose}
+          >
+            <MenuItem onClick={() => handleSectionToggle('metrics')}>
+              <Checkbox checked={visibleSections.metrics} />
+              <ListItemText primary="Metrics" />
+            </MenuItem>
+            <MenuItem onClick={() => handleSectionToggle('entryPoints')}>
+              <Checkbox checked={visibleSections.entryPoints} />
+              <ListItemText primary="Entry points" />
+            </MenuItem>
+            <MenuItem onClick={() => handleSectionToggle('content')}>
+              <Checkbox checked={visibleSections.content} />
+              <ListItemText primary="Content" />
+            </MenuItem>
+            <Divider />
+            <MenuItem onClick={handleSectionMenuClose}>
+              <ListItemText primary="Export..." />
+            </MenuItem>
+            <MenuItem onClick={handleSectionMenuClose}>
+              <ListItemText primary="Remove" />
+            </MenuItem>
+          </Menu>
+        </Box>
+      </Box>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+        {campaign?.campaign || 'Unknown Campaign'}
+      </Typography>
+
+      {/* Overview Metrics */}
+      {visibleSections.metrics && (
+        <Box sx={{ 
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+          gap: 3,
+          mb: 4,
+          pb: 3,
+          borderBottom: '1px solid #e0e0e0'
+        }}>
+          <Box>
+            <Typography variant="caption" color="text.secondary">Impressions</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>{adGroupMetrics.impressions}</Typography>
+          </Box>
+          <Box>
+            <Typography variant="caption" color="text.secondary">Clicks</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>{adGroupMetrics.clicks}</Typography>
+          </Box>
+          <Box>
+            <Typography variant="caption" color="text.secondary">Goal Actions</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>{adGroupMetrics.goalActions}</Typography>
+          </Box>
+          <Box>
+            <Typography variant="caption" color="text.secondary">Reach</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>{adGroupMetrics.reach}</Typography>
+          </Box>
+          <Box>
+            <Typography variant="caption" color="text.secondary">CPA</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>{adGroupMetrics.cpa}</Typography>
+          </Box>
+          <Box>
+            <Typography variant="caption" color="text.secondary">CPM</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>{adGroupMetrics.cpm}</Typography>
+          </Box>
+        </Box>
+      )}
+
+      {/* Creatives Table */}
+      {visibleSections.entryPoints && (
+        <Box sx={{ mb: 4 }}>
+        <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
+          Entry points
+        </Typography>
+        
+        {/* Search Box */}
+        <Box sx={{ mb: 2, display: 'flex', gap: 1, alignItems: 'center' }}>
+          <TextField
+            size="small"
+            placeholder="Search by name or ID"
+            value={entryPointSearch}
+            onChange={(e) => setEntryPointSearch(e.target.value)}
+            fullWidth
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon fontSize="small" />
+                </InputAdornment>
+              ),
+              endAdornment: entryPointSearch && (
+                <InputAdornment position="end">
+                  <IconButton
+                    size="small"
+                    onClick={() => setEntryPointSearch('')}
+                    edge="end"
+                  >
+                    <ClearIcon fontSize="small" />
+                  </IconButton>
+                </InputAdornment>
+              )
+            }}
+          />
+          <IconButton 
+            size="small" 
+            onClick={handleColumnMenuOpen}
+            sx={{ 
+              border: '1px solid rgba(0, 0, 0, 0.23)',
+              borderRadius: '6px',
+              width: 36,
+              height: 36
+            }}
+          >
+            <SettingsIcon fontSize="small" sx={{ color: 'primary.main' }} />
+          </IconButton>
+          <Menu
+            anchorEl={columnMenuAnchor}
+            open={Boolean(columnMenuAnchor)}
+            onClose={handleColumnMenuClose}
+          >
+            <MenuItem onClick={() => handleColumnToggle('impressions')}>
+              <Checkbox checked={visibleColumns.impressions} size="small" />
+              <ListItemText primary="Impressions" />
+            </MenuItem>
+            <MenuItem onClick={() => handleColumnToggle('clicks')}>
+              <Checkbox checked={visibleColumns.clicks} size="small" />
+              <ListItemText primary="Clicks" />
+            </MenuItem>
+            <MenuItem onClick={() => handleColumnToggle('goalActions')}>
+              <Checkbox checked={visibleColumns.goalActions} size="small" />
+              <ListItemText primary="Goal Actions" />
+            </MenuItem>
+            <MenuItem onClick={() => handleColumnToggle('reach')}>
+              <Checkbox checked={visibleColumns.reach} size="small" />
+              <ListItemText primary="Reach" />
+            </MenuItem>
+            <MenuItem onClick={() => handleColumnToggle('cpa')}>
+              <Checkbox checked={visibleColumns.cpa} size="small" />
+              <ListItemText primary="CPA" />
+            </MenuItem>
+            <MenuItem onClick={() => handleColumnToggle('cpm')}>
+              <Checkbox checked={visibleColumns.cpm} size="small" />
+              <ListItemText primary="CPM" />
+            </MenuItem>
+          </Menu>
+        </Box>
+        
+        <TableContainer component={Paper} sx={{ width: "100%", borderRadius: "0px", boxShadow: "none" }}>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 'bold' }}>Entry point</TableCell>
+                {visibleColumns.impressions && <TableCell align="right" sx={{ fontWeight: 'bold' }}>Impressions</TableCell>}
+                {visibleColumns.clicks && <TableCell align="right" sx={{ fontWeight: 'bold' }}>Clicks</TableCell>}
+                {visibleColumns.goalActions && <TableCell align="right" sx={{ fontWeight: 'bold' }}>Goal Actions</TableCell>}
+                {visibleColumns.reach && <TableCell align="right" sx={{ fontWeight: 'bold' }}>Reach</TableCell>}
+                {visibleColumns.cpa && <TableCell align="right" sx={{ fontWeight: 'bold' }}>CPA</TableCell>}
+                {visibleColumns.cpm && <TableCell align="right" sx={{ fontWeight: 'bold' }}>CPM</TableCell>}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {creatives.length > 0 ? (
+                creatives
+                  .filter(creative => {
+                    if (!entryPointSearch) return true;
+                    const searchLower = entryPointSearch.toLowerCase();
+                    return (
+                      creative.name?.toLowerCase().includes(searchLower) ||
+                      creative.id?.toString().includes(searchLower)
+                    );
+                  })
+                  .map((creative) => (
+                  <TableRow key={creative.id} hover>
+                    <TableCell>
+                      <Box>
+                        <Typography variant="body2">{creative.name}</Typography>
+                        <Typography variant="caption" color="text.secondary">{creative.id}</Typography>
+                      </Box>
+                    </TableCell>
+                    {visibleColumns.impressions && <TableCell align="right">{creative.impressions || '0'}</TableCell>}
+                    {visibleColumns.clicks && <TableCell align="right">{creative.clicks || '0'}</TableCell>}
+                    {visibleColumns.goalActions && <TableCell align="right">{creative.goalActions || '0'}</TableCell>}
+                    {visibleColumns.reach && <TableCell align="right">{creative.reach || '0'}</TableCell>}
+                    {visibleColumns.cpa && <TableCell align="right">{creative.cpa || '$0.00'}</TableCell>}
+                    {visibleColumns.cpm && <TableCell align="right">{creative.cpm || '$0.00'}</TableCell>}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={1 + Object.values(visibleColumns).filter(Boolean).length} align="center" sx={{ py: 3, color: 'text.secondary' }}>
+                    {entryPointSearch ? 'No creatives found matching your search' : 'No creatives found'}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+      )}
+
+      {/* Destinations Table */}
+      {visibleSections.content && (
+        <Box>
+        <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
+          Content
+        </Typography>
+        
+        {/* Search Box */}
+        <Box sx={{ mb: 2, display: 'flex', gap: 1, alignItems: 'center' }}>
+          <TextField
+            size="small"
+            placeholder="Search by name or ID"
+            value={contentSearch}
+            onChange={(e) => setContentSearch(e.target.value)}
+            fullWidth
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon fontSize="small" />
+                </InputAdornment>
+              ),
+              endAdornment: contentSearch && (
+                <InputAdornment position="end">
+                  <IconButton
+                    size="small"
+                    onClick={() => setContentSearch('')}
+                    edge="end"
+                  >
+                    <ClearIcon fontSize="small" />
+                  </IconButton>
+                </InputAdornment>
+              )
+            }}
+          />
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <InputLabel id="type-label" sx={{ fontSize: "14px" }} shrink>Content type</InputLabel>
+            <Select
+              labelId="type-label"
+              value={selectedTypes}
+              onChange={(e) => setSelectedTypes(e.target.value)}
+              label="Content type"
+              variant="outlined"
+              multiple
+              displayEmpty
+              notched
+              renderValue={(selected) => selected.length === 0 ? 'All' : selected.join(', ')}
+              title={selectedTypes.length === 0 ? 'All types' : selectedTypes.join(', ')}
+              sx={{ 
+                "& .MuiSelect-select": {
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap"
+                }
+              }}
+            >
+              {uniqueTypes.map((type) => (
+                <MenuItem key={type} value={type}>
+                  <Checkbox checked={selectedTypes.indexOf(type) > -1} />
+                  <ListItemText primary={type} />
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <IconButton 
+            size="small" 
+            onClick={handleContentColumnMenuOpen}
+            sx={{ 
+              border: '1px solid rgba(0, 0, 0, 0.23)',
+              borderRadius: '6px',
+              width: 36,
+              height: 36
+            }}
+          >
+            <SettingsIcon fontSize="small" sx={{ color: 'primary.main' }} />
+          </IconButton>
+          <Menu
+            anchorEl={contentColumnMenuAnchor}
+            open={Boolean(contentColumnMenuAnchor)}
+            onClose={handleContentColumnMenuClose}
+          >
+            <MenuItem onClick={() => handleContentColumnToggle('type')}>
+              <Checkbox checked={visibleContentColumns.type} />
+              <ListItemText primary="Content type" />
+            </MenuItem>
+            <MenuItem onClick={() => handleContentColumnToggle('impressions')}>
+              <Checkbox checked={visibleContentColumns.impressions} />
+              <ListItemText primary="Impressions" />
+            </MenuItem>
+            <MenuItem onClick={() => handleContentColumnToggle('ctr')}>
+              <Checkbox checked={visibleContentColumns.ctr} />
+              <ListItemText primary="CTR" />
+            </MenuItem>
+            <MenuItem onClick={() => handleContentColumnToggle('vcr')}>
+              <Checkbox checked={visibleContentColumns.vcr} />
+              <ListItemText primary="VCR" />
+            </MenuItem>
+            <MenuItem onClick={() => handleContentColumnToggle('reach')}>
+              <Checkbox checked={visibleContentColumns.reach} />
+              <ListItemText primary="Reach" />
+            </MenuItem>
+            <MenuItem onClick={() => handleContentColumnToggle('frequency')}>
+              <Checkbox checked={visibleContentColumns.frequency} />
+              <ListItemText primary="Frequency" />
+            </MenuItem>
+            <MenuItem onClick={() => handleContentColumnToggle('totalMinutesPerHousehold')}>
+              <Checkbox checked={visibleContentColumns.totalMinutesPerHousehold} />
+              <ListItemText primary="Total mins/HH" />
+            </MenuItem>
+          </Menu>
+        </Box>
+        
+        <TableContainer component={Paper} sx={{ width: "100%", borderRadius: "0px", boxShadow: "none" }}>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 'bold' }}>Title</TableCell>
+                {visibleContentColumns.type && <TableCell sx={{ fontWeight: 'bold' }}>Content type</TableCell>}
+                {visibleContentColumns.impressions && <TableCell align="right" sx={{ fontWeight: 'bold' }}>Impressions</TableCell>}
+                {visibleContentColumns.ctr && <TableCell align="right" sx={{ fontWeight: 'bold' }}>CTR</TableCell>}
+                {visibleContentColumns.vcr && <TableCell align="right" sx={{ fontWeight: 'bold' }}>VCR</TableCell>}
+                {visibleContentColumns.reach && <TableCell align="right" sx={{ fontWeight: 'bold' }}>Reach</TableCell>}
+                {visibleContentColumns.frequency && <TableCell align="right" sx={{ fontWeight: 'bold' }}>Frequency</TableCell>}
+                {visibleContentColumns.totalMinutesPerHousehold && <TableCell align="right" sx={{ fontWeight: 'bold' }}>Total mins/HH</TableCell>}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {destinations.length > 0 ? (
+                destinations
+                  .filter((destination) => {
+                    // Filter by search
+                    if (contentSearch) {
+                      const searchLower = contentSearch.toLowerCase();
+                      const matchesSearch = (
+                        destination.title?.toLowerCase().includes(searchLower) ||
+                        destination.type?.toLowerCase().includes(searchLower)
+                      );
+                      if (!matchesSearch) return false;
+                    }
+                    
+                    // Filter by selected types
+                    if (selectedTypes.length > 0) {
+                      if (!selectedTypes.includes(destination.type)) return false;
+                    }
+                    
+                    return true;
+                  })
+                  .map((destination, index) => (
+                  <TableRow key={index} hover>
+                    <TableCell>{destination.title}</TableCell>
+                    {visibleContentColumns.type && <TableCell>{destination.type}</TableCell>}
+                    {visibleContentColumns.impressions && <TableCell align="right">{destination.impressions || '0'}</TableCell>}
+                    {visibleContentColumns.ctr && <TableCell align="right">{destination.ctr || '0%'}</TableCell>}
+                    {visibleContentColumns.vcr && <TableCell align="right">{destination.vcr || '0%'}</TableCell>}
+                    {visibleContentColumns.reach && <TableCell align="right">{destination.reach || '0'}</TableCell>}
+                    {visibleContentColumns.frequency && <TableCell align="right">{destination.frequency || '0'}</TableCell>}
+                    {visibleContentColumns.totalMinutesPerHousehold && <TableCell align="right">{destination.totalMinutesPerHousehold || '0'}</TableCell>}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={1 + Object.values(visibleContentColumns).filter(Boolean).length} align="center" sx={{ py: 3, color: 'text.secondary' }}>
+                    {contentSearch ? 'No content found matching your search' : 'No destination data available'}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+      )}
+    </Box>
+  );
+};
+
+// Frequency Report Tile Component
+const FrequencyReportTile = ({ startDate, endDate }) => {
+  // State for menu and section visibility
+  const [menuAnchor, setMenuAnchor] = React.useState(null);
+  const [visibleSections, setVisibleSections] = React.useState({
+    frequencyBuckets: true,
+    frequencyAverage: true,
+    frequencyByDay: true,
+    frequencyByWeek: true,
+  });
+
+  const handleMenuOpen = (event) => {
+    setMenuAnchor(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchor(null);
+  };
+
+  const handleToggleSection = (section) => {
+    setVisibleSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
+  // Sample data for frequency buckets bar chart
+  const bucketData = [28, 22, 18, 14, 10, 6, 2];
+  const bucketAverage = bucketData.reduce((a, b) => a + b, 0) / bucketData.length;
+  
+  const frequencyBucketsData = {
+    labels: ['1-3', '3-5', '5-7', '7-9', '11-20', '20-30', '30+'],
+    datasets: [
+      {
+        type: 'bar',
+        label: 'Reach %',
+        data: bucketData,
+        backgroundColor: [
+          'rgba(79, 1, 163, 1)',    // Darkest for highest value (#4f01a3)
+          'rgba(79, 1, 163, 0.85)',
+          'rgba(79, 1, 163, 0.7)',
+          'rgba(79, 1, 163, 0.55)',
+          'rgba(79, 1, 163, 0.4)',
+          'rgba(79, 1, 163, 0.25)',
+          'rgba(79, 1, 163, 0.15)'  // Lightest for lowest value
+        ],
+        borderColor: [
+          'rgba(79, 1, 163, 1)',
+          'rgba(79, 1, 163, 1)',
+          'rgba(79, 1, 163, 1)',
+          'rgba(79, 1, 163, 1)',
+          'rgba(79, 1, 163, 1)',
+          'rgba(79, 1, 163, 1)',
+          'rgba(79, 1, 163, 1)'
+        ],
+        borderWidth: 1,
+        order: 2,
+      },
+      {
+        type: 'line',
+        label: 'Average',
+        data: ['1-3', '3-5', '5-7', '7-9', '11-20', '20-30', '30+'].map(() => bucketAverage),
+        borderColor: 'rgba(79, 1, 163, 0.6)',
+        borderWidth: 2,
+        borderDash: [5, 5],
+        fill: false,
+        pointRadius: 0,
+        order: 1,
+      },
+    ],
+  };
+
+  const frequencyBucketsOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      title: {
+        display: false,
+      },
+      tooltip: {
+        enabled: true,
+        mode: 'index',
+        intersect: false,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Reach %',
+        },
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Frequency by household',
+        },
+      },
+    },
+  };
+
+  // Calculate days between start and end date
+  const generateDayLabels = () => {
+    if (!startDate || !endDate) {
+      // Default to showing 7 days from today
+      const days = [];
+      for (let i = 0; i < 7; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() + i);
+        days.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+      }
+      return days;
+    }
+    
+    const days = [];
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const current = new Date(start);
+    
+    while (current <= end) {
+      days.push(current.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+      current.setDate(current.getDate() + 1);
+    }
+    
+    return days;
+  };
+
+  // Calculate weeks between start and end date
+  const generateWeekLabels = () => {
+    if (!startDate || !endDate) {
+      // Default to showing 4 weeks from today
+      const weeks = [];
+      for (let i = 0; i < 4; i++) {
+        const weekStart = new Date();
+        weekStart.setDate(weekStart.getDate() + (i * 7));
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        weeks.push(`${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`);
+      }
+      return weeks;
+    }
+    
+    const weeks = [];
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const current = new Date(start);
+    
+    while (current <= end) {
+      const weekStart = new Date(current);
+      const weekEnd = new Date(current);
+      weekEnd.setDate(weekEnd.getDate() + 6);
+      
+      // If week end goes beyond the end date, use end date instead
+      if (weekEnd > end) {
+        weeks.push(`${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`);
+      } else {
+        weeks.push(`${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`);
+      }
+      
+      current.setDate(current.getDate() + 7);
+    }
+    
+    return weeks;
+  };
+
+  const dayLabels = generateDayLabels();
+  const weekLabels = generateWeekLabels();
+
+  // Sample data for frequency by day
+  const dayData = dayLabels.map(() => Math.random() * 5 + 2);
+  const dayAverage = dayData.reduce((a, b) => a + b, 0) / dayData.length;
+  
+  const frequencyByDayData = {
+    labels: dayLabels,
+    datasets: [
+      {
+        label: 'Frequency',
+        data: dayData,
+        borderColor: 'rgba(79, 1, 163, 1)',
+        backgroundColor: 'rgba(79, 1, 163, 0.2)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        order: 2,
+      },
+      {
+        label: 'Average',
+        data: dayLabels.map(() => dayAverage),
+        borderColor: 'rgba(79, 1, 163, 0.6)',
+        borderWidth: 2,
+        borderDash: [5, 5],
+        fill: false,
+        pointRadius: 0,
+        order: 1,
+      },
+    ],
+  };
+
+  // Sample data for frequency by week
+  const weekData = weekLabels.map(() => Math.random() * 5 + 2);
+  const weekAverage = weekData.reduce((a, b) => a + b, 0) / weekData.length;
+  
+  const frequencyByWeekData = {
+    labels: weekLabels,
+    datasets: [
+      {
+        label: 'Frequency',
+        data: weekData,
+        borderColor: 'rgba(79, 1, 163, 1)',
+        backgroundColor: 'rgba(79, 1, 163, 0.2)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        order: 2,
+      },
+      {
+        label: 'Average',
+        data: weekLabels.map(() => weekAverage),
+        borderColor: 'rgba(79, 1, 163, 0.6)',
+        borderWidth: 2,
+        borderDash: [5, 5],
+        fill: false,
+        pointRadius: 0,
+        order: 1,
+      },
+    ],
+  };
+
+  const lineChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        enabled: true,
+        mode: 'index',
+        intersect: false,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Frequency',
+        },
+      },
+    },
+  };
+
+  return (
+    <Box sx={{ 
+      boxShadow: '0 1px 6px rgba(0, 0, 0, 0.1)',
+      p: 3,
+      backgroundColor: 'white',
+      mb: 3,
+      borderRadius: 1
+    }}>
+      {/* Title */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h2" sx={{ fontWeight: 'bold' }}>
+          Frequency
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography variant="body2" color="text.secondary">
+            Last updated: {new Date().toLocaleString('en-US', { 
+              month: 'short', 
+              day: 'numeric', 
+              year: 'numeric', 
+              hour: 'numeric', 
+              minute: '2-digit', 
+              hour12: true 
+            })}
+          </Typography>
+          <IconButton onClick={handleMenuOpen} size="small">
+            <MoreHorizIcon />
+          </IconButton>
+          <Menu
+            anchorEl={menuAnchor}
+            open={Boolean(menuAnchor)}
+            onClose={handleMenuClose}
+          >
+            <MenuItem onClick={() => handleToggleSection('frequencyBuckets')}>
+              <Checkbox checked={visibleSections.frequencyBuckets} />
+              <ListItemText primary="Frequency Buckets" />
+            </MenuItem>
+            <MenuItem onClick={() => handleToggleSection('frequencyAverage')}>
+              <Checkbox checked={visibleSections.frequencyAverage} />
+              <ListItemText primary="Frequency per HH (Average)" />
+            </MenuItem>
+            <MenuItem onClick={() => handleToggleSection('frequencyByDay')}>
+              <Checkbox checked={visibleSections.frequencyByDay} />
+              <ListItemText primary="Frequency by Day" />
+            </MenuItem>
+            <MenuItem onClick={() => handleToggleSection('frequencyByWeek')}>
+              <Checkbox checked={visibleSections.frequencyByWeek} />
+              <ListItemText primary="Frequency by Week" />
+            </MenuItem>
+            <Divider />
+            <MenuItem onClick={handleMenuClose}>Export...</MenuItem>
+            <MenuItem onClick={handleMenuClose}>Remove</MenuItem>
+          </Menu>
+        </Box>
+      </Box>
+
+      {/* Frequency Buckets Bar Chart and Average Metric */}
+      {(visibleSections.frequencyBuckets || visibleSections.frequencyAverage) && (
+        <Box sx={{ mb: 4 }}>
+          {visibleSections.frequencyBuckets && (
+            <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
+              Frequency Buckets
+            </Typography>
+          )}
+          <Box sx={{ display: 'flex', gap: 3, alignItems: 'center' }}>
+            {/* Bar Chart - 80% width */}
+            {visibleSections.frequencyBuckets && (
+              <Box sx={{ flex: 4, height: 300 }} key="frequency-buckets">
+                <Bar 
+                  key={`buckets-chart-${visibleSections.frequencyAverage ? 'split' : 'full'}`} 
+                  data={frequencyBucketsData} 
+                  options={frequencyBucketsOptions} 
+                  redraw={true}
+                />
+              </Box>
+            )}
+            
+            {/* Average Frequency Metric - 20% width */}
+            {visibleSections.frequencyAverage && (
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="body1" color="text.secondary">Frequency per HH (Average)</Typography>
+                <Typography variant="h1" sx={{ fontWeight: 'bold' }}>3.7</Typography>
+              </Box>
+            )}
+          </Box>
+        </Box>
+      )}
+
+      {/* Frequency by Day and Week Line Charts */}
+      {(visibleSections.frequencyByDay || visibleSections.frequencyByWeek) && (
+        <Box sx={{ display: 'flex', gap: 3 }}>
+          {/* Frequency by Day Line Chart */}
+          {visibleSections.frequencyByDay && (
+            <Box sx={{ flex: 1 }} key="frequency-by-day">
+              <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
+                Frequency by Day
+              </Typography>
+              <Box sx={{ height: 300 }}>
+                <Line 
+                  key={`day-chart-${visibleSections.frequencyByWeek ? 'split' : 'full'}`} 
+                  data={frequencyByDayData} 
+                  options={lineChartOptions} 
+                  redraw={true}
+                />
+              </Box>
+            </Box>
+          )}
+
+          {/* Frequency by Week Line Chart */}
+          {visibleSections.frequencyByWeek && (
+            <Box sx={{ flex: 1 }} key="frequency-by-week">
+              <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
+                Frequency by Week
+              </Typography>
+              <Box sx={{ height: 300 }}>
+                <Line 
+                  key={`week-chart-${visibleSections.frequencyByDay ? 'split' : 'full'}`} 
+                  data={frequencyByWeekData} 
+                  options={lineChartOptions} 
+                  redraw={true}
+                />
+              </Box>
+            </Box>
+          )}
+        </Box>
+      )}
+    </Box>
+  );
+};
+
+// Audience Insights Component
+const AudienceInsightsTile = () => {
+  // State for menu and chart visibility
+  const [menuAnchor, setMenuAnchor] = React.useState(null);
+  const [showMaritalInsight, setShowMaritalInsight] = React.useState(false);
+  const [visibleCharts, setVisibleCharts] = React.useState({
+    age: true,
+    gender: true,
+    maritalStatus: true,
+    parents: true,
+    income: true,
+    education: true,
+  });
+
+  const handleMenuOpen = (event) => {
+    setMenuAnchor(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchor(null);
+  };
+
+  const handleToggleChart = (chart) => {
+    setVisibleCharts(prev => ({
+      ...prev,
+      [chart]: !prev[chart]
+    }));
+  };
+
+  // Sample data for age demographics by gender
+  const ageData = {
+    labels: ['18-20', '21-24', '25-29', '30-34', '35-39', '40-44', '45-49', '50-54', '55-64', '65+'],
+    datasets: [
+      {
+        label: 'Male',
+        data: [8, 12, 18, 22, 20, 15, 12, 10, 8, 5],
+        backgroundColor: 'rgba(79, 1, 163, 0.8)',
+        borderColor: 'rgba(79, 1, 163, 1)',
+        borderWidth: 1,
+      },
+      {
+        label: 'Female',
+        data: [7, 10, 16, 20, 22, 17, 14, 11, 9, 6],
+        backgroundColor: 'rgba(156, 39, 176, 0.6)',
+        borderColor: 'rgba(156, 39, 176, 1)',
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const ageChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          usePointStyle: true,
+          pointStyle: 'circle',
+          boxWidth: 6,
+          boxHeight: 6,
+        }
+      },
+      title: {
+        display: false,
+      },
+      tooltip: {
+        enabled: true,
+        mode: 'index',
+        intersect: false,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Percentage (%)',
+        },
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Age Range',
+        },
+      },
+    },
+  };
+
+  return (
+    <Box sx={{ 
+      p: 3, 
+      backgroundColor: 'white',
+      boxShadow: '0 1px 6px rgba(0, 0, 0, 0.1)',
+      mb: 4,
+      borderRadius: 1
+    }}>
+      {/* Title */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+        <Typography variant="h2" sx={{ fontWeight: 'bold' }}>
+          Audience insights
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography variant="body2" color="text.secondary">
+            Last updated: {new Date().toLocaleString('en-US', { 
+              month: 'short', 
+              day: 'numeric', 
+              year: 'numeric', 
+              hour: 'numeric', 
+              minute: '2-digit', 
+              hour12: true 
+            })}
+          </Typography>
+          <IconButton onClick={handleMenuOpen} size="small">
+            <MoreHorizIcon />
+          </IconButton>
+        </Box>
+      </Box>
+
+      <Menu
+        anchorEl={menuAnchor}
+        open={Boolean(menuAnchor)}
+        onClose={handleMenuClose}
+      >
+        <MenuItem onClick={() => handleToggleChart('age')}>
+          <Checkbox checked={visibleCharts.age} />
+          <ListItemText primary="Age" />
+        </MenuItem>
+        <MenuItem onClick={() => handleToggleChart('gender')}>
+          <Checkbox checked={visibleCharts.gender} />
+          <ListItemText primary="Gender" />
+        </MenuItem>
+        <MenuItem onClick={() => handleToggleChart('maritalStatus')}>
+          <Checkbox checked={visibleCharts.maritalStatus} />
+          <ListItemText primary="Marital status" />
+        </MenuItem>
+        <MenuItem onClick={() => handleToggleChart('parents')}>
+          <Checkbox checked={visibleCharts.parents} />
+          <ListItemText primary="Parents" />
+        </MenuItem>
+        <MenuItem onClick={() => handleToggleChart('income')}>
+          <Checkbox checked={visibleCharts.income} />
+          <ListItemText primary="Income" />
+        </MenuItem>
+        <MenuItem onClick={() => handleToggleChart('education')}>
+          <Checkbox checked={visibleCharts.education} />
+          <ListItemText primary="Education" />
+        </MenuItem>
+        <Divider />
+        <MenuItem onClick={handleMenuClose}>Export...</MenuItem>
+        <MenuItem onClick={handleMenuClose}>Remove</MenuItem>
+      </Menu>
+
+      {/* Age Demographics Chart */}
+      {visibleCharts.age && (
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
+            Age
+          </Typography>
+          <Box sx={{ height: 400 }}>
+            <Bar data={ageData} options={ageChartOptions} />
+          </Box>
+        </Box>
+      )}
+
+      {/* Pie Charts Row */}
+      <Box sx={{ display: 'flex', gap: 3, justifyContent: 'space-between' }}>
+        {/* Gender Pie Chart */}
+        {visibleCharts.gender && (
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
+              Gender
+            </Typography>
+            <Box sx={{ height: 300, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <Pie 
+              data={{
+                labels: ['Male', 'Female'],
+                datasets: [{
+                  data: [52, 48],
+                  backgroundColor: [
+                    'rgba(79, 1, 163, 1)',
+                    'rgba(156, 39, 176, 1)',
+                  ],
+                  borderColor: '#ffffff',
+                  borderWidth: 2,
+                }],
+              }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                  legend: {
+                    position: 'bottom',
+                    labels: {
+                      usePointStyle: true,
+                      pointStyle: 'circle',
+                      boxWidth: 6,
+                      boxHeight: 6,
+                    }
+                  },
+                  tooltip: {
+                    callbacks: {
+                      label: function(context) {
+                        return context.label + ': ' + context.parsed + '%';
+                      }
+                    }
+                  }
+                },
+              }}
+            />
+          </Box>
+        </Box>
+        )}
+
+        {/* Marital Status Pie Chart */}
+        {visibleCharts.maritalStatus && (
+          <Box sx={{ flex: 1 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                Marital status
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <IconButton size="small" onClick={() => setShowMaritalInsight(prev => !prev)}><NotificationsActiveOutlinedIcon sx={{ color: '#7b1fa2' }} /></IconButton>
+                <IconButton size="small"><MoreHorizIcon /></IconButton>
+              </Box>
+            </Box>
+            {showMaritalInsight && (
+              <Box sx={{ mb: 2, p: 2, backgroundColor: '#f3e5f5', borderRadius: 1, border: '1px solid #ce93d8', display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                <NotificationsActiveOutlinedIcon sx={{ color: '#7b1fa2', fontSize: 20, mt: 0.25 }} />
+                <Typography variant="body2" sx={{ color: '#7b1fa2' }}>
+                  The overwhelming majority of this audience is married.
+                </Typography>
+              </Box>
+            )}
+          <Box sx={{ height: 300, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <Pie 
+              data={{
+                labels: ['Married', 'Single'],
+                datasets: [{
+                  data: [58, 42],
+                  backgroundColor: [
+                    'rgba(79, 1, 163, 1)',
+                    'rgba(156, 39, 176, 1)',
+                  ],
+                  borderColor: '#ffffff',
+                  borderWidth: 2,
+                }],
+              }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                  legend: {
+                    position: 'bottom',
+                    labels: {
+                      usePointStyle: true,
+                      pointStyle: 'circle',
+                      boxWidth: 6,
+                      boxHeight: 6,
+                    }
+                  },
+                  tooltip: {
+                    callbacks: {
+                      label: function(context) {
+                        return context.label + ': ' + context.parsed + '%';
+                      }
+                    }
+                  }
+                },
+              }}
+            />
+          </Box>
+        </Box>
+        )}
+
+        {/* Parents Pie Chart */}
+        {visibleCharts.parents && (
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
+              Parents
+            </Typography>
+            <Box sx={{ height: 300, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <Pie 
+              data={{
+                labels: ['No children in HH', 'Children in HH'],
+                datasets: [{
+                  data: [65, 35],
+                  backgroundColor: [
+                    'rgba(79, 1, 163, 1)',
+                    'rgba(156, 39, 176, 1)',
+                  ],
+                  borderColor: '#ffffff',
+                  borderWidth: 2,
+                }],
+              }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                  legend: {
+                    position: 'bottom',
+                    labels: {
+                      usePointStyle: true,
+                      pointStyle: 'circle',
+                      boxWidth: 6,
+                      boxHeight: 6,
+                    }
+                  },
+                  tooltip: {
+                    callbacks: {
+                      label: function(context) {
+                        return context.label + ': ' + context.parsed + '%';
+                      }
+                    }
+                  }
+                },
+              }}
+            />
+          </Box>
+        </Box>
+        )}
+      </Box>
+
+      {/* Income and Education Bar Charts */}
+      <Box sx={{ display: 'flex', gap: 3, mt: 4 }}>
+        {/* Income Bar Chart */}
+        {visibleCharts.income && (
+          <Box sx={{ flex: 1 }}>
+          <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
+            Income
+          </Typography>
+          <Box sx={{ height: 300 }}>
+            <Bar 
+              data={{
+                labels: ['Under $50k', '$50k-$75k', '$75k-$100k', '$100k-$150k', '$150k-$200k', '$200k-$250k', 'Over $250k'],
+                datasets: [{
+                  label: 'Male',
+                  data: [18, 22, 25, 20, 10, 3, 2],
+                  backgroundColor: 'rgba(79, 1, 163, 0.8)',
+                  borderColor: 'rgba(79, 1, 163, 1)',
+                  borderWidth: 1,
+                }, {
+                  label: 'Female',
+                  data: [20, 24, 23, 18, 9, 4, 2],
+                  backgroundColor: 'rgba(156, 39, 176, 0.6)',
+                  borderColor: 'rgba(156, 39, 176, 1)',
+                  borderWidth: 1,
+                }]
+              }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    position: 'bottom',
+                    labels: {
+                      usePointStyle: true,
+                      pointStyle: 'circle',
+                      boxWidth: 6,
+                      boxHeight: 6,
+                    }
+                  },
+                },
+                scales: {
+                  x: {
+                    title: {
+                      display: true,
+                      text: 'Income Range',
+                    },
+                  },
+                  y: {
+                    beginAtZero: true,
+                    title: {
+                      display: true,
+                      text: 'Percentage',
+                    },
+                    ticks: {
+                      callback: function(value) {
+                        return value + '%';
+                      }
+                    }
+                  },
+                },
+              }}
+            />
+          </Box>
+        </Box>
+        )}
+
+        {/* Education Bar Chart */}
+        {visibleCharts.education && (
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
+              Education
+            </Typography>
+            <Box sx={{ height: 300 }}>
+              <Bar 
+              data={{
+                labels: ['Didn\'t complete high school', 'High school diploma', 'Some college', 'Bachelors degree', 'Graduate degree'],
+                datasets: [{
+                  label: 'Male',
+                  data: [8, 28, 22, 25, 17],
+                  backgroundColor: 'rgba(79, 1, 163, 0.8)',
+                  borderColor: 'rgba(79, 1, 163, 1)',
+                  borderWidth: 1,
+                }, {
+                  label: 'Female',
+                  data: [7, 26, 24, 27, 16],
+                  backgroundColor: 'rgba(156, 39, 176, 0.6)',
+                  borderColor: 'rgba(156, 39, 176, 1)',
+                  borderWidth: 1,
+                }]
+              }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    position: 'bottom',
+                    labels: {
+                      usePointStyle: true,
+                      pointStyle: 'circle',
+                      boxWidth: 6,
+                      boxHeight: 6,
+                    }
+                  },
+                },
+                scales: {
+                  x: {
+                    title: {
+                      display: true,
+                      text: 'Education Level',
+                    },
+                  },
+                  y: {
+                    beginAtZero: true,
+                    title: {
+                      display: true,
+                      text: 'Percentage',
+                    },
+                    ticks: {
+                      callback: function(value) {
+                        return value + '%';
+                      }
+                    }
+                  },
+                },
+              }}
+            />
+          </Box>
+        </Box>
+        )}
+      </Box>
+    </Box>
+  );
+};
+
+// Sponsorship Insights Component
+const SponsorshipInsightsTile = () => {
+  // State for menu and section visibility
+  const [menuAnchor, setMenuAnchor] = React.useState(null);
+  const [visibleSections, setVisibleSections] = React.useState({
+    nonSponsorshipPie: true,
+    videoSponsorshipPie: true,
+    nativeAdsBreakout: true,
+    brandedExperience: true,
+  });
+
+  const handleMenuOpen = (event) => {
+    setMenuAnchor(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchor(null);
+  };
+
+  const handleToggleSection = (section) => {
+    setVisibleSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
+  // Sample data for Non-sponsorship video and sponsorship pie chart
+  const nonSponsorshipData = {
+    labels: ['Non-sponsorship', 'Sponsorship', 'Sponsorship & video'],
+    datasets: [{
+      data: [40, 30, 30],
+      backgroundColor: [
+        'rgba(79, 1, 163, 1)',
+        'rgba(156, 39, 176, 1)',
+        'rgba(186, 104, 200, 1)',
+      ],
+      borderColor: '#ffffff',
+      borderWidth: 2,
+    }],
+  };
+
+  // Sample data for Video and sponsorship pie chart
+  const videoSponsorshipData = {
+    labels: ['Video & sponsorship', 'Video only', 'Sponsorship (non-video)'],
+    datasets: [{
+      data: [45, 30, 25],
+      backgroundColor: [
+        'rgba(79, 1, 163, 1)',
+        'rgba(156, 39, 176, 1)',
+        'rgba(186, 104, 200, 1)',
+      ],
+      borderColor: '#ffffff',
+      borderWidth: 2,
+    }],
+  };
+
+  // Waterfall chart data using stacked bars
+  const waterfallData = {
+    labels: ['Marquee ad video', 'Marquee ad static/animated + billboard video', 'Spotlight ad', 'Added value sponsorship video'],
+    datasets: [
+      {
+        label: 'Base',
+        data: [0, 25, 40, 52],
+        backgroundColor: 'rgba(0, 0, 0, 0)',
+        borderColor: 'rgba(0, 0, 0, 0)',
+        borderWidth: 0,
+      },
+      {
+        label: 'Reach %',
+        data: [25, 15, 12, 8],
+        backgroundColor: [
+          'rgba(79, 1, 163, 1)',      // Darkest purple
+          'rgba(126, 87, 194, 0.85)',  // Medium-dark purple
+          'rgba(156, 39, 176, 0.7)',   // Medium purple
+          'rgba(186, 104, 200, 0.6)',  // Light purple
+        ],
+        borderColor: [
+          'rgba(79, 1, 163, 1)',
+          'rgba(126, 87, 194, 1)',
+          'rgba(156, 39, 176, 1)',
+          'rgba(186, 104, 200, 1)',
+        ],
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  // Sample data for Branded experience - Ad reach waterfall chart
+  const brandedExperienceData = {
+    labels: ['Added value native ads', 'Sponsorship video', 'Native ads', 'Added value sponsorship video', 'Roku City'],
+    datasets: [
+      {
+        label: 'Base',
+        data: [0, 22, 38, 55, 68],
+        backgroundColor: 'rgba(0, 0, 0, 0)',
+        borderColor: 'rgba(0, 0, 0, 0)',
+        borderWidth: 0,
+      },
+      {
+        label: 'Reach %',
+        data: [22, 16, 17, 13, 12],
+        backgroundColor: [
+          'rgba(79, 1, 163, 1)',
+          'rgba(126, 87, 194, 0.85)',
+          'rgba(156, 39, 176, 0.7)',
+          'rgba(186, 104, 200, 0.6)',
+          'rgba(206, 147, 216, 0.5)',
+        ],
+        borderColor: [
+          'rgba(79, 1, 163, 1)',
+          'rgba(126, 87, 194, 1)',
+          'rgba(156, 39, 176, 1)',
+          'rgba(186, 104, 200, 1)',
+          'rgba(206, 147, 216, 1)',
+        ],
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const waterfallOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            if (context.dataset.label === 'Reach %') {
+              const baseValue = context.chart.data.datasets[0].data[context.dataIndex];
+              const value = context.parsed.y;
+              const total = baseValue + value;
+              return 'Reach: ' + value + '% (Total: ' + total + '%)';
+            }
+            return null;
+          },
+          footer: function(tooltipItems) {
+            const context = tooltipItems[0];
+            if (context.label === 'Added value native ads') {
+              return 'Tiles (Where to Watch, Featured Free, Roku Channel), Title Cards, Pause Ads, Native Ads (Spotlight Ads), Microsites (Passes, Playlists, Zones)';
+            }
+            if (context.label === 'Sponsorship video') {
+              return 'Sponsorship Ad Video (Standard Ad Video, Takeover Pod), Custom Videos (Vignettes, Tagged Tune Ins), Action Ads (Stanard Ad Video + Overlay, Scannable Ads, 3P Brightline/Innvoid Action Ads)';
+            }
+            if (context.label === 'Native ads') {
+              return 'Tiles (Where to Watch, Featured Free, Roku Channel), Native Ads (Marquee, Billboard, Spotlight Ads)';
+            }
+            if (context.label === 'Added value sponsorship video') {
+              return 'Sponsorship Ad Video (In-Content Ad Video, Standard Ad Video), Custom Videos (Vignettes, Tagged Tune Ins), Action Ads (Stanard Ad Video + Overlay, Scannable Ads, 3P Brightline/Innvoid Action Ads)';
+            }
+            if (context.label === 'Roku City') {
+              return 'Buildings, Cars, Neighborhoods';
+            }
+            return '';
+          },
+          filter: function(tooltipItem) {
+            return tooltipItem.dataset.label !== 'Base';
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        stacked: true,
+        title: {
+          display: false,
+        },
+      },
+      y: {
+        stacked: true,
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Reach %',
+        },
+      },
+    },
+  };
+
+  return (
+    <Box sx={{ 
+      p: 3, 
+      backgroundColor: 'white',
+      boxShadow: '0 1px 6px rgba(0, 0, 0, 0.1)',
+      mb: 4,
+      borderRadius: 1
+    }}>
+      {/* Title */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h2" sx={{ fontWeight: 'bold' }}>
+          Sponsorship insights
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography variant="body2" color="text.secondary">
+            Last updated: {new Date().toLocaleString('en-US', { 
+              month: 'short', 
+              day: 'numeric', 
+              year: 'numeric', 
+              hour: 'numeric', 
+              minute: '2-digit', 
+              hour12: true 
+            })}
+          </Typography>
+          <IconButton onClick={handleMenuOpen} size="small">
+            <MoreHorizIcon />
+          </IconButton>
+          <Menu
+            anchorEl={menuAnchor}
+            open={Boolean(menuAnchor)}
+            onClose={handleMenuClose}
+          >
+            <MenuItem onClick={() => handleToggleSection('nonSponsorshipPie')}>
+              <Checkbox checked={visibleSections.nonSponsorshipPie} />
+              <ListItemText primary="Non-sponsorship video and sponsorship" />
+            </MenuItem>
+            <MenuItem onClick={() => handleToggleSection('videoSponsorshipPie')}>
+              <Checkbox checked={visibleSections.videoSponsorshipPie} />
+              <ListItemText primary="Video and sponsorship" />
+            </MenuItem>
+            <MenuItem onClick={() => handleToggleSection('nativeAdsBreakout')}>
+              <Checkbox checked={visibleSections.nativeAdsBreakout} />
+              <ListItemText primary="Native ads breakout" />
+            </MenuItem>
+            <MenuItem onClick={() => handleToggleSection('brandedExperience')}>
+              <Checkbox checked={visibleSections.brandedExperience} />
+              <ListItemText primary="Branded experience - Ad reach" />
+            </MenuItem>
+            <Divider />
+            <MenuItem onClick={handleMenuClose}>Export...</MenuItem>
+            <MenuItem onClick={handleMenuClose}>Remove</MenuItem>
+          </Menu>
+        </Box>
+      </Box>
+
+      {/* Sponsorship Pie Charts */}
+      <Box sx={{ display: 'flex', gap: 3, mb: 4 }}>
+        {/* Non-sponsorship video and sponsorship Pie Chart */}
+        {visibleSections.nonSponsorshipPie && (
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
+              Non-sponsorship video and sponsorship
+            </Typography>
+            <Box sx={{ height: 300, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <Pie 
+                data={nonSponsorshipData}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: true,
+                  plugins: {
+                    legend: {
+                      position: 'bottom',
+                      labels: {
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        boxWidth: 6,
+                        boxHeight: 6,
+                      }
+                    },
+                    tooltip: {
+                      callbacks: {
+                        label: function(context) {
+                          return context.label + ': ' + context.parsed + '%';
+                        }
+                      }
+                    }
+                  },
+                }}
+              />
+            </Box>
+          </Box>
+        )}
+
+        {/* Video and sponsorship Pie Chart */}
+        {visibleSections.videoSponsorshipPie && (
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
+              Video and sponsorship
+            </Typography>
+            <Box sx={{ height: 300, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <Pie 
+                data={videoSponsorshipData}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: true,
+                  plugins: {
+                    legend: {
+                      position: 'bottom',
+                      labels: {
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        boxWidth: 6,
+                        boxHeight: 6,
+                      }
+                    },
+                    tooltip: {
+                      callbacks: {
+                        label: function(context) {
+                          return context.label + ': ' + context.parsed + '%';
+                        }
+                      }
+                    }
+                  },
+                }}
+              />
+            </Box>
+          </Box>
+        )}
+      </Box>
+
+      {/* Waterfall Charts */}
+      <Box sx={{ display: 'flex', gap: 3 }}>
+        {/* Native ads breakout Waterfall Chart */}
+        {visibleSections.nativeAdsBreakout && (
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
+              Native ads breakout
+            </Typography>
+            <Box sx={{ height: 300 }}>
+              <Bar data={waterfallData} options={waterfallOptions} />
+            </Box>
+          </Box>
+        )}
+
+        {/* Branded experience - Ad reach Waterfall Chart */}
+        {visibleSections.brandedExperience && (
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
+              Branded experience - Ad reach
+            </Typography>
+            <Box sx={{ height: 300 }}>
+              <Bar data={brandedExperienceData} options={waterfallOptions} />
+            </Box>
+          </Box>
+        )}
+      </Box>
+    </Box>
+  );
+};
+
+// DAR Metrics Component
+const DARMetricsTile = () => {
+  const [menuAnchor, setMenuAnchor] = React.useState(null);
+  const [visibleMetrics, setVisibleMetrics] = React.useState({
+    spend: true,
+    nielsenImpressions: true,
+    firstPartyImpressions: true,
+    coviewingLift: true,
+    coviewedCPM: true,
+    additionalCoviewedImpressions: true,
+    totalOnTargetImpressions: true,
+  });
+
+  const handleMenuOpen = (event) => {
+    setMenuAnchor(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchor(null);
+  };
+
+  const handleToggleMetric = (metric) => {
+    setVisibleMetrics(prev => ({
+      ...prev,
+      [metric]: !prev[metric]
+    }));
+  };
+
+  return (
+    <Box sx={{ 
+      p: 3, 
+      backgroundColor: 'white',
+      boxShadow: '0 1px 6px rgba(0, 0, 0, 0.1)',
+      mb: 4,
+      borderRadius: 1
+    }}>
+      {/* Title */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="h2" sx={{ fontWeight: 'bold', mb: 1 }}>
+            DAR metrics
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            If a campaign is tagged at the campaign/order ID level (one DAR campaign ID across multiple flights), flight-level filtering of the dashboard will not apply. The DAR Impressions tile will show the campaign total even if a flight filter is applied.
+          </Typography>
+        </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography variant="body2" color="text.secondary">
+            Last updated: {new Date().toLocaleString('en-US', { 
+              month: 'short', 
+              day: 'numeric', 
+              year: 'numeric', 
+              hour: 'numeric', 
+              minute: '2-digit', 
+              hour12: true 
+            })}
+          </Typography>
+          <IconButton onClick={handleMenuOpen} size="small">
+            <MoreHorizIcon />
+          </IconButton>
+          <Menu
+            anchorEl={menuAnchor}
+            open={Boolean(menuAnchor)}
+            onClose={handleMenuClose}
+          >
+            <MenuItem onClick={() => handleToggleMetric('spend')}>
+              <Checkbox checked={visibleMetrics.spend} />
+              <ListItemText primary="Spend" />
+            </MenuItem>
+            <MenuItem onClick={() => handleToggleMetric('nielsenImpressions')}>
+              <Checkbox checked={visibleMetrics.nielsenImpressions} />
+              <ListItemText primary="Nielsen impressions" />
+            </MenuItem>
+            <MenuItem onClick={() => handleToggleMetric('firstPartyImpressions')}>
+              <Checkbox checked={visibleMetrics.firstPartyImpressions} />
+              <ListItemText primary="1P impressions" />
+            </MenuItem>
+            <MenuItem onClick={() => handleToggleMetric('coviewingLift')}>
+              <Checkbox checked={visibleMetrics.coviewingLift} />
+              <ListItemText primary="Coviewing lift" />
+            </MenuItem>
+            <MenuItem onClick={() => handleToggleMetric('coviewedCPM')}>
+              <Checkbox checked={visibleMetrics.coviewedCPM} />
+              <ListItemText primary="Coviewed CPM" />
+            </MenuItem>
+            <MenuItem onClick={() => handleToggleMetric('additionalCoviewedImpressions')}>
+              <Checkbox checked={visibleMetrics.additionalCoviewedImpressions} />
+              <ListItemText primary="Additional coviewed impressions" />
+            </MenuItem>
+            <MenuItem onClick={() => handleToggleMetric('totalOnTargetImpressions')}>
+              <Checkbox checked={visibleMetrics.totalOnTargetImpressions} />
+              <ListItemText primary="Total on target billable impressions" />
+            </MenuItem>
+            <Divider />
+            <MenuItem onClick={handleMenuClose}>Export...</MenuItem>
+            <MenuItem onClick={handleMenuClose}>Remove</MenuItem>
+          </Menu>
+        </Box>
+      </Box>
+
+      {/* Metrics Grid */}
+      <Box sx={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+        gap: 3 
+      }}>
+        {/* Spend */}
+        {visibleMetrics.spend && (
+          <Box>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+              Spend
+            </Typography>
+            <Typography variant="h1" sx={{ fontWeight: 'bold' }}>
+              $125,430
+            </Typography>
+          </Box>
+        )}
+
+        {/* Nielsen impressions */}
+        {visibleMetrics.nielsenImpressions && (
+          <Box>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+              Nielsen impressions
+            </Typography>
+            <Typography variant="h1" sx={{ fontWeight: 'bold' }}>
+              8,542,300
+            </Typography>
+          </Box>
+        )}
+
+        {/* 1P impressions */}
+        {visibleMetrics.firstPartyImpressions && (
+          <Box>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+              1P impressions
+            </Typography>
+            <Typography variant="h1" sx={{ fontWeight: 'bold' }}>
+              7,234,100
+            </Typography>
+          </Box>
+        )}
+
+        {/* Coviewing lift */}
+        {visibleMetrics.coviewingLift && (
+          <Box>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+              Coviewing lift
+            </Typography>
+            <Typography variant="h1" sx={{ fontWeight: 'bold' }}>
+              18.1%
+            </Typography>
+          </Box>
+        )}
+
+        {/* Coviewed CPM */}
+        {visibleMetrics.coviewedCPM && (
+          <Box>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+              Coviewed CPM
+            </Typography>
+            <Typography variant="h1" sx={{ fontWeight: 'bold' }}>
+              $14.68
+            </Typography>
+          </Box>
+        )}
+
+        {/* Additional coviewed impressions */}
+        {visibleMetrics.additionalCoviewedImpressions && (
+          <Box>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+              Additional coviewed impressions
+            </Typography>
+            <Typography variant="h1" sx={{ fontWeight: 'bold' }}>
+              1,308,200
+            </Typography>
+          </Box>
+        )}
+
+        {/* Total on target billable impressions */}
+        {visibleMetrics.totalOnTargetImpressions && (
+          <Box>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+              Total on target billable impressions
+            </Typography>
+            <Typography variant="h1" sx={{ fontWeight: 'bold' }}>
+              9,850,500
+            </Typography>
+          </Box>
+        )}
+      </Box>
+    </Box>
+  );
+};
+
+// Creatives Report Component
+const CreativesReportTile = ({ adGroups, campaigns = [], selectedCampaignIds = [] }) => {
+  const [menuAnchor, setMenuAnchor] = React.useState(null);
+  const [visibleColumns, setVisibleColumns] = React.useState({
+    spend: true,
+    impressions: true,
+    reach: true,
+    frequency: true,
+    cpur: true,
+    cpm: true,
+    cpa: true,
+    actions: true,
+    clicks: true,
+    ctr: true,
+  });
+
+  const handleMenuOpen = (event) => {
+    setMenuAnchor(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchor(null);
+  };
+
+  const handleToggleColumn = (column) => {
+    setVisibleColumns(prev => ({
+      ...prev,
+      [column]: !prev[column]
+    }));
+  };
+
+  // Filter ad groups by selected campaigns if any are selected
+  const filteredAdGroups = selectedCampaignIds.length > 0 
+    ? adGroups.filter(adGroup => {
+        // Find the campaign for this ad group
+        const campaign = campaigns.find(c => c.campaign === adGroup.parentCampaign);
+        return campaign && selectedCampaignIds.includes(campaign.id);
+      })
+    : adGroups;
+
+  // Extract all creatives from filtered ad groups with sample metrics
+  const allCreatives = filteredAdGroups.flatMap(adGroup => 
+    (adGroup.creatives || []).map((creative, index) => ({
+      id: creative.id,
+      name: creative.name,
+      type: creative.type,
+      spend: 8000 + Math.random() * 10000,
+      impressions: 200000 + Math.random() * 300000,
+      reach: 80000 + Math.random() * 100000,
+      frequency: 2.5 + Math.random() * 0.5,
+      cpur: 0.08 + Math.random() * 0.04,
+      cpm: 30 + Math.random() * 10,
+      cpa: 12 + Math.random() * 8,
+      actions: 400 + Math.random() * 700,
+      clicks: 1500 + Math.random() * 1500,
+      ctr: 0.55 + Math.random() * 0.2,
+    }))
+  );
+
+  // Deduplicate creatives by ID (in case same creative is in multiple ad groups)
+  const creativesData = Array.from(
+    new Map(allCreatives.map(creative => [creative.id, creative])).values()
+  );
+
+  return (
+    <Box sx={{ 
+      p: 3, 
+      backgroundColor: 'white',
+      boxShadow: '0 1px 6px rgba(0, 0, 0, 0.1)',
+      mb: 4,
+      borderRadius: 1
+    }}>
+      {/* Title */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h2" sx={{ fontWeight: 'bold' }}>
+          Creatives
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography variant="body2" color="text.secondary">
+            Last updated: {new Date().toLocaleString('en-US', { 
+              month: 'short', 
+              day: 'numeric', 
+              year: 'numeric', 
+              hour: 'numeric', 
+              minute: '2-digit', 
+              hour12: true 
+            })}
+          </Typography>
+          <IconButton onClick={handleMenuOpen} size="small">
+            <MoreHorizIcon />
+          </IconButton>
+          <Menu
+            anchorEl={menuAnchor}
+            open={Boolean(menuAnchor)}
+            onClose={handleMenuClose}
+          >
+            <MenuItem onClick={() => handleToggleColumn('spend')}>
+              <Checkbox checked={visibleColumns.spend} />
+              <ListItemText primary="Spend" />
+            </MenuItem>
+            <MenuItem onClick={() => handleToggleColumn('impressions')}>
+              <Checkbox checked={visibleColumns.impressions} />
+              <ListItemText primary="Impressions" />
+            </MenuItem>
+            <MenuItem onClick={() => handleToggleColumn('reach')}>
+              <Checkbox checked={visibleColumns.reach} />
+              <ListItemText primary="Reach" />
+            </MenuItem>
+            <MenuItem onClick={() => handleToggleColumn('frequency')}>
+              <Checkbox checked={visibleColumns.frequency} />
+              <ListItemText primary="Frequency" />
+            </MenuItem>
+            <MenuItem onClick={() => handleToggleColumn('cpur')}>
+              <Checkbox checked={visibleColumns.cpur} />
+              <ListItemText primary="CPUR" />
+            </MenuItem>
+            <MenuItem onClick={() => handleToggleColumn('cpm')}>
+              <Checkbox checked={visibleColumns.cpm} />
+              <ListItemText primary="CPM" />
+            </MenuItem>
+            <MenuItem onClick={() => handleToggleColumn('cpa')}>
+              <Checkbox checked={visibleColumns.cpa} />
+              <ListItemText primary="CPA" />
+            </MenuItem>
+            <MenuItem onClick={() => handleToggleColumn('actions')}>
+              <Checkbox checked={visibleColumns.actions} />
+              <ListItemText primary="Actions" />
+            </MenuItem>
+            <MenuItem onClick={() => handleToggleColumn('clicks')}>
+              <Checkbox checked={visibleColumns.clicks} />
+              <ListItemText primary="Clicks" />
+            </MenuItem>
+            <MenuItem onClick={() => handleToggleColumn('ctr')}>
+              <Checkbox checked={visibleColumns.ctr} />
+              <ListItemText primary="CTR" />
+            </MenuItem>
+            <Divider />
+            <MenuItem onClick={handleMenuClose}>Export...</MenuItem>
+            <MenuItem onClick={handleMenuClose}>Remove</MenuItem>
+          </Menu>
+        </Box>
+      </Box>
+
+      {/* Table */}
+      <Box sx={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', display: 'block' }}>
+          <thead style={{ display: 'table', width: '100%', tableLayout: 'fixed' }}>
+            <tr style={{ borderBottom: '2px solid #e0e0e0' }}>
+              <th style={{ textAlign: 'left', padding: '12px', fontWeight: 'bold', color: '#666' }}>Creative</th>
+              {visibleColumns.spend && <th style={{ textAlign: 'right', padding: '12px', fontWeight: 'bold', color: '#666' }}>Spend</th>}
+              {visibleColumns.impressions && <th style={{ textAlign: 'right', padding: '12px', fontWeight: 'bold', color: '#666' }}>Impressions</th>}
+              {visibleColumns.reach && <th style={{ textAlign: 'right', padding: '12px', fontWeight: 'bold', color: '#666' }}>Reach</th>}
+              {visibleColumns.frequency && <th style={{ textAlign: 'right', padding: '12px', fontWeight: 'bold', color: '#666' }}>Frequency</th>}
+              {visibleColumns.cpur && <th style={{ textAlign: 'right', padding: '12px', fontWeight: 'bold', color: '#666' }}>CPUR</th>}
+              {visibleColumns.cpm && <th style={{ textAlign: 'right', padding: '12px', fontWeight: 'bold', color: '#666' }}>CPM</th>}
+              {visibleColumns.cpa && <th style={{ textAlign: 'right', padding: '12px', fontWeight: 'bold', color: '#666' }}>CPA</th>}
+              {visibleColumns.actions && <th style={{ textAlign: 'right', padding: '12px', fontWeight: 'bold', color: '#666' }}>Actions</th>}
+              {visibleColumns.clicks && <th style={{ textAlign: 'right', padding: '12px', fontWeight: 'bold', color: '#666' }}>Clicks</th>}
+              {visibleColumns.ctr && <th style={{ textAlign: 'right', padding: '12px', fontWeight: 'bold', color: '#666' }}>CTR</th>}
+            </tr>
+          </thead>
+          <tbody style={{ display: 'block', maxHeight: '600px', overflowY: 'auto', width: '100%' }}>
+            {creativesData.map((creative, index) => (
+              <tr 
+                key={creative.id}
+                style={{ 
+                  borderBottom: '1px solid #e0e0e0',
+                  display: 'table',
+                  width: '100%',
+                  tableLayout: 'fixed'
+                }}
+              >
+                <td style={{ padding: '12px' }}>
+                  <div style={{ fontWeight: '500' }}>{creative.name}</div>
+                  <div style={{ fontSize: '0.875rem', color: '#666', marginTop: '4px' }}>{creative.type}</div>
+                </td>
+                {visibleColumns.spend && <td style={{ textAlign: 'right', padding: '12px' }}>${creative.spend.toLocaleString()}</td>}
+                {visibleColumns.impressions && <td style={{ textAlign: 'right', padding: '12px' }}>{creative.impressions.toLocaleString()}</td>}
+                {visibleColumns.reach && <td style={{ textAlign: 'right', padding: '12px' }}>{creative.reach.toLocaleString()}</td>}
+                {visibleColumns.frequency && <td style={{ textAlign: 'right', padding: '12px' }}>{creative.frequency.toFixed(2)}</td>}
+                {visibleColumns.cpur && <td style={{ textAlign: 'right', padding: '12px' }}>${creative.cpur.toFixed(2)}</td>}
+                {visibleColumns.cpm && <td style={{ textAlign: 'right', padding: '12px' }}>${creative.cpm.toFixed(2)}</td>}
+                {visibleColumns.cpa && <td style={{ textAlign: 'right', padding: '12px' }}>${creative.cpa.toFixed(2)}</td>}
+                {visibleColumns.actions && <td style={{ textAlign: 'right', padding: '12px' }}>{creative.actions.toLocaleString()}</td>}
+                {visibleColumns.clicks && <td style={{ textAlign: 'right', padding: '12px' }}>{creative.clicks.toLocaleString()}</td>}
+                {visibleColumns.ctr && <td style={{ textAlign: 'right', padding: '12px' }}>{creative.ctr.toFixed(2)}%</td>}
+              </tr>
+            ))}
+          </tbody>
+          <tfoot style={{ display: 'table', width: '100%', tableLayout: 'fixed' }}>
+            {/* Totals Row */}
+            <tr style={{ borderTop: '1px solid #333', backgroundColor: '#f5f5f5' }}>
+              <td style={{ padding: '12px', fontWeight: 'bold' }}>
+                Total ({creativesData.length} {creativesData.length === 1 ? 'creative' : 'creatives'})
+              </td>
+              {visibleColumns.spend && (
+                <td style={{ textAlign: 'right', padding: '12px', fontWeight: 'bold' }}>
+                  ${creativesData.reduce((sum, c) => sum + c.spend, 0).toLocaleString()}
+                </td>
+              )}
+              {visibleColumns.impressions && (
+                <td style={{ textAlign: 'right', padding: '12px', fontWeight: 'bold' }}>
+                  {creativesData.reduce((sum, c) => sum + c.impressions, 0).toLocaleString()}
+                </td>
+              )}
+              {visibleColumns.reach && (
+                <td style={{ textAlign: 'right', padding: '12px', fontWeight: 'bold' }}>
+                  {creativesData.reduce((sum, c) => sum + c.reach, 0).toLocaleString()}
+                </td>
+              )}
+              {visibleColumns.frequency && (
+                <td style={{ textAlign: 'right', padding: '12px', fontWeight: 'bold' }}>
+                  {(creativesData.reduce((sum, c) => sum + c.frequency, 0) / creativesData.length).toFixed(2)}
+                </td>
+              )}
+              {visibleColumns.cpur && (
+                <td style={{ textAlign: 'right', padding: '12px', fontWeight: 'bold' }}>
+                  ${(creativesData.reduce((sum, c) => sum + c.cpur, 0) / creativesData.length).toFixed(2)}
+                </td>
+              )}
+              {visibleColumns.cpm && (
+                <td style={{ textAlign: 'right', padding: '12px', fontWeight: 'bold' }}>
+                  ${(creativesData.reduce((sum, c) => sum + c.cpm, 0) / creativesData.length).toFixed(2)}
+                </td>
+              )}
+              {visibleColumns.cpa && (
+                <td style={{ textAlign: 'right', padding: '12px', fontWeight: 'bold' }}>
+                  ${(creativesData.reduce((sum, c) => sum + c.cpa, 0) / creativesData.length).toFixed(2)}
+                </td>
+              )}
+              {visibleColumns.actions && (
+                <td style={{ textAlign: 'right', padding: '12px', fontWeight: 'bold' }}>
+                  {creativesData.reduce((sum, c) => sum + c.actions, 0).toLocaleString()}
+                </td>
+              )}
+              {visibleColumns.clicks && (
+                <td style={{ textAlign: 'right', padding: '12px', fontWeight: 'bold' }}>
+                  {creativesData.reduce((sum, c) => sum + c.clicks, 0).toLocaleString()}
+                </td>
+              )}
+              {visibleColumns.ctr && (
+                <td style={{ textAlign: 'right', padding: '12px', fontWeight: 'bold' }}>
+                  {(creativesData.reduce((sum, c) => sum + c.ctr, 0) / creativesData.length).toFixed(2)}%
+                </td>
+              )}
+            </tr>
+          </tfoot>
+        </table>
+      </Box>
+    </Box>
+  );
+};
+
+// Roku Channel Delivery Component
+const RokuChannelDeliveryTile = () => {
+  const [menuAnchor, setMenuAnchor] = React.useState(null);
+  const [visibleCharts, setVisibleCharts] = React.useState({
+    contentType: true,
+    trcGenre: true,
+    iabGenre: true,
+  });
+
+  const handleMenuOpen = (event) => {
+    setMenuAnchor(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchor(null);
+  };
+
+  const handleToggleChart = (chartName) => {
+    setVisibleCharts(prev => ({
+      ...prev,
+      [chartName]: !prev[chartName]
+    }));
+  };
+
+  const genres = [
+    'Documentary', 'Entertainment', 'Reality TV', 'News & weather', 'Crime', 
+    'Drama', 'Comedy', 'Football', 'Holiday', 'Hunting', 'Animated', 
+    'Game show', 'Western', 'Actions', 'Children', 'Home improvement', 
+    'Romantic comedy', 'Cooking', 'Comedy drama', 'Adventure', 'Dance', 
+    'Music', 'Auto', 'Sports', 'Empty'
+  ];
+
+  // Sample data values for TRC
+  const trcValues = [
+    12.5, 10.8, 9.2, 8.5, 7.8, 7.2, 6.9, 6.5, 6.1, 5.8, 5.4, 
+    4.9, 4.5, 4.2, 3.8, 3.5, 3.2, 2.9, 2.6, 2.3, 2.0, 1.7, 1.4, 1.1, 0.8
+  ];
+
+  // Sample data values for IAB
+  const iabValues = [
+    11.2, 10.5, 9.8, 8.9, 8.2, 7.5, 7.1, 6.8, 6.3, 5.9, 5.5, 
+    5.1, 4.7, 4.3, 4.0, 3.6, 3.3, 3.0, 2.7, 2.4, 2.1, 1.8, 1.5, 1.2, 0.9
+  ];
+
+  // Function to generate gradient colors based on value
+  const generateGradientColors = (values) => {
+    const maxValue = Math.max(...values);
+    const minValue = Math.min(...values);
+    
+    return values.map(value => {
+      // Normalize value between 0 and 1
+      const normalized = (value - minValue) / (maxValue - minValue);
+      
+      // Dark purple to light purple gradient
+      // Dark: rgba(79, 1, 163, 1) - Light: rgba(206, 147, 216, 0.4)
+      const r = Math.round(79 + (206 - 79) * (1 - normalized));
+      const g = Math.round(1 + (147 - 1) * (1 - normalized));
+      const b = Math.round(163 + (216 - 163) * (1 - normalized));
+      const a = 1 - (1 - 0.4) * (1 - normalized);
+      
+      return `rgba(${r}, ${g}, ${b}, ${a})`;
+    });
+  };
+
+  // TRC Content type pie chart data
+  const trcContentTypeData = {
+    labels: ['Live channel', 'Movie', 'TV show', 'Other'],
+    datasets: [{
+      data: [35, 28, 25, 12],
+      backgroundColor: [
+        'rgba(79, 1, 163, 1)',
+        'rgba(156, 39, 176, 1)',
+        'rgba(186, 104, 200, 1)',
+        'rgba(206, 147, 216, 1)'
+      ],
+      borderColor: '#ffffff',
+      borderWidth: 2
+    }]
+  };
+
+  const pieChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          usePointStyle: true,
+          pointStyle: 'circle',
+          boxWidth: 6,
+          boxHeight: 6,
+          padding: 15
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            return context.label + ': ' + context.parsed + '%';
+          }
+        }
+      }
+    }
+  };
+
+  // Sample data for TRC Genre impressions
+  const trcData = {
+    labels: genres,
+    datasets: [{
+      label: '% of impressions',
+      data: trcValues,
+      backgroundColor: generateGradientColors(trcValues),
+      borderColor: generateGradientColors(trcValues).map(color => color.replace(/[\d.]+\)$/g, '1)')),
+      borderWidth: 1,
+    }]
+  };
+
+  // Sample data for IAB Genre impressions
+  const iabData = {
+    labels: genres,
+    datasets: [{
+      label: '% of impressions',
+      data: iabValues,
+      backgroundColor: generateGradientColors(iabValues),
+      borderColor: generateGradientColors(iabValues).map(color => color.replace(/[\d.]+\)$/g, '1)')),
+      borderWidth: 1,
+    }]
+  };
+
+  const chartOptions = {
+    indexAxis: 'y', // This makes it a horizontal bar chart
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            return context.parsed.x + '%';
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: '% of impressions',
+        },
+      },
+      y: {
+        title: {
+          display: true,
+          text: 'Genre',
+        },
+        ticks: {
+          font: {
+            size: 10,
+          },
+          autoSkip: false,
+        }
+      },
+    },
+  };
+
+  return (
+    <Box sx={{ 
+      p: 3, 
+      backgroundColor: 'white',
+      boxShadow: '0 1px 6px rgba(0, 0, 0, 0.1)',
+      mb: 4,
+      borderRadius: 1
+    }}>
+      {/* Title with Last Updated and Menu */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+        <Typography variant="h2" sx={{ fontWeight: 'bold' }}>
+          Roku channel delivery
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography variant="body2" color="text.secondary">
+            Last updated: {new Date().toLocaleString('en-US', { 
+              month: 'short', 
+              day: 'numeric', 
+              year: 'numeric', 
+              hour: 'numeric', 
+              minute: '2-digit', 
+              hour12: true 
+            })}
+          </Typography>
+          <IconButton onClick={handleMenuOpen} size="small">
+            <MoreHorizIcon />
+          </IconButton>
+        </Box>
+      </Box>
+
+      <Menu
+        anchorEl={menuAnchor}
+        open={Boolean(menuAnchor)}
+        onClose={handleMenuClose}
+      >
+        <MenuItem onClick={() => handleToggleChart('contentType')}>
+          <Checkbox checked={visibleCharts.contentType} size="small" />
+          <ListItemText primary="TRC Content type" />
+        </MenuItem>
+        <MenuItem onClick={() => handleToggleChart('trcGenre')}>
+          <Checkbox checked={visibleCharts.trcGenre} size="small" />
+          <ListItemText primary="TRC Genre impressions %" />
+        </MenuItem>
+        <MenuItem onClick={() => handleToggleChart('iabGenre')}>
+          <Checkbox checked={visibleCharts.iabGenre} size="small" />
+          <ListItemText primary="IAB Genre impressions %" />
+        </MenuItem>
+        <Divider />
+        <MenuItem onClick={handleMenuClose}>Export...</MenuItem>
+        <MenuItem onClick={handleMenuClose}>Remove</MenuItem>
+      </Menu>
+
+      {/* TRC Content type pie chart */}
+      {visibleCharts.contentType && (
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
+            TRC Content type
+          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            <Box sx={{ height: 300, width: 400 }}>
+              <Pie data={trcContentTypeData} options={pieChartOptions} />
+            </Box>
+          </Box>
+        </Box>
+      )}
+
+      {/* Charts */}
+      <Box sx={{ display: 'flex', gap: 3 }}>
+        {/* TRC Genre impressions */}
+        {visibleCharts.trcGenre && (
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
+              TRC Genre impressions %
+            </Typography>
+            <Box sx={{ height: 410 }}>
+              <Bar data={trcData} options={chartOptions} />
+            </Box>
+          </Box>
+        )}
+
+        {/* IAB Genre impressions */}
+        {visibleCharts.iabGenre && (
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
+              IAB Genre impressions %
+            </Typography>
+            <Box sx={{ height: 410 }}>
+              <Bar data={iabData} options={chartOptions} />
+            </Box>
+          </Box>
+        )}
+      </Box>
+    </Box>
+  );
+};
+
 // Reusable Creatives Card Component
-const CreativesCard = ({ adGroup, isSelected, handleCampaignCheckboxClick, onAddCreative, getCreativesForAdGroup, onEditCreative }) => {
+const CreativesCard = ({ adGroup, isSelected, handleCampaignCheckboxClick, onAddCreative, getCreativesForAdGroup, onEditCreative, onSelectCreativeType }) => {
   const creativesToShow = getCreativesForAdGroup(adGroup);
 
   return (
@@ -316,6 +2767,9 @@ const CreativesCard = ({ adGroup, isSelected, handleCampaignCheckboxClick, onAdd
               description="Video ads that play within content feeds"
               isSelected={false}
               onClick={() => {
+                if (onSelectCreativeType) {
+                  onSelectCreativeType('in-content-video');
+                }
                 onAddCreative(adGroup);
                 console.log('In-content video selected');
               }}
@@ -713,7 +3167,7 @@ const CheckboxOptionCleanComponent = ({ icon, title, description, selected = fal
 };
 
 // Skeleton Loading Component for Ad Group Details
-const AdGroupDetailsSkeleton = ({ adGroups, currentCampaign = 'Holiday Sale 2024', selectedAdGroupId }) => {
+const AdGroupDetailsSkeleton = ({ adGroups, currentCampaign = 'Holiday Sale 2024', selectedAdGroupId, campaignGoal = 'Conversion' }) => {
   const [sidebarWidth, setSidebarWidth] = useState(250);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [campaignDetailsExpanded, setCampaignDetailsExpanded] = useState(false);
@@ -799,7 +3253,7 @@ const AdGroupDetailsSkeleton = ({ adGroups, currentCampaign = 'Holiday Sale 2024
                 Advertising objective
               </Typography>
               <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                Conversion
+                {campaignGoal}
               </Typography>
             </Box>
             
@@ -982,6 +3436,7 @@ const campaignsData = [
     campaign: "Agency | Vandelay Industries US | Radio Shack | DI | WTYW Discovery Q3'24-Q4'24 | Ad Buy - US",
     goal: "Conversion",
     conversionEvent: "purchases",
+    eventGroup: "XDNEuttoJA",
     status: "Active",
     previousStatus: "Active",
     spend: "$1,234.56",
@@ -1012,7 +3467,8 @@ const campaignsData = [
     campaign: "Kmart Upfront Holiday Total Plan 2025",
     goal: "Conversion",
     conversionEvent: "app_installs",
-    status: "Creative in review",
+    eventGroup: "XDNEuttoJA",
+    status: "Active",
     previousStatus: "Creative in review",
     spend: "$567.89",
     impressions: "15,234",
@@ -1027,7 +3483,8 @@ const campaignsData = [
     campaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025",
     goal: "Conversion",
     conversionEvent: "leads",
-    status: "Creative needed",
+    eventGroup: "ABCEuttoJA",
+    status: "Draft",
     previousStatus: "Creative needed",
     spend: "$0.00",
     impressions: "0",
@@ -1070,6 +3527,7 @@ const campaignsData = [
     campaign: "Black Friday 2023",
     goal: "Conversion",
     conversionEvent: "purchases",
+    eventGroup: "XDNEuttoJA",
     status: "Ended",
     previousStatus: "Ended",
     spend: "$5,678.90",
@@ -1498,7 +3956,7 @@ export default function App() {
   const [filterMenuAnchor, setFilterMenuAnchor] = useState(null);
   const [statusSelectOpen, setStatusSelectOpen] = useState(false);
   const [creativeTypeSelectOpen, setCreativeTypeSelectOpen] = useState(false);
-  const [currentView, setCurrentView] = useState('list'); // 'list', 'details', or 'reports'
+  const [currentView, setCurrentView] = useState('landing'); // 'landing', 'list', 'details', or 'reports'
   const [selectedCampaignForDetails, setSelectedCampaignForDetails] = useState(null);
   const [selectedAdGroupForDetails, setSelectedAdGroupForDetails] = useState(null);
   
@@ -1507,7 +3965,52 @@ export default function App() {
   const [reportsSelectedCreatives, setReportsSelectedCreatives] = useState([]);
   const [reportsStartDate, setReportsStartDate] = useState(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
   const [reportsEndDate, setReportsEndDate] = useState(new Date());
-  const [reportsSelectedTab, setReportsSelectedTab] = useState(0); // 0: Ad account, 1: Location, 2: Creative, 3: Placement
+  const [reportsSelectedTab, setReportsSelectedTab] = useState(0); // 0: Delivery & Engagement, 1: Location, 2: Creative, 3: Placement
+  const [summaryMenuAnchor, setSummaryMenuAnchor] = useState(null);
+  const [visibleSummarySections, setVisibleSummarySections] = useState({
+    impression: true,
+    spend: true,
+    engagement: true,
+  });
+  const handleSummaryMenuOpen = (event) => setSummaryMenuAnchor(event.currentTarget);
+  const handleSummaryMenuClose = () => setSummaryMenuAnchor(null);
+  const handleSummarySectionToggle = (key) => setVisibleSummarySections(prev => ({ ...prev, [key]: !prev[key] }));
+  const [reportsToolbarMenuAnchor, setReportsToolbarMenuAnchor] = useState(null);
+  const [demographicMenuAnchor, setDemographicMenuAnchor] = useState(null);
+  const [visibleDemographicSections, setVisibleDemographicSections] = useState({
+    ageDistribution: true,
+    gender: true,
+    maritalStatus: true,
+    userEngagement: true,
+  });
+  const handleDemographicSectionToggle = (key) => setVisibleDemographicSections(prev => ({ ...prev, [key]: !prev[key] }));
+  const [sponsorshipInsightsMenuAnchor, setSponsorshipInsightsMenuAnchor] = useState(null);
+  const [visibleSponsorshipCharts, setVisibleSponsorshipCharts] = useState({
+    nonSponsorshipPie: true,
+    videoSponsorshipPie: true,
+    brandedExperience: true,
+    nativeAdsBreakout: true,
+  });
+  const handleSponsorshipChartToggle = (key) => setVisibleSponsorshipCharts(prev => ({ ...prev, [key]: !prev[key] }));
+  const [overIndexMenuAnchor, setOverIndexMenuAnchor] = useState(null);
+  const [visibleOverIndexColumns, setVisibleOverIndexColumns] = useState({
+    metric: true,
+    baseline: true,
+    index: true,
+  });
+  const handleOverIndexColumnToggle = (key) => setVisibleOverIndexColumns(prev => ({ ...prev, [key]: !prev[key] }));
+  const [showTenureInsight, setShowTenureInsight] = useState(false);
+  const [ageDistributionExpanded, setAgeDistributionExpanded] = useState(false);
+  const [maritalStatusExpanded, setMaritalStatusExpanded] = useState(false);
+  const [genderExpanded, setGenderExpanded] = useState(false);
+  const [showMaritalInsight, setShowMaritalInsight] = useState(false);
+  const [reportsFilterMenuAnchor, setReportsFilterMenuAnchor] = useState(null);
+  const [visibleReportFilters, setVisibleReportFilters] = useState({
+    campaigns: false,
+    creatives: false,
+  });
+  const [reportsCampaignsFilterOpen, setReportsCampaignsFilterOpen] = useState(false);
+  const [reportsCreativesFilterOpen, setReportsCreativesFilterOpen] = useState(false);
   
   const [selectedTab, setSelectedTab] = useState(0); // 0: Campaigns, 1: Ad groups, 2: Creatives
   const [selectedCampaigns, setSelectedCampaigns] = useState({
@@ -1518,6 +4021,23 @@ export default function App() {
   const [showSelectedOnly, setShowSelectedOnly] = useState(false);
   const [detailsExpanded, setDetailsExpanded] = useState(true);
   const [isLoadingAdGroupDetails, setIsLoadingAdGroupDetails] = useState(false);
+  const [automaticPlacement, setAutomaticPlacement] = useState(true);
+  const [placementToggle, setPlacementToggle] = useState(true);
+  const [excludeMatureContent, setExcludeMatureContent] = useState(false);
+  const [genrePlacements, setGenrePlacements] = useState({
+    'Action & Adventure': 'include',
+    'Comedy': 'include',
+    'Drama': 'include',
+    'Education': 'include',
+    'Holiday': 'include',
+    'Lifestyle': 'include',
+    'Music': 'include',
+    'News': 'include',
+    'Reality & Pop culture': 'include',
+    'Romance': 'include',
+    'Sci-Fi': 'include',
+    'Sports': 'include'
+  });
   const [creativesMenuAnchorEl, setCreativesMenuAnchorEl] = useState(null);
   const [showCreativeGridOverlay, setShowCreativeGridOverlay] = useState(false);
   const [creativeGridSortConfig, setCreativeGridSortConfig] = useState({ key: null, direction: 'asc' });
@@ -1536,11 +4056,17 @@ export default function App() {
     housing: false
   });
   const [selectedConversionEvent, setSelectedConversionEvent] = useState('');
+  const [selectedEventGroup, setSelectedEventGroup] = useState('');
+  const [budgetConversionEvent, setBudgetConversionEvent] = useState('app_installs');
+  const [budgetEventGroup, setBudgetEventGroup] = useState('XD8AAI1eMy');
   const [newAdGroupName, setNewAdGroupName] = useState('');
+  const [adGroupStatusSort, setAdGroupStatusSort] = useState({}); // Track status sort per campaign group
   const adGroupNameFieldRef = useRef(null);
   const multipleAdGroupsFieldRef = useRef(null);
   const [toastMessage, setToastMessage] = useState('');
   const [toastOpen, setToastOpen] = useState(false);
+  const [switchConfirmDialogOpen, setSwitchConfirmDialogOpen] = useState(false);
+  const [pendingSwitchChange, setPendingSwitchChange] = useState(null); // { id, isChecked }
   const [campaignName, setCampaignName] = useState(() => {
     const now = new Date();
     return `Campaign-${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}-${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}`;
@@ -1588,10 +4114,291 @@ export default function App() {
   const [selectedLocationType, setSelectedLocationType] = useState(''); // '', 'states', 'dma', 'postal'
   const [campaignEditDrawerOpen, setCampaignEditDrawerOpen] = useState(false);
   const [scheduleEditDrawerOpen, setScheduleEditDrawerOpen] = useState(false);
+  const [placementDrawerOpen, setPlacementDrawerOpen] = useState(false);
+  const [editDashboardDrawerOpen, setEditDashboardDrawerOpen] = useState(false);
+  const [editDashboardTab, setEditDashboardTab] = useState(0);
+  const [reportCardVisibility, setReportCardVisibility] = useState({
+    summary: true,
+    dailyImpressionsSpend: true,
+    adGroupOverview: true,
+    frequency: true,
+    darMetrics: true,
+    creatives: true,
+    rokuChannelDelivery: true,
+    channelReport: true,
+    topTrcContentTitles: true,
+    liveTvChannels: true,
+    sponsorshipInsights: true,
+    audienceInsights: true,
+    demographic: true,
+    topOverIndexingFeatures: true,
+    accountTenure: true,
+  });
+  const [reportTabVisibility, setReportTabVisibility] = useState({
+    0: true,
+    1: true,
+    2: true,
+    3: true,
+  });
+  const [savedCardVisibility, setSavedCardVisibility] = useState(null);
+  const [savedTabVisibility, setSavedTabVisibility] = useState(null);
+  const [exportDrawerOpen, setExportDrawerOpen] = useState(false);
+  const [exportFormat, setExportFormat] = useState('powerpoint');
   const [profileMenuAnchorEl, setProfileMenuAnchorEl] = useState(null);
   const profileMenuOpen = Boolean(profileMenuAnchorEl);
-  const [selectedProfileOption, setSelectedProfileOption] = useState('All');
-  const [activeNavItem, setActiveNavItem] = useState('Campaigns'); // Default to Campaigns
+  const [selectedProfileOption, setSelectedProfileOption] = useState('Managed Service User');
+  const [activeNavItem, setActiveNavItem] = useState(''); // No active nav on landing page
+  const [accountPickerAnchor, setAccountPickerAnchor] = useState(null);
+  const [accountSearchQuery, setAccountSearchQuery] = useState('');
+  const [selectedAccount, setSelectedAccount] = useState({ org: 'Omni Partners', account: "Wally's Windows" });
+  const accountOrgs = [
+    { name: 'Apple Inc.', accounts: ['iPhone Launch 2026', 'Apple TV+ Originals', 'MacBook Pro Campaign', 'iPad Education', 'Apple Music Sessions', 'AirPods Max', 'Apple Watch Series', 'iCloud Storage Promo', 'Vision Pro Launch', 'Apple Card Rewards'] },
+    { name: 'Google', accounts: ['Pixel 10 Launch', 'Google Cloud Platform', 'YouTube Premium', 'Google Workspace', 'Nest Home Devices', 'Android Auto', 'Google Fi Mobile', 'Gemini AI Campaign', 'Google Maps Business', 'Chrome Enterprise', 'Google One Storage', 'Fitbit Wellness'] },
+    { name: 'Microsoft', accounts: ['Surface Pro Campaign', 'Xbox Game Pass', 'Microsoft 365 Business', 'Azure Cloud Services', 'Copilot AI', 'LinkedIn Premium', 'Teams Enterprise', 'Windows 12 Launch'] },
+    { name: 'Amazon', accounts: ['Prime Video Originals', 'AWS Cloud Solutions', 'Alexa Smart Home', 'Amazon Fresh', 'Kindle Unlimited', 'Ring Security', 'Amazon Business', 'Prime Day 2026', 'Whole Foods Market', 'Amazon Pharmacy', 'Twitch Streaming', 'MGM Studios', 'Audible Originals', 'Amazon Music'] },
+    { name: 'Meta Platforms', accounts: ['Instagram Shopping', 'WhatsApp Business', 'Meta Quest VR', 'Facebook Marketplace', 'Threads Social', 'Horizon Worlds'] },
+    { name: 'Netflix', accounts: ['Netflix Originals Q1', 'Netflix Games', 'Netflix Ad Tier', 'Netflix Sports', 'Netflix Live Events'] },
+    { name: 'Walt Disney Company', accounts: ['Disney+ Streaming', 'Marvel Studios', 'Star Wars Franchise', 'Pixar Animation', 'ESPN+', 'Disney Parks', 'Hulu Originals', 'ABC Network', 'National Geographic', 'Disney Cruise Line', 'Disney Store', '20th Century Studios'] },
+    { name: 'Tesla', accounts: ['Model S Performance', 'Cybertruck Launch', 'Tesla Energy', 'Full Self-Driving', 'Tesla Semi', 'Powerwall Home', 'Model Y Campaign', 'Tesla Insurance'] },
+    { name: 'Samsung Electronics', accounts: ['Galaxy S26 Launch', 'Samsung TV Neo QLED', 'Galaxy Watch Ultra', 'Samsung Appliances', 'Galaxy Buds Pro', 'Samsung Business', 'Galaxy Z Fold', 'Bespoke Home', 'Samsung Health'] },
+    { name: 'Coca-Cola Company', accounts: ['Coca-Cola Classic', 'Sprite Refresh', 'Fanta Flavors', 'Minute Maid', 'Dasani Water', 'Powerade Sports', 'Costa Coffee', 'Simply Juices', 'Smartwater', 'Topo Chico', 'Fairlife Milk', 'Bodyarmor Sports'] },
+    { name: 'PepsiCo', accounts: ['Pepsi Max', 'Mountain Dew', 'Lay\'s Chips', 'Gatorade', 'Doritos', 'Tropicana', 'Quaker Oats', 'Bubly Sparkling', 'Cheetos', 'SodaStream', 'Rockstar Energy'] },
+    { name: 'Nike', accounts: ['Air Max 2026', 'Nike Running', 'Jordan Brand', 'Nike Training', 'Nike Basketball', 'Nike Football', 'Nike Women', 'SNKRS App', 'Nike Sustainability'] },
+    { name: 'Procter & Gamble', accounts: ['Tide Laundry', 'Gillette Razors', 'Pampers Baby', 'Crest Oral Care', 'Old Spice', 'Olay Skincare', 'Downy Fabric', 'Febreze Home', 'Bounty Paper', 'Charmin Bath', 'Head & Shoulders', 'Swiffer Clean', 'Dawn Dish', 'Oral-B Electric', 'SK-II Luxury'] },
+    { name: 'Johnson & Johnson', accounts: ['Tylenol Pain Relief', 'Band-Aid Brand', 'Neutrogena Skin', 'Aveeno Wellness', 'Listerine Oral', 'Johnson\'s Baby'] },
+    { name: 'Unilever', accounts: ['Dove Body Care', 'Axe Body Spray', 'Ben & Jerry\'s', 'Hellmann\'s Mayo', 'Knorr Cooking', 'Degree Deodorant', 'Vaseline Lotion', 'Lipton Tea', 'TRESemme Hair', 'Breyers Ice Cream'] },
+    { name: 'Toyota Motor', accounts: ['Camry 2026', 'RAV4 Adventure', 'Toyota Tacoma', 'Prius Hybrid', 'Lexus Luxury', 'Toyota Trucks', 'GR Performance', 'Toyota Safety'] },
+    { name: 'General Motors', accounts: ['Chevrolet Silverado', 'GMC Sierra', 'Cadillac EV', 'Buick Envista', 'Corvette Sports', 'Hummer EV'] },
+    { name: 'Ford Motor Company', accounts: ['F-150 Lightning', 'Mustang Mach-E', 'Bronco Adventure', 'Ford Explorer', 'Lincoln Luxury', 'Ford Pro Commercial', 'Maverick Compact'] },
+    { name: 'Walmart', accounts: ['Walmart+ Membership', 'Walmart Grocery', 'Sam\'s Club', 'Walmart Health', 'Walmart Connect Ads', 'Great Value Brand', 'Walmart Fashion'] },
+    { name: 'Target Corporation', accounts: ['Target Circle Rewards', 'Target Home', 'Cat & Jack Kids', 'Good & Gather Food', 'Target Beauty', 'Target Tech'] },
+    { name: 'JPMorgan Chase', accounts: ['Chase Sapphire', 'Chase Business Banking', 'JP Morgan Wealth', 'Chase Freedom Card', 'Chase Auto Loans', 'Chase Mortgage'] },
+    { name: 'Bank of America', accounts: ['BofA Preferred Rewards', 'Merrill Lynch Invest', 'BofA Business', 'Erica Virtual Assistant'] },
+    { name: 'Goldman Sachs', accounts: ['Marcus Personal Loans', 'Goldman Asset Mgmt', 'Apple Card Partnership'] },
+    { name: 'Visa Inc.', accounts: ['Visa Signature', 'Visa Business Solutions', 'Visa Checkout', 'Visa Direct Payments', 'Visa Infinite'] },
+    { name: 'Mastercard', accounts: ['Mastercard Priceless', 'Mastercard Business', 'Mastercard Travel', 'World Elite Card'] },
+    { name: 'American Express', accounts: ['Amex Platinum Card', 'Amex Gold Card', 'Amex Business', 'Amex Travel', 'Amex Membership Rewards', 'Centurion Lounge'] },
+    { name: 'Intel Corporation', accounts: ['Intel Core Ultra', 'Intel AI Accelerator', 'Intel Foundry', 'Intel Evo Platform'] },
+    { name: 'AMD', accounts: ['Ryzen Processors', 'Radeon Graphics', 'AMD EPYC Server', 'AMD Instinct AI'] },
+    { name: 'NVIDIA', accounts: ['GeForce RTX 60 Series', 'NVIDIA AI Enterprise', 'CUDA Platform', 'NVIDIA Omniverse', 'GeForce NOW Cloud', 'NVIDIA Drive Auto'] },
+    { name: 'IBM', accounts: ['IBM Watson AI', 'IBM Cloud Hybrid', 'Red Hat Enterprise', 'IBM Quantum Computing', 'IBM Security'] },
+    { name: 'Oracle', accounts: ['Oracle Cloud Infra', 'Oracle Database', 'Oracle NetSuite', 'Oracle Health', 'Java Platform'] },
+    { name: 'Salesforce', accounts: ['Salesforce CRM', 'Slack Enterprise', 'Tableau Analytics', 'MuleSoft Integration', 'Salesforce AI Cloud'] },
+    { name: 'Adobe', accounts: ['Creative Cloud', 'Adobe Express', 'Adobe Experience Cloud', 'Adobe Firefly AI', 'Adobe Acrobat', 'Adobe Stock'] },
+    { name: 'Uber Technologies', accounts: ['Uber Rides', 'Uber Eats', 'Uber Freight', 'Uber One Membership', 'Uber Business'] },
+    { name: 'Airbnb', accounts: ['Airbnb Stays', 'Airbnb Experiences', 'Airbnb Luxe', 'Airbnb for Work'] },
+    { name: 'Booking Holdings', accounts: ['Booking.com Hotels', 'Priceline Deals', 'Kayak Search', 'OpenTable Dining'] },
+    { name: 'Starbucks', accounts: ['Starbucks Rewards', 'Starbucks Reserve', 'Starbucks at Home', 'Starbucks Delivery', 'Teavana Tea'] },
+    { name: 'McDonald\'s Corporation', accounts: ['Big Mac Campaign', 'McDelivery', 'McCafe Coffee', 'Happy Meal', 'McDonald\'s App Deals'] },
+    { name: 'Chipotle', accounts: ['Chipotle Rewards', 'Chipotle Catering', 'Chipotlanes Drive-Thru'] },
+    { name: 'Marriott International', accounts: ['Marriott Bonvoy', 'Ritz-Carlton Luxury', 'W Hotels', 'Sheraton Hotels', 'Westin Wellness', 'Courtyard Business'] },
+    { name: 'Hilton Hotels', accounts: ['Hilton Honors', 'Waldorf Astoria', 'Conrad Hotels', 'Hampton Inn', 'DoubleTree by Hilton'] },
+    { name: 'Delta Air Lines', accounts: ['Delta SkyMiles', 'Delta One Premium', 'Delta Vacations', 'Delta Business Travel'] },
+    { name: 'United Airlines', accounts: ['United MileagePlus', 'United Polaris', 'United Business'] },
+    { name: 'Southwest Airlines', accounts: ['Rapid Rewards', 'Wanna Get Away', 'Southwest Business'] },
+    { name: 'AT&T', accounts: ['AT&T Fiber', 'AT&T Wireless', 'AT&T Business', 'AT&T Prepaid', 'FirstNet First Responder'] },
+    { name: 'Verizon', accounts: ['Verizon 5G Home', 'Verizon Wireless', 'Verizon Business', 'Fios Internet', 'Verizon Connect'] },
+    { name: 'T-Mobile', accounts: ['T-Mobile 5G', 'T-Mobile Home Internet', 'Metro by T-Mobile', 'T-Mobile Business', 'T-Mobile Tuesdays'] },
+    { name: 'Comcast', accounts: ['Xfinity Internet', 'Xfinity Mobile', 'Peacock Streaming', 'NBCUniversal Studios', 'Sky UK'] },
+    { name: 'Warner Bros. Discovery', accounts: ['Max Streaming', 'HBO Originals', 'Discovery+', 'CNN News', 'DC Studios', 'Warner Bros. Pictures'] },
+    { name: 'Paramount Global', accounts: ['Paramount+', 'CBS Network', 'Showtime', 'MTV Brand', 'Nickelodeon Kids', 'BET Networks'] },
+    { name: 'Sony Group', accounts: ['PlayStation 6', 'Sony Pictures', 'Sony Music', 'Sony Electronics', 'Crunchyroll Anime', 'Sony Alpha Cameras'] },
+    { name: 'Nintendo', accounts: ['Switch 2 Launch', 'Mario Franchise', 'Zelda Campaign', 'Pokemon Brand', 'Nintendo Online'] },
+    { name: 'Electronic Arts', accounts: ['EA Sports FC', 'Madden NFL 27', 'Apex Legends', 'The Sims', 'EA Play Subscription'] },
+    { name: 'Spotify', accounts: ['Spotify Premium', 'Spotify for Artists', 'Spotify Podcasts', 'Spotify Wrapped', 'Spotify Business'] },
+    { name: 'PayPal', accounts: ['PayPal Checkout', 'Venmo Social', 'PayPal Business', 'PayPal Credit', 'Braintree Payments'] },
+    { name: 'Block Inc.', accounts: ['Square POS', 'Cash App', 'Afterpay BNPL', 'Square Banking'] },
+    { name: 'Shopify', accounts: ['Shopify Plus', 'Shopify Payments', 'Shopify POS', 'Shop App'] },
+    { name: 'Home Depot', accounts: ['Home Depot Pro', 'Home Depot Rental', 'HDX Brand', 'Home Depot Garden'] },
+    { name: 'Lowe\'s', accounts: ['Lowe\'s Pro Supply', 'Lowe\'s Home Improvement', 'Lowe\'s Appliances'] },
+    { name: 'Costco', accounts: ['Costco Membership', 'Kirkland Signature', 'Costco Travel', 'Costco Optical'] },
+    { name: 'Kroger', accounts: ['Kroger Boost', 'Simple Truth Organic', 'Kroger Pharmacy', 'Kroger Delivery'] },
+    { name: 'Nestlé', accounts: ['Nescafe Coffee', 'KitKat Chocolate', 'Purina Pet Care', 'Gerber Baby', 'DiGiorno Pizza', 'Perrier Water', 'San Pellegrino', 'Häagen-Dazs', 'Stouffer\'s Meals', 'Hot Pockets'] },
+    { name: 'L\'Oréal', accounts: ['Maybelline Cosmetics', 'Lancôme Luxury', 'Garnier Hair', 'NYX Makeup', 'CeraVe Skincare', 'Kiehl\'s', 'Ralph Lauren Fragrance', 'Urban Decay'] },
+    { name: 'Estée Lauder', accounts: ['Clinique Skincare', 'MAC Cosmetics', 'La Mer Luxury', 'Bobbi Brown', 'Tom Ford Beauty', 'Jo Malone London'] },
+    { name: 'LVMH', accounts: ['Louis Vuitton', 'Christian Dior', 'Sephora Retail', 'Hennessy Spirits', 'Tiffany & Co.', 'Fendi Fashion', 'Givenchy', 'Moët & Chandon', 'Tag Heuer Watches', 'Rimowa Travel'] },
+    { name: 'Adidas', accounts: ['Adidas Originals', 'Adidas Running', 'Adidas Football', 'Yeezy Brand', 'Adidas Training', 'Reebok Classics'] },
+    { name: 'Under Armour', accounts: ['UA Running', 'UA Training', 'UA Golf', 'UA Outlet'] },
+    { name: 'Lululemon', accounts: ['Lululemon Women', 'Lululemon Men', 'Lululemon Mirror', 'Lululemon Run'] },
+    { name: 'Ralph Lauren', accounts: ['Polo Ralph Lauren', 'Ralph Lauren Home', 'Lauren Women', 'Purple Label'] },
+    { name: 'Pfizer', accounts: ['Pfizer Vaccines', 'Pfizer Oncology', 'Pfizer Consumer Health', 'Pfizer Rare Disease'] },
+    { name: 'Moderna', accounts: ['Moderna mRNA Platform', 'Moderna Respiratory', 'Moderna Oncology'] },
+    { name: 'UnitedHealth Group', accounts: ['UnitedHealthcare Plans', 'Optum Health', 'Optum Rx Pharmacy', 'Rally Health App'] },
+    { name: 'CVS Health', accounts: ['CVS Pharmacy', 'Aetna Insurance', 'MinuteClinic', 'CVS ExtraCare'] },
+    { name: 'Walgreens', accounts: ['Walgreens Pharmacy', 'Walgreens Beauty', 'Walgreens Health', 'myWalgreens Rewards'] },
+    { name: 'The Kraft Heinz Company', accounts: ['Heinz Ketchup', 'Kraft Mac & Cheese', 'Oscar Mayer', 'Philadelphia Cream Cheese', 'Jell-O Desserts', 'Velveeta', 'Planters Nuts'] },
+    { name: 'General Mills', accounts: ['Cheerios Cereal', 'Nature Valley', 'Pillsbury Baking', 'Häagen-Dazs Ice Cream', 'Betty Crocker', 'Old El Paso', 'Yoplait Yogurt', 'Annie\'s Organic'] },
+    { name: 'Kellogg\'s', accounts: ['Frosted Flakes', 'Pringles Snacks', 'Pop-Tarts', 'Cheez-It', 'Eggo Waffles', 'MorningStar Farms'] },
+    { name: 'Mondelez International', accounts: ['Oreo Cookies', 'Cadbury Chocolate', 'Ritz Crackers', 'Toblerone', 'Trident Gum', 'belVita Breakfast'] },
+    { name: 'Mars Inc.', accounts: ['M&M\'s Chocolate', 'Snickers', 'Skittles', 'Pedigree Pet Food', 'Whiskas Cat Food', 'Kind Snacks', 'Ben\'s Original Rice'] },
+    { name: 'Colgate-Palmolive', accounts: ['Colgate Toothpaste', 'Palmolive Dish', 'Speed Stick', 'Irish Spring', 'Tom\'s of Maine'] },
+    { name: 'Clorox Company', accounts: ['Clorox Bleach', 'Glad Bags', 'Burt\'s Bees', 'Pine-Sol Cleaner', 'Kingsford Charcoal'] },
+    { name: 'FedEx', accounts: ['FedEx Express', 'FedEx Ground', 'FedEx Freight', 'FedEx Office'] },
+    { name: 'UPS', accounts: ['UPS Shipping', 'UPS Business Solutions', 'UPS Store', 'UPS Supply Chain'] },
+    { name: 'DoorDash', accounts: ['DoorDash Delivery', 'DashPass Membership', 'DoorDash for Business'] },
+    { name: 'Instacart', accounts: ['Instacart+ Membership', 'Instacart Business', 'Instacart Ads'] },
+    { name: 'Zoom Video', accounts: ['Zoom Meetings', 'Zoom Phone', 'Zoom Rooms', 'Zoom Events'] },
+    { name: 'Snowflake', accounts: ['Snowflake Data Cloud', 'Snowflake AI', 'Snowflake Marketplace'] },
+    { name: 'ServiceNow', accounts: ['ServiceNow IT Ops', 'ServiceNow HR', 'ServiceNow AI Platform'] },
+    { name: 'Workday', accounts: ['Workday HCM', 'Workday Finance', 'Workday Adaptive Planning'] },
+    { name: 'Palantir Technologies', accounts: ['Palantir Foundry', 'Palantir Gotham', 'Palantir AIP'] },
+    { name: 'CrowdStrike', accounts: ['Falcon Platform', 'CrowdStrike Cloud Security', 'CrowdStrike Identity'] },
+    { name: 'Palo Alto Networks', accounts: ['Prisma Cloud', 'Cortex XDR', 'Next-Gen Firewall', 'Palo Alto SASE'] },
+    { name: 'Cisco Systems', accounts: ['Cisco Webex', 'Cisco Meraki', 'Cisco Networking', 'Cisco Security', 'ThousandEyes Monitoring'] },
+    { name: 'Caterpillar', accounts: ['Cat Construction', 'Cat Mining Equipment', 'Cat Energy Solutions'] },
+    { name: 'John Deere', accounts: ['Deere Tractors', 'Deere Precision Ag', 'Deere Construction', 'Deere Forestry'] },
+    { name: 'Boeing', accounts: ['Boeing Commercial', 'Boeing Defense', 'Boeing Space'] },
+    { name: 'Lockheed Martin', accounts: ['Lockheed Aeronautics', 'Lockheed Space', 'Lockheed Missiles'] },
+    { name: 'SpaceX', accounts: ['Starlink Internet', 'SpaceX Launch Services', 'Starship Program'] },
+    { name: 'Rivian', accounts: ['R1T Truck', 'R1S SUV', 'Rivian Commercial Vans'] },
+    { name: 'Lucid Motors', accounts: ['Lucid Air Sedan', 'Lucid Gravity SUV'] },
+    { name: 'General Electric', accounts: ['GE Aerospace', 'GE Vernova Energy', 'GE HealthCare Imaging'] },
+    { name: 'Siemens', accounts: ['Siemens Healthineers', 'Siemens Digital Industries', 'Siemens Smart Infra', 'Siemens Mobility'] },
+    { name: 'Philips', accounts: ['Philips Healthcare', 'Philips Personal Care', 'Philips Lighting'] },
+    { name: '3M Company', accounts: ['3M Industrial', 'Post-it Notes', '3M Safety', 'Scotch Tape', 'Command Hooks'] },
+    { name: 'Honeywell', accounts: ['Honeywell Aerospace', 'Honeywell Building Tech', 'Honeywell Safety', 'Honeywell Home'] },
+    { name: 'Berkshire Hathaway', accounts: ['GEICO Insurance', 'Duracell Batteries', 'Dairy Queen', 'See\'s Candies', 'Fruit of the Loom'] },
+    { name: 'State Farm', accounts: ['State Farm Auto', 'State Farm Home', 'State Farm Life'] },
+    { name: 'Progressive Insurance', accounts: ['Progressive Auto', 'Progressive Home', 'Progressive Commercial'] },
+    { name: 'Allstate', accounts: ['Allstate Auto Insurance', 'Allstate Home', 'Esurance Online'] },
+    { name: 'Morgan Stanley', accounts: ['Morgan Stanley Wealth', 'E*TRADE Platform', 'Morgan Stanley Invest'] },
+    { name: 'Charles Schwab', accounts: ['Schwab Brokerage', 'Schwab Intelligent Portfolios', 'Schwab Bank'] },
+    { name: 'Fidelity Investments', accounts: ['Fidelity Brokerage', 'Fidelity Retirement', 'Fidelity Youth Account', 'Fidelity Crypto'] },
+    { name: 'BlackRock', accounts: ['iShares ETFs', 'BlackRock Aladdin', 'BlackRock Wealth'] },
+    { name: 'Deloitte', accounts: ['Deloitte Consulting', 'Deloitte Audit', 'Deloitte Digital', 'Deloitte Tax'] },
+    { name: 'McKinsey & Company', accounts: ['McKinsey Solutions', 'McKinsey Digital', 'QuantumBlack AI'] },
+    { name: 'Accenture', accounts: ['Accenture Cloud', 'Accenture Strategy', 'Accenture Interactive', 'Accenture Technology', 'Accenture Security'] },
+    { name: 'Stripe', accounts: ['Stripe Payments', 'Stripe Atlas', 'Stripe Climate', 'Stripe Connect'] },
+    { name: 'Robinhood', accounts: ['Robinhood Trading', 'Robinhood Gold', 'Robinhood Crypto'] },
+    { name: 'Coinbase', accounts: ['Coinbase Exchange', 'Coinbase Wallet', 'Coinbase Prime', 'Coinbase Commerce'] },
+    { name: 'Etsy', accounts: ['Etsy Marketplace', 'Etsy Ads', 'Depop Fashion'] },
+    { name: 'eBay', accounts: ['eBay Marketplace', 'eBay Motors', 'eBay Refurbished', 'eBay Business'] },
+    { name: 'Pinterest', accounts: ['Pinterest Shopping', 'Pinterest Trends', 'Pinterest Creator'] },
+    { name: 'Snap Inc.', accounts: ['Snapchat Ads', 'Snap AR Lenses', 'Spotlight Content', 'Snapchat+'] },
+    { name: 'Reddit', accounts: ['Reddit Ads Manager', 'Reddit Talk', 'Reddit Premium'] },
+    { name: 'LinkedIn', accounts: ['LinkedIn Talent', 'LinkedIn Marketing', 'LinkedIn Learning', 'LinkedIn Sales Navigator'] },
+    { name: 'Twitter / X Corp', accounts: ['X Premium', 'X Ads Platform', 'X Business', 'Grok AI'] },
+    { name: 'TikTok', accounts: ['TikTok For Business', 'TikTok Shop', 'TikTok LIVE', 'CapCut Creative'] },
+    { name: 'Hershey Company', accounts: ['Hershey Chocolate', 'Reese\'s Candy', 'Kit Kat US', 'Jolly Rancher', 'SkinnyPop Popcorn'] },
+    { name: 'Campbell Soup', accounts: ['Campbell\'s Soup', 'Goldfish Crackers', 'V8 Veggie Juice', 'Prego Pasta Sauce'] },
+    { name: 'Tyson Foods', accounts: ['Tyson Chicken', 'Jimmy Dean Breakfast', 'Hillshire Farm', 'Ball Park Franks'] },
+    { name: 'Constellation Brands', accounts: ['Corona Beer', 'Modelo Especial', 'Kim Crawford Wine', 'Robert Mondavi'] },
+    { name: 'Anheuser-Busch InBev', accounts: ['Budweiser', 'Bud Light', 'Michelob Ultra', 'Stella Artois', 'Corona Global', 'Hoegaarden'] },
+    { name: 'Diageo', accounts: ['Johnnie Walker', 'Guinness Beer', 'Tanqueray Gin', 'Don Julio Tequila', 'Crown Royal Whisky', 'Smirnoff Vodka', 'Captain Morgan'] },
+    { name: 'Red Bull', accounts: ['Red Bull Energy', 'Red Bull Media', 'Red Bull Racing'] },
+    { name: 'Monster Beverage', accounts: ['Monster Energy', 'Reign Total Body', 'Bang Energy'] },
+    { name: 'Peloton', accounts: ['Peloton Bike+', 'Peloton Tread', 'Peloton App', 'Peloton Row'] },
+    { name: 'Sonos', accounts: ['Sonos Speakers', 'Sonos Home Theater', 'Sonos Headphones'] },
+    { name: 'Dyson', accounts: ['Dyson Vacuum', 'Dyson Airwrap', 'Dyson Purifier', 'Dyson Zone'] },
+    { name: 'IKEA', accounts: ['IKEA Living Room', 'IKEA Kitchen', 'IKEA Smart Home', 'IKEA Sustainability', 'IKEA Food'] },
+    { name: 'Wayfair', accounts: ['Wayfair Furniture', 'AllModern Design', 'Joss & Main', 'Birch Lane Home'] },
+    { name: 'Williams-Sonoma', accounts: ['Pottery Barn', 'West Elm', 'Williams-Sonoma Cooking', 'Rejuvenation Lighting', 'Mark and Graham'] },
+    { name: 'Gap Inc.', accounts: ['Old Navy Value', 'Gap Brand', 'Banana Republic', 'Athleta Active'] },
+    { name: 'H&M Group', accounts: ['H&M Fashion', 'COS Premium', 'ARKET Essentials', '& Other Stories'] },
+    { name: 'Zara / Inditex', accounts: ['Zara Fashion', 'Massimo Dutti', 'Pull & Bear', 'Bershka'] },
+    { name: 'Nordstrom', accounts: ['Nordstrom Full-Line', 'Nordstrom Rack', 'Nordstrom Beauty'] },
+    { name: 'Macy\'s', accounts: ['Macy\'s Department Store', 'Bloomingdale\'s', 'Bluemercury Beauty'] },
+    { name: 'TJX Companies', accounts: ['TJ Maxx', 'Marshalls', 'HomeGoods', 'Sierra Trading'] },
+    { name: 'Dollar General', accounts: ['DG Fresh', 'Dollar General Everyday', 'pOpshelf'] },
+    { name: 'Wish', accounts: ['Wish Marketplace', 'Wish Express'] },
+    { name: 'Warby Parker', accounts: ['Warby Parker Glasses', 'Warby Parker Contacts', 'Scout by Warby Parker'] },
+    { name: 'Allbirds', accounts: ['Allbirds Runners', 'Allbirds Apparel'] },
+    { name: 'Glossier', accounts: ['Glossier Skincare', 'Glossier Makeup', 'Glossier Fragrance'] },
+    { name: 'Sephora (standalone)', accounts: ['Sephora Collection', 'Sephora Beauty Insider', 'Sephora App'] },
+    { name: 'Ulta Beauty', accounts: ['Ulta Rewards', 'Ulta Skincare', 'Ulta Fragrance', 'Ulta Salon Services'] },
+    { name: 'Bath & Body Works', accounts: ['B&BW Body Care', 'B&BW Home Fragrance', 'B&BW Candles'] },
+    { name: 'Revlon', accounts: ['Revlon Color Cosmetics', 'Elizabeth Arden'] },
+    { name: 'Hasbro', accounts: ['Transformers Brand', 'Monopoly Games', 'Nerf Blasters', 'My Little Pony', 'Dungeons & Dragons'] },
+    { name: 'Mattel', accounts: ['Barbie Brand', 'Hot Wheels', 'Fisher-Price Baby', 'American Girl', 'UNO Card Game'] },
+    { name: 'LEGO Group', accounts: ['LEGO Star Wars', 'LEGO Technic', 'LEGO City', 'LEGO Ideas', 'LEGO Education', 'LEGO Fortnite'] },
+    { name: 'Roblox', accounts: ['Roblox Platform', 'Roblox Developer', 'Roblox Premium'] },
+    { name: 'Epic Games', accounts: ['Fortnite Battle Royale', 'Unreal Engine', 'Epic Games Store', 'Rocket League'] },
+    { name: 'Activision Blizzard', accounts: ['Call of Duty', 'World of Warcraft', 'Overwatch 2', 'Diablo IV', 'Candy Crush'] },
+    { name: 'Take-Two Interactive', accounts: ['GTA Online', 'NBA 2K Series', 'Red Dead Online', 'Civilization VII'] },
+    { name: 'Qualcomm', accounts: ['Snapdragon Mobile', 'Qualcomm AI Hub', 'Qualcomm Auto'] },
+    { name: 'Broadcom', accounts: ['Broadcom Networking', 'VMware Cloud', 'Broadcom Security'] },
+    { name: 'Texas Instruments', accounts: ['TI Education', 'TI Analog Chips', 'TI Embedded'] },
+    { name: 'Micron Technology', accounts: ['Micron Memory', 'Crucial SSD', 'Micron AI Solutions'] },
+    { name: 'Dell Technologies', accounts: ['Dell XPS Laptops', 'Dell Servers', 'Dell Gaming Alienware', 'Dell Business PCs'] },
+    { name: 'HP Inc.', accounts: ['HP Spectre Laptops', 'HP Printers', 'HP Business Solutions', 'HyperX Gaming'] },
+    { name: 'Lenovo', accounts: ['ThinkPad Business', 'Legion Gaming', 'Lenovo Yoga', 'Motorola Phones'] },
+    { name: 'Canon', accounts: ['Canon EOS Cameras', 'Canon Printers', 'Canon Medical'] },
+    { name: 'Panasonic', accounts: ['Panasonic Lumix', 'Panasonic Auto Systems', 'Panasonic Energy'] },
+    { name: 'LG Electronics', accounts: ['LG OLED TVs', 'LG Appliances', 'LG Gram Laptops', 'LG Energy Solution'] },
+    { name: 'Whirlpool', accounts: ['Whirlpool Appliances', 'KitchenAid', 'Maytag Laundry'] },
+    { name: 'Stanley Black & Decker', accounts: ['DeWalt Power Tools', 'Stanley Tools', 'Craftsman', 'Black+Decker Home'] },
+    { name: 'Sherwin-Williams', accounts: ['Sherwin-Williams Paint', 'HGTV Home Colors', 'Valspar Stain'] },
+    { name: 'Zillow Group', accounts: ['Zillow Home Search', 'Trulia Rentals', 'StreetEasy NYC'] },
+    { name: 'Redfin', accounts: ['Redfin Home Search', 'Redfin Mortgage'] },
+    { name: 'Expedia Group', accounts: ['Expedia Travel', 'Hotels.com', 'Vrbo Vacation Rentals', 'Travelocity'] },
+    { name: 'Tripadvisor', accounts: ['Tripadvisor Reviews', 'Viator Experiences', 'TheFork Dining'] },
+    { name: 'Lyft', accounts: ['Lyft Rides', 'Lyft Business', 'Lyft Bikes & Scooters'] },
+    { name: 'Dollar Shave Club', accounts: ['DSC Razors', 'DSC Body Care', 'DSC Oral Care'] },
+    { name: 'Calm', accounts: ['Calm Meditation', 'Calm Business', 'Calm Kids'] },
+    { name: 'Headspace', accounts: ['Headspace Mindfulness', 'Headspace for Work'] },
+    { name: 'Duolingo', accounts: ['Duolingo Language', 'Duolingo Math', 'Duolingo Super'] },
+    { name: 'Coursera', accounts: ['Coursera Plus', 'Coursera for Business', 'Coursera Degrees'] },
+  ].map((org, i) => ({ ...org, managed: i % 3 === 0 }));
+  const [recentAccounts, setRecentAccounts] = useState([
+    { account: "Wally's Windows", org: 'Omni Partners' },
+    { account: 'iPhone Launch 2026', org: 'Apple Inc.' },
+    { account: 'Disney+ Streaming', org: 'Walt Disney Company' },
+    { account: 'Nike Running', org: 'Nike' },
+    { account: 'Chase Sapphire', org: 'JPMorgan Chase' },
+  ]);
+  const handleAccountSelect = (acct) => {
+    setSelectedAccount(acct);
+    setRecentAccounts(prev => {
+      const filtered = prev.filter(a => a.account !== acct.account || a.org !== acct.org);
+      return [acct, ...filtered].slice(0, 5);
+    });
+    setAccountPickerAnchor(null);
+    setAccountSearchQuery('');
+    setCurrentView('list');
+    setSelectedCampaignForDetails(null);
+    setSelectedAdGroupForDetails(null);
+    setActiveNavItem('Campaigns');
+  };
+  const filteredRecentAccounts = recentAccounts.filter(a => {
+    if (selectedProfileOption === 'Self Service User') {
+      const org = accountOrgs.find(o => o.name === a.org);
+      if (org?.managed) return false;
+    }
+    return a.account.toLowerCase().includes(accountSearchQuery.toLowerCase()) ||
+      a.org.toLowerCase().includes(accountSearchQuery.toLowerCase());
+  }).sort((a, b) => {
+    if (!accountSearchQuery) return 0;
+    const q = accountSearchQuery.toLowerCase();
+    const aStarts = a.account.toLowerCase().startsWith(q) || a.org.toLowerCase().startsWith(q);
+    const bStarts = b.account.toLowerCase().startsWith(q) || b.org.toLowerCase().startsWith(q);
+    if (aStarts && !bStarts) return -1;
+    if (!aStarts && bStarts) return 1;
+    return 0;
+  });
+  const filteredOrgs = accountOrgs.filter(org => {
+    if (selectedProfileOption === 'Self Service User' && org.managed) return false;
+    return true;
+  }).map(org => ({
+    ...org,
+    accounts: org.accounts.filter(a => a.toLowerCase().includes(accountSearchQuery.toLowerCase()) || org.name.toLowerCase().includes(accountSearchQuery.toLowerCase()))
+      .sort((a, b) => {
+        if (!accountSearchQuery) return 0;
+        const q = accountSearchQuery.toLowerCase();
+        const aStarts = a.toLowerCase().startsWith(q);
+        const bStarts = b.toLowerCase().startsWith(q);
+        if (aStarts && !bStarts) return -1;
+        if (!aStarts && bStarts) return 1;
+        return 0;
+      })
+  })).filter(org => org.accounts.length > 0).sort((a, b) => {
+    if (!accountSearchQuery) return 0;
+    const q = accountSearchQuery.toLowerCase();
+    const aStarts = a.name.toLowerCase().startsWith(q) || a.accounts.some(acc => acc.toLowerCase().startsWith(q));
+    const bStarts = b.name.toLowerCase().startsWith(q) || b.accounts.some(acc => acc.toLowerCase().startsWith(q));
+    if (aStarts && !bStarts) return -1;
+    if (!aStarts && bStarts) return 1;
+    return 0;
+  });
   const [reportsMenuAnchorEl, setReportsMenuAnchorEl] = useState(null);
   const reportsMenuOpen = Boolean(reportsMenuAnchorEl);
 
@@ -1752,9 +4559,19 @@ export default function App() {
   };
 
   const handleSwitchChange = (campaignId, isChecked) => {
+    // Store the pending change and show confirmation dialog
+    setPendingSwitchChange({ id: campaignId, isChecked });
+    setSwitchConfirmDialogOpen(true);
+  };
+
+  const confirmSwitchChange = () => {
+    if (!pendingSwitchChange) return;
+
+    const { id, isChecked } = pendingSwitchChange;
+
     setCampaigns(prevCampaigns => 
       prevCampaigns.map(campaign => {
-        if (campaign.id === campaignId) {
+        if (campaign.id === id) {
           if (isChecked) {
             // Switch turned on - restore previous status
             return {
@@ -1773,6 +4590,38 @@ export default function App() {
         return campaign;
       })
     );
+
+    setAdGroups(prevAdGroups =>
+      prevAdGroups.map(adGroup => {
+        if (adGroup.id === id) {
+          if (isChecked) {
+            // Switch turned on - restore previous status
+            return {
+              ...adGroup,
+              status: adGroup.previousStatus
+            };
+          } else {
+            // Switch turned off - store current status and set to Inactive
+            return {
+              ...adGroup,
+              previousStatus: adGroup.status !== 'Inactive' ? adGroup.status : adGroup.previousStatus,
+              status: 'Inactive'
+            };
+          }
+        }
+        return adGroup;
+      })
+    );
+
+    // Close dialog and clear pending change
+    setSwitchConfirmDialogOpen(false);
+    setPendingSwitchChange(null);
+  };
+
+  const cancelSwitchChange = () => {
+    // Close dialog and clear pending change without making changes
+    setSwitchConfirmDialogOpen(false);
+    setPendingSwitchChange(null);
   };
 
   const handleCreateCampaign = () => {
@@ -1786,6 +4635,9 @@ export default function App() {
       employment: false,
       housing: false
     });
+    // Reset conversion event and event group
+    setSelectedConversionEvent('');
+    setSelectedEventGroup('');
     // Reset temporary dayparting when opening drawer for new campaign
     setTempDayparting(new Set());
   };
@@ -1811,6 +4663,7 @@ export default function App() {
       campaign: campaignName.trim(),
       goal: selectedCampaignType === 'conversion' ? 'Conversion' : 'Awareness',
       conversionEvent: selectedCampaignType === 'conversion' ? selectedConversionEvent : null,
+      eventGroup: selectedCampaignType === 'conversion' ? selectedEventGroup : null,
       status: "Draft",
       previousStatus: "Draft",
       spend: "$0.00",
@@ -1845,7 +4698,9 @@ export default function App() {
       startDate: today,
       endDate: endDate,
       lastModified: new Date(),
-      dayparting: []
+      dayparting: [],
+      conversionEvent: selectedCampaignType === 'conversion' ? selectedConversionEvent : null,
+      eventGroup: selectedCampaignType === 'conversion' ? selectedEventGroup : null
     };
 
     // Add the new ad group to the adGroups array
@@ -1863,6 +4718,14 @@ export default function App() {
     setSelectedAdGroupForDetails(null);
     setCurrentView('details');
 
+    // Populate Budget card optimization goal from campaign data
+    if (selectedCampaignType === 'conversion' && selectedConversionEvent) {
+      setBudgetConversionEvent(selectedConversionEvent);
+    }
+    if (selectedCampaignType === 'conversion' && selectedEventGroup) {
+      setBudgetEventGroup(selectedEventGroup);
+    }
+
     // Reset form state
     setSelectedCampaignType(null);
     setSpecialCategories({
@@ -1871,7 +4734,143 @@ export default function App() {
       housing: false
     });
     setSelectedConversionEvent('');
+    setSelectedEventGroup('');
     setTempDayparting(new Set());
+  };
+
+  const handleCreateAwarenessWithVideoCreative = () => {
+    const campaignName = `AI Video Campaign - ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+    const campaignId = Date.now();
+    
+    const newCampaign = {
+      id: campaignId,
+      campaign: campaignName,
+      goal: 'Awareness',
+      conversionEvent: null,
+      eventGroup: null,
+      status: "Draft",
+      previousStatus: "Draft",
+      spend: "$0.00",
+      impressions: "0",
+      cpm: "$0.00",
+      goalActions: "0",
+      goalCpa: "$0.00",
+      lastModified: new Date(),
+      accessType: "self",
+      dayparting: []
+    };
+
+    setCampaigns(prev => [newCampaign, ...prev]);
+
+    const today = new Date();
+    const endDate = new Date();
+    endDate.setDate(today.getDate() + 30);
+
+    const newAdGroup = {
+      id: campaignId + 1,
+      campaign: campaignName,
+      parentCampaign: campaignName,
+      status: "Draft",
+      spend: "$0.00",
+      impressions: "0",
+      cpm: "$0.00",
+      goalActions: "0",
+      goalCpa: "$0.00",
+      lifetimeBudget: "$500",
+      startDate: today,
+      endDate: endDate,
+      lastModified: new Date(),
+      dayparting: [],
+      conversionEvent: null,
+      eventGroup: null
+    };
+
+    setAdGroups(prev => [...prev, newAdGroup]);
+
+    // Add creative entry with the video assigned
+    const newCreativeEntry = {
+      id: campaignId + 2,
+      campaign: campaignName,
+      status: "Draft",
+      spend: "$0.00",
+      impressions: "0",
+      cpm: "$0.00",
+      goalActions: "0",
+      goalCpa: "$0.00",
+      creatives: [
+        { id: campaignId + 3, name: "AI Generated Video Ad", type: "In-content video", size: "16:9", status: "In review" }
+      ]
+    };
+
+    setCreatives(prev => [...prev, newCreativeEntry]);
+
+    setToastMessage('Awareness campaign created with AI video creative');
+    setToastOpen(true);
+
+    setSelectedCampaignForDetails(newCampaign);
+    setSelectedAdGroupForDetails(null);
+    setCurrentView('details');
+    setActiveNavItem('Campaigns');
+  };
+
+  const handleSetupLeadTracking = () => {
+    const campaignName = `Lead Generation - ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+    const campaignId = Date.now();
+    
+    const newCampaign = {
+      id: campaignId,
+      campaign: campaignName,
+      goal: 'Conversion',
+      conversionEvent: 'leads',
+      eventGroup: null,
+      status: "Draft",
+      previousStatus: "Draft",
+      spend: "$0.00",
+      impressions: "0",
+      cpm: "$0.00",
+      goalActions: "0",
+      goalCpa: "$0.00",
+      lastModified: new Date(),
+      accessType: "self",
+      dayparting: []
+    };
+
+    setCampaigns(prev => [newCampaign, ...prev]);
+
+    const today = new Date();
+    const endDate = new Date();
+    endDate.setDate(today.getDate() + 30);
+
+    const newAdGroup = {
+      id: campaignId + 1,
+      campaign: campaignName,
+      parentCampaign: campaignName,
+      status: "Draft",
+      spend: "$0.00",
+      impressions: "0",
+      cpm: "$0.00",
+      goalActions: "0",
+      goalCpa: "$0.00",
+      lifetimeBudget: "$500",
+      startDate: today,
+      endDate: endDate,
+      lastModified: new Date(),
+      dayparting: [],
+      conversionEvent: 'leads',
+      eventGroup: null
+    };
+
+    setAdGroups(prev => [...prev, newAdGroup]);
+
+    setBudgetConversionEvent('leads');
+
+    setToastMessage('Conversion campaign created with lead tracking');
+    setToastOpen(true);
+
+    setSelectedCampaignForDetails(newCampaign);
+    setSelectedAdGroupForDetails(null);
+    setCurrentView('details');
+    setActiveNavItem('Campaigns');
   };
 
   const handleAdGroupsDrawerOpen = () => {
@@ -2090,6 +5089,10 @@ export default function App() {
       setSelectedCampaignForDetails(null);
       setCurrentView('details');
       
+      // Populate Budget card optimization goal from campaign/ad group data
+      if (firstAdGroup.conversionEvent) setBudgetConversionEvent(firstAdGroup.conversionEvent);
+      if (firstAdGroup.eventGroup) setBudgetEventGroup(firstAdGroup.eventGroup);
+      
       // Simulate loading time (in real app, this would be an API call)
       setTimeout(() => {
         setSelectedAdGroupForDetails(firstAdGroup);
@@ -2101,12 +5104,20 @@ export default function App() {
       setSelectedCampaignForDetails(campaign);
       setSelectedAdGroupForDetails(null);
       setCurrentView('details');
+      
+      // Populate Budget card optimization goal from campaign data
+      if (campaign.conversionEvent) setBudgetConversionEvent(campaign.conversionEvent);
+      if (campaign.eventGroup) setBudgetEventGroup(campaign.eventGroup);
     } else {
       // No ad groups, navigate to campaign details
       console.log('No ad groups, navigating to campaign details:', campaign);
       setSelectedCampaignForDetails(campaign);
       setSelectedAdGroupForDetails(null);
       setCurrentView('details');
+      
+      // Populate Budget card optimization goal from campaign data
+      if (campaign.conversionEvent) setBudgetConversionEvent(campaign.conversionEvent);
+      if (campaign.eventGroup) setBudgetEventGroup(campaign.eventGroup);
     }
   };
 
@@ -2115,6 +5126,10 @@ export default function App() {
     // Don't clear selectedAdGroupForDetails immediately - keep it for context
     setSelectedCampaignForDetails(null);
     setCurrentView('details');
+    
+    // Populate Budget card optimization goal from ad group data
+    if (adGroup.conversionEvent) setBudgetConversionEvent(adGroup.conversionEvent);
+    if (adGroup.eventGroup) setBudgetEventGroup(adGroup.eventGroup);
     
     // Simulate loading time (in real app, this would be an API call)
     setTimeout(() => {
@@ -2434,6 +5449,24 @@ export default function App() {
   // Debug: Log the sorted order
   console.log('Campaign sort order:', filteredCampaigns.map(c => `${c.campaign} (${new Date(c.lastModified).toISOString()})`));
 
+  // Handler for clicking status pills in ad group campaign headers
+  const handleStatusPillClick = (parentCampaign, status, event) => {
+    event.stopPropagation(); // Prevent row collapse
+    
+    setAdGroupStatusSort(prev => {
+      const currentSort = prev[parentCampaign];
+      
+      // If clicking the same status, toggle it off, otherwise set new status
+      if (currentSort === status) {
+        const newSort = { ...prev };
+        delete newSort[parentCampaign];
+        return newSort;
+      } else {
+        return { ...prev, [parentCampaign]: status };
+      }
+    });
+  };
+
   // Filter ad groups based on search term, selected statuses, and selected campaigns
   const filteredAdGroups = adGroups.filter(adGroup => {
     const matchesSearch = adGroup.campaign.toLowerCase().includes(searchTerm.toLowerCase());
@@ -2537,7 +5570,18 @@ export default function App() {
     scheduleEditDrawerOpen,
     setScheduleEditDrawerOpen,
     setTempDayparting,
-    handleMultipleAdGroupsInfoDrawerOpen
+    handleMultipleAdGroupsInfoDrawerOpen,
+    setSelectedCreativeType,
+    setCreativesDrawerOpen,
+    setSelectedAdGroupForCreatives,
+    automaticPlacement,
+    setAutomaticPlacement,
+    placementToggle,
+    setPlacementToggle,
+    setCurrentView,
+    setReportsSelectedCampaigns,
+    setReportsStartDate,
+    setReportsEndDate
   }) => {
     // Add safety check for campaign object
     if (!campaign) {
@@ -2563,10 +5607,15 @@ export default function App() {
     );
     const [isSaving, setIsSaving] = useState(false);
     const [isBudgetSaving, setIsBudgetSaving] = useState(false);
+    const [budgetError, setBudgetError] = useState(false);
+    const [bufferPercent, setBufferPercent] = useState("1");
+    const [contractedImpressions, setContractedImpressions] = useState(
+      campaign.lifetimeBudget && typeof campaign.lifetimeBudget === 'string'
+        ? String(parseFloat(campaign.lifetimeBudget.replace('$', '')) * 12)
+        : "6000"
+    );
     const [autoBid, setAutoBid] = useState(true);
     const [maxBid, setMaxBid] = useState("");
-    const [automaticPlacement, setAutomaticPlacement] = useState(true);
-    const [placementToggle, setPlacementToggle] = useState(true);
     const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
     const [audienceDrawerOpen, setAudienceDrawerOpen] = useState(false);
     const [audienceSelection, setAudienceSelection] = useState("include");
@@ -2598,10 +5647,19 @@ export default function App() {
     };
 
     const handleLifetimeBudgetChange = (event) => {
-      const value = event.target.value;
+      const value = event.target.value.replace(/,/g, '');
       // Only allow numbers (including decimals)
       if (value === '' || /^\d*\.?\d*$/.test(value)) {
         setLifetimeBudget(value);
+        setContractedImpressions(value ? String(parseFloat(value) * 12) : '0');
+      }
+    };
+
+    const handleContractedImpressionsChange = (event) => {
+      const value = event.target.value.replace(/,/g, '');
+      if (value === '' || /^\d*\.?\d*$/.test(value)) {
+        setContractedImpressions(value);
+        setLifetimeBudget(value ? String(parseFloat(value) / 12) : '0');
       }
     };
 
@@ -2840,31 +5898,55 @@ export default function App() {
           mb: 3,
           boxShadow: '0 1px 6px rgba(0, 0, 0, 0.1)',
           p: 3,
-          backgroundColor: 'white'
+          backgroundColor: 'white',
+          position: 'relative'
         }}>
           <Box>
-            <Typography variant="caption" color="text.secondary">Goal</Typography>
-            <Typography variant="body1" sx={{ fontWeight: 'bold' }}>{campaign.goal}</Typography>
+            <Typography variant="body2" color="text.secondary">Goal</Typography>
+            <Typography variant="h1">{campaign.goal}</Typography>
           </Box>
           <Box>
-            <Typography variant="caption" color="text.secondary">Spend</Typography>
-            <Typography variant="body1" sx={{ fontWeight: 'bold' }}>{campaign.spend}</Typography>
+            <Typography variant="body2" color="text.secondary">Spend</Typography>
+            <Typography variant="h1">{campaign.spend}</Typography>
           </Box>
           <Box>
-            <Typography variant="caption" color="text.secondary">Impressions</Typography>
-            <Typography variant="body1" sx={{ fontWeight: 'bold' }}>{campaign.impressions}</Typography>
+            <Typography variant="body2" color="text.secondary">Impressions</Typography>
+            <Typography variant="h1">{campaign.impressions}</Typography>
           </Box>
           <Box>
-            <Typography variant="caption" color="text.secondary">CPM</Typography>
-            <Typography variant="body1" sx={{ fontWeight: 'bold' }}>{campaign.cpm}</Typography>
+            <Typography variant="body2" color="text.secondary">CPM</Typography>
+            <Typography variant="h1">{campaign.cpm}</Typography>
           </Box>
           <Box>
-            <Typography variant="caption" color="text.secondary">Goal Actions</Typography>
-            <Typography variant="body1" sx={{ fontWeight: 'bold' }}>{campaign.goalActions}</Typography>
+            <Typography variant="body2" color="text.secondary">Goal Actions</Typography>
+            <Typography variant="h1">{campaign.goalActions}</Typography>
           </Box>
           <Box>
-            <Typography variant="caption" color="text.secondary">Goal CPA</Typography>
-            <Typography variant="body1" sx={{ fontWeight: 'bold' }}>{campaign.goalCpa}</Typography>
+            <Typography variant="body2" color="text.secondary">Goal CPA</Typography>
+            <Typography variant="h1">{campaign.goalCpa}</Typography>
+          </Box>
+          <Box sx={{ position: 'absolute', top: 12, right: 12 }}>
+            <Link
+              href="#"
+              underline="hover"
+              color="primary"
+              sx={{ cursor: 'pointer', fontSize: '0.875rem' }}
+              onClick={(e) => {
+                e.preventDefault();
+                // Set the campaign as selected in reports
+                setReportsSelectedCampaigns([campaign.id]);
+                // Set the date range based on campaign dates (using sample dates for now)
+                const campaignStart = campaign.startDate ? new Date(campaign.startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+                const campaignEnd = campaign.endDate ? new Date(campaign.endDate) : new Date();
+                setReportsStartDate(campaignStart);
+                setReportsEndDate(campaignEnd);
+                // Navigate to reports view
+                setCurrentView('reports');
+                setActiveNavItem('Reports');
+              }}
+            >
+              View full report
+            </Link>
           </Box>
         </Box>
       )}
@@ -2908,35 +5990,40 @@ export default function App() {
         {detailsExpanded && (
           <>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-              <Typography variant="caption" color="text.secondary">
-                Event group
-              </Typography>
-              <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                XD8AAI1eMy
-              </Typography>
-            </Box>
-            
-            <Typography variant="body1" sx={{ fontWeight: 'bold', mb: 2 }}>
-              Goals & KPIs
-            </Typography>
-            
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="body1" color="text.secondary" sx={{ width: '240px', minWidth: '240px', whiteSpace: 'nowrap', mr: 2 }}>
                 Advertising objective
               </Typography>
               <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                Conversion
+                {campaign.goal}
               </Typography>
             </Box>
-            
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-              <Typography variant="caption" color="text.secondary">
-                Optimization goal
-              </Typography>
-              <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                App installs
-              </Typography>
-            </Box>
+            {Object.entries(specialCategories).some(([, v]) => v) && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                <Typography variant="body1" color="text.secondary" sx={{ width: '240px', minWidth: '240px', whiteSpace: 'nowrap', mr: 2 }}>
+                  Special categories
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  {specialCategories.credit && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <CreditCardIcon sx={{ fontSize: 18 }} />
+                      <Typography variant="body1" sx={{ fontWeight: 'bold' }}>Credit</Typography>
+                    </Box>
+                  )}
+                  {specialCategories.employment && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <WorkIcon sx={{ fontSize: 18 }} />
+                      <Typography variant="body1" sx={{ fontWeight: 'bold' }}>Employment</Typography>
+                    </Box>
+                  )}
+                  {specialCategories.housing && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <HomeIcon sx={{ fontSize: 18 }} />
+                      <Typography variant="body1" sx={{ fontWeight: 'bold' }}>Housing</Typography>
+                    </Box>
+                  )}
+                </Box>
+              </Box>
+            )}
           </>
         )}
       </Box>
@@ -2999,7 +6086,120 @@ export default function App() {
         backgroundColor: 'white',
         mb: 3
       }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+        <Typography variant="h2">
+          Optimization goal
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+          <Typography variant="body1" color="text.secondary" sx={{ width: '240px', minWidth: '240px', whiteSpace: 'nowrap', mr: 2 }}>
+            Conversion event
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <FormControl size="small" sx={{ minWidth: 200 }}>
+            <InputLabel>Event</InputLabel>
+            <Select
+              value={budgetConversionEvent}
+              onChange={(e) => setBudgetConversionEvent(e.target.value)}
+              label="Event"
+              renderValue={(selected) => {
+                const eventData = {
+                  'page_views': { label: 'Page views', icon: <PageviewIcon sx={{ fontSize: 20 }} /> },
+                  'sign_ups': { label: 'Sign ups', icon: <PersonAddIcon sx={{ fontSize: 20 }} /> },
+                  'leads': { label: 'Leads', icon: <LeadsIcon sx={{ fontSize: 20 }} /> },
+                  'downloads': { label: 'Downloads', icon: <DownloadIcon sx={{ fontSize: 20 }} /> },
+                  'purchases': { label: 'Purchases', icon: <ShoppingCartIcon sx={{ fontSize: 20 }} /> },
+                  'app_installs': { label: 'App installs', icon: <PhoneAndroidIcon sx={{ fontSize: 20 }} /> },
+                  'subscriptions': { label: 'Subscriptions', icon: <SubscriptionsIcon sx={{ fontSize: 20 }} /> }
+                };
+                const selectedEvent = eventData[selected];
+                return selectedEvent ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {selectedEvent.icon}
+                    <Typography variant="body2">{selectedEvent.label}</Typography>
+                  </Box>
+                ) : 'Select';
+              }}
+            >
+              <MenuItem value="page_views">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <PageviewIcon sx={{ fontSize: 20 }} />
+                  <Box>
+                    <Typography variant="body2">Page views</Typography>
+                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>Track when users visit specific pages</Typography>
+                  </Box>
+                </Box>
+              </MenuItem>
+              <MenuItem value="sign_ups">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <PersonAddIcon sx={{ fontSize: 20 }} />
+                  <Box>
+                    <Typography variant="body2">Sign ups</Typography>
+                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>Track user registrations and account creation</Typography>
+                  </Box>
+                </Box>
+              </MenuItem>
+              <MenuItem value="leads">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <LeadsIcon sx={{ fontSize: 20 }} />
+                  <Box>
+                    <Typography variant="body2">Leads</Typography>
+                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>Track form submissions and contact requests</Typography>
+                  </Box>
+                </Box>
+              </MenuItem>
+              <MenuItem value="downloads">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <DownloadIcon sx={{ fontSize: 20 }} />
+                  <Box>
+                    <Typography variant="body2">Downloads</Typography>
+                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>Track file and content downloads</Typography>
+                  </Box>
+                </Box>
+              </MenuItem>
+              <MenuItem value="purchases">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <ShoppingCartIcon sx={{ fontSize: 20 }} />
+                  <Box>
+                    <Typography variant="body2">Purchases</Typography>
+                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>Track completed transactions and sales</Typography>
+                  </Box>
+                </Box>
+              </MenuItem>
+              <MenuItem value="app_installs">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <PhoneAndroidIcon sx={{ fontSize: 20 }} />
+                  <Box>
+                    <Typography variant="body2">App installs</Typography>
+                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>Track mobile app installations</Typography>
+                  </Box>
+                </Box>
+              </MenuItem>
+              <MenuItem value="subscriptions" disabled>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, opacity: 0.5 }}>
+                  <SubscriptionsIcon sx={{ fontSize: 20 }} />
+                  <Box>
+                    <Typography variant="body2">Subscriptions</Typography>
+                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>Track recurring subscription signups</Typography>
+                  </Box>
+                </Box>
+              </MenuItem>
+            </Select>
+          </FormControl>
+          <Typography variant="body1" color="text.secondary">
+            in
+          </Typography>
+          <FormControl size="small" sx={{ minWidth: 200 }}>
+            <InputLabel>Event group</InputLabel>
+            <Select value={budgetEventGroup} onChange={(e) => setBudgetEventGroup(e.target.value)} label="Event group">
+              <MenuItem value="XD8AAI1eMy">XD8AAI1eMy</MenuItem>
+              <MenuItem value="XDNEuttoJA">XDNEuttoJA</MenuItem>
+            </Select>
+          </FormControl>
+          </Box>
+        </Box>
+
+        <Divider sx={{ mt: 2 }} />
+
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px', mt: 2 }}>
           <Typography variant="h2">
             Budget
           </Typography>
@@ -3044,39 +6244,87 @@ export default function App() {
         </Box>
         
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
-          <Typography variant="body1" color="text.secondary" sx={{ width: '240px' }}>
-            Lifetime budget
+          <Typography variant="body1" color="text.secondary" sx={{ width: '240px', flexShrink: 0, whiteSpace: 'nowrap' }}>
+            Lifetime
             <Typography component="span" sx={{ color: 'red', ml: 0.5 }}>
               *
             </Typography>
           </Typography>
-          <TextField
-            value={lifetimeBudget}
-            onChange={handleLifetimeBudgetChange}
-            onBlur={handleLifetimeBudgetBlur}
-            onKeyPress={handleLifetimeBudgetKeyPress}
-            variant="outlined"
-            size="small"
-            sx={{ width: '240px' }}
-            placeholder="Enter amount"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  $
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  USD
-                </InputAdornment>
-              )
-            }}
-          />
-          {isBudgetSaving && (
-            <Typography variant="caption" color="success.main" sx={{ fontSize: '12px', ml: 1 }}>
-              Saved
-            </Typography>
-          )}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <TextField
+              value={lifetimeBudget ? parseFloat(parseFloat(lifetimeBudget).toFixed(2)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 }) : lifetimeBudget}
+              onChange={handleLifetimeBudgetChange}
+              onBlur={handleLifetimeBudgetBlur}
+              onKeyPress={handleLifetimeBudgetKeyPress}
+              variant="outlined"
+              size="small"
+              sx={{ width: '200px' }}
+              label="Budget"
+              placeholder="Enter amount"
+              error={budgetError}
+              helperText={budgetError ? '$500 minimum required' : ''}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    $
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    USD
+                  </InputAdornment>
+                )
+              }}
+            />
+            {isBudgetSaving && (
+              <Typography variant="caption" color="success.main" sx={{ fontSize: '12px', ml: 1 }}>
+                Saved
+              </Typography>
+            )}
+            {selectedProfileOption === 'Managed Service User' && (
+              <>
+                <Typography variant="body1" color="text.secondary">=</Typography>
+                <TextField
+                  label="Contracted impressions"
+                  value={contractedImpressions ? parseFloat(contractedImpressions).toLocaleString() : '0'}
+                  onChange={handleContractedImpressionsChange}
+                  variant="outlined"
+                  size="small"
+                  sx={{ width: '180px' }}
+                />
+                <Typography variant="body1" color="text.secondary">x</Typography>
+                <TextField
+                  label="Buffer"
+                  value={bufferPercent}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '' || /^\d*\.?\d*$/.test(val)) setBufferPercent(val);
+                  }}
+                  variant="outlined"
+                  size="small"
+                  sx={{ width: '70px' }}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">%</InputAdornment>
+                    )
+                  }}
+                />
+                <Typography variant="body1" color="text.secondary">=</Typography>
+                <TextField
+                  label="Total impressions"
+                  value={
+                    contractedImpressions && bufferPercent
+                      ? Math.round(parseFloat(contractedImpressions) * (1 + parseFloat(bufferPercent) / 100)).toLocaleString()
+                      : '0'
+                  }
+                  variant="outlined"
+                  size="small"
+                  sx={{ width: '180px' }}
+                  InputProps={{ readOnly: true }}
+                />
+              </>
+            )}
+          </Box>
         </Box>
         
         <Divider sx={{ mt: 2 }} />
@@ -3299,28 +6547,37 @@ export default function App() {
           Optimized audience
         </Typography>
         
-        <Typography variant="caption" color="text.secondary">
-          Automatically targets the best performing demographic based on your advertising objective
-        </Typography>
-      </Box>
-      
+      <Typography variant="caption" color="text.secondary">
+        Automatically targets the best performing demographic based on your advertising objective
+      </Typography>
+    </Box>
+    
+    {/* Only show Placement card if campaign has "In-content video" creatives */}
+    {(() => {
+      const campaignAdGroups = adGroups.filter(ag => ag.parentCampaign === campaign.campaign);
+      const hasVideoCreative = campaignAdGroups.some(ag => 
+        ag.creatives && ag.creatives.some(creative => creative.type === 'In-content video')
+      );
+      return hasVideoCreative;
+    })() && (
       <PlacementCard
         automaticPlacement={automaticPlacement}
         setAutomaticPlacement={setAutomaticPlacement}
         placementToggle={placementToggle}
         setPlacementToggle={setPlacementToggle}
+        onEdit={() => setPlacementDrawerOpen(true)}
       />
+    )}
 
-      <DeliveryCard
-        autoBid={autoBid}
-        setAutoBid={setAutoBid}
-        maxBid={maxBid}
-        setMaxBid={setMaxBid}
-        showAdvancedSettings={showAdvancedSettings}
-        setShowAdvancedSettings={setShowAdvancedSettings}
-      />
-
-      {/* Creatives Card for Campaign */}
+    <DeliveryCard
+      autoBid={autoBid}
+      setAutoBid={setAutoBid}
+      maxBid={maxBid}
+      setMaxBid={setMaxBid}
+      showAdvancedSettings={showAdvancedSettings}
+      setShowAdvancedSettings={setShowAdvancedSettings}
+      selectedProfileOption={selectedProfileOption}
+    />      {/* Creatives Card for Campaign */}
       <Box sx={{ 
         boxShadow: '0 1px 6px rgba(0, 0, 0, 0.1)',
         p: 3,
@@ -3346,7 +6603,7 @@ export default function App() {
         
         {(() => {
           // Get all creatives for all ad groups in this campaign
-          const campaignAdGroups = adGroupsData.filter(adGroup => 
+          const campaignAdGroups = adGroups.filter(adGroup => 
             adGroup.campaign === campaign.campaign
           );
           const allCreatives = campaignAdGroups.flatMap(adGroup => 
@@ -3369,7 +6626,39 @@ export default function App() {
                   description="Video ads that play within content feeds"
                   isSelected={false}
                   onClick={() => {
-                    console.log('In-content video selected for campaign');
+                    console.log('=== In-content video tile clicked in campaign view ===');
+                    console.log('Campaign:', campaign?.campaign);
+                    console.log('Functions available:');
+                    console.log('  setSelectedCreativeType:', typeof setSelectedCreativeType);
+                    console.log('  setCreativesDrawerOpen:', typeof setCreativesDrawerOpen);
+                    console.log('  setSelectedAdGroupForCreatives:', typeof setSelectedAdGroupForCreatives);
+                    
+                    // Set creative type
+                    if (setSelectedCreativeType) {
+                      console.log('Setting creative type to in-content-video');
+                      setSelectedCreativeType('in-content-video');
+                    }
+                    
+                    // Find ad groups
+                    const campaignAdGroups = adGroups.filter(adGroup => 
+                      adGroup.campaign === campaign.campaign
+                    );
+                    console.log('Found', campaignAdGroups.length, 'ad groups for campaign');
+                    
+                    if (campaignAdGroups.length > 0) {
+                      console.log('First ad group:', campaignAdGroups[0]);
+                      if (setSelectedAdGroupForCreatives) {
+                        console.log('Setting selected ad group for creatives');
+                        setSelectedAdGroupForCreatives(campaignAdGroups[0]);
+                      }
+                      if (setCreativesDrawerOpen) {
+                        console.log('Opening creatives drawer');
+                        setCreativesDrawerOpen(true);
+                      }
+                    } else {
+                      console.log('No ad groups found - cannot open drawer');
+                    }
+                    console.log('=== End click handler ===');
                   }}
                 />
                 <TileComponent
@@ -3751,7 +7040,24 @@ export default function App() {
   };
 
   // Ad Group Details Component
-  const AdGroupDetails = ({ adGroup, selectedTimeSlots, setSelectedTimeSlots, setScheduleEditDrawerOpen, setDrawerContext: setDrawerContextProp, setDrawerOpen: setDrawerOpenProp, setCurrentView, setActiveNavItem }) => {
+  const AdGroupDetails = ({ 
+    adGroup, 
+    selectedTimeSlots, 
+    setSelectedTimeSlots, 
+    setScheduleEditDrawerOpen, 
+    setDrawerContext: setDrawerContextProp, 
+    setDrawerOpen: setDrawerOpenProp, 
+    setCurrentView, 
+    setActiveNavItem,
+    automaticPlacement,
+    setAutomaticPlacement,
+    placementToggle,
+    setPlacementToggle,
+    setReportsSelectedCampaigns,
+    setReportsStartDate,
+    setReportsEndDate,
+    campaignGoal = 'Conversion'
+  }) => {
     const [adGroupName, setAdGroupName] = useState(adGroup.campaign);
     const [lifetimeBudget, setLifetimeBudget] = useState(adGroup.lifetimeBudget?.replace('$', '') || "500");
     const [isSaving, setIsSaving] = useState(false);
@@ -3762,8 +7068,6 @@ export default function App() {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [autoBid, setAutoBid] = useState(true);
     const [maxBid, setMaxBid] = useState("");
-    const [automaticPlacement, setAutomaticPlacement] = useState(true);
-    const [placementToggle, setPlacementToggle] = useState(true);
     const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
     const [audienceDrawerOpen, setAudienceDrawerOpen] = useState(false);
     const [audienceSelection, setAudienceSelection] = useState("include");
@@ -3975,7 +7279,12 @@ export default function App() {
     };
 
     const handleLifetimeBudgetBlur = () => {
-      saveLifetimeBudget();
+      if (!lifetimeBudget || parseFloat(lifetimeBudget) < 500) {
+        setBudgetError(true);
+      } else {
+        setBudgetError(false);
+        saveLifetimeBudget();
+      }
     };
 
     const handleLifetimeBudgetKeyPress = (event) => {
@@ -4058,7 +7367,7 @@ export default function App() {
                 Advertising objective
               </Typography>
               <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                Conversion
+                {campaignGoal}
               </Typography>
             </Box>
             
@@ -4255,23 +7564,51 @@ export default function App() {
               mb: 3,
               boxShadow: '0 1px 6px rgba(0, 0, 0, 0.1)',
               p: 3,
-              backgroundColor: 'white'
+              backgroundColor: 'white',
+              position: 'relative'
             }}>
               <Box>
-                <Typography variant="caption" color="text.secondary">Impressions</Typography>
-                <Typography variant="body1" sx={{ fontWeight: 'bold' }}>{adGroup.impressions}</Typography>
+                <Typography variant="body2" color="text.secondary">Impressions</Typography>
+                <Typography variant="h1">{adGroup.impressions}</Typography>
               </Box>
               <Box>
-                <Typography variant="caption" color="text.secondary">CPM</Typography>
-                <Typography variant="body1" sx={{ fontWeight: 'bold' }}>{adGroup.cpm}</Typography>
+                <Typography variant="body2" color="text.secondary">CPM</Typography>
+                <Typography variant="h1">{adGroup.cpm}</Typography>
               </Box>
               <Box>
-                <Typography variant="caption" color="text.secondary">Goal Actions</Typography>
-                <Typography variant="body1" sx={{ fontWeight: 'bold' }}>{adGroup.goalActions}</Typography>
+                <Typography variant="body2" color="text.secondary">Goal Actions</Typography>
+                <Typography variant="h1">{adGroup.goalActions}</Typography>
               </Box>
               <Box>
-                <Typography variant="caption" color="text.secondary">Goal CPA</Typography>
-                <Typography variant="body1" sx={{ fontWeight: 'bold' }}>{adGroup.goalCpa}</Typography>
+                <Typography variant="body2" color="text.secondary">Goal CPA</Typography>
+                <Typography variant="h1">{adGroup.goalCpa}</Typography>
+              </Box>
+              <Box sx={{ position: 'absolute', top: 12, right: 12 }}>
+                <Link
+                  href="#"
+                  underline="hover"
+                  color="primary"
+                  sx={{ cursor: 'pointer', fontSize: '0.875rem' }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    // Find the parent campaign
+                    const parentCampaign = campaigns.find(c => c.campaign === adGroup.parentCampaign);
+                    if (parentCampaign) {
+                      // Set the campaign as selected in reports
+                      setReportsSelectedCampaigns([parentCampaign.id]);
+                      // Set the date range based on campaign dates
+                      const campaignStart = parentCampaign.startDate ? new Date(parentCampaign.startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+                      const campaignEnd = parentCampaign.endDate ? new Date(parentCampaign.endDate) : new Date();
+                      setReportsStartDate(campaignStart);
+                      setReportsEndDate(campaignEnd);
+                    }
+                    // Navigate to reports view
+                    setCurrentView('reports');
+                    setActiveNavItem('Reports');
+                  }}
+                >
+                  View full report
+                </Link>
               </Box>
             </Box>
           )}
@@ -4529,29 +7866,32 @@ export default function App() {
               Optimized audience
             </Typography>
             
-            <Typography variant="caption" color="text.secondary">
-              Automatically targets the best performing demographic based on your advertising objective
-            </Typography>
-          </Box>
-          
-          <PlacementCard
-            automaticPlacement={automaticPlacement}
-            setAutomaticPlacement={setAutomaticPlacement}
-            placementToggle={placementToggle}
-            setPlacementToggle={setPlacementToggle}
-          />
+        <Typography variant="caption" color="text.secondary">
+          Automatically targets the best performing demographic based on your advertising objective
+        </Typography>
+      </Box>
+      
+      {/* Only show Placement card if ad group has "In-content video" creatives */}
+      {adGroup.creatives && adGroup.creatives.some(creative => creative.type === 'In-content video') && (
+        <PlacementCard
+          automaticPlacement={automaticPlacement}
+          setAutomaticPlacement={setAutomaticPlacement}
+          placementToggle={placementToggle}
+          setPlacementToggle={setPlacementToggle}
+          onEdit={() => setPlacementDrawerOpen(true)}
+        />
+      )}
 
-          {/* Delivery Card */}
-          <DeliveryCard
-            autoBid={autoBid}
-            setAutoBid={setAutoBid}
-            maxBid={maxBid}
-            setMaxBid={setMaxBid}
-            showAdvancedSettings={showAdvancedSettings}
-            setShowAdvancedSettings={setShowAdvancedSettings}
-          />
-
-          {/* Creatives Card */}
+      {/* Delivery Card */}
+      <DeliveryCard
+        autoBid={autoBid}
+        setAutoBid={setAutoBid}
+        maxBid={maxBid}
+        setMaxBid={setMaxBid}
+        showAdvancedSettings={showAdvancedSettings}
+        setShowAdvancedSettings={setShowAdvancedSettings}
+        selectedProfileOption={selectedProfileOption}
+      />          {/* Creatives Card */}
           <CreativesCard 
             adGroup={adGroup}
             isSelected={isSelected}
@@ -4562,6 +7902,7 @@ export default function App() {
             }}
             getCreativesForAdGroup={getCreativesForAdGroup}
             onEditCreative={handleEditCreativeDrawerOpen}
+            onSelectCreativeType={setSelectedCreativeType}
           />
         </Box>
       </Box>
@@ -4631,7 +7972,7 @@ export default function App() {
       <AppBar position="static" sx={{ backgroundColor: "#20004c", height: "60px" }}>
         <Toolbar sx={{ height: "100%", minHeight: "60px" }}>
           <Box 
-            onClick={handleBackToList}
+            onClick={() => { setCurrentView('landing'); setActiveNavItem(''); }}
             sx={{ 
               cursor: 'pointer',
               display: 'flex',
@@ -4642,7 +7983,7 @@ export default function App() {
           </Box>
           <Typography 
             variant="h6" 
-            onClick={handleBackToList}
+            onClick={() => { setCurrentView('landing'); setActiveNavItem(''); }}
             sx={{ 
               mr: 2,
               cursor: 'pointer'
@@ -4650,42 +7991,99 @@ export default function App() {
           >
             Ads Manager
           </Typography>
-          <FormControl size="small" sx={{ minWidth: 120 }}>
-            <Select
-              value="campaigns"
-              variant="outlined"
-              sx={{ 
-                color: 'white',
-                backgroundColor: '#5D12B7',
-                height: '36px',
-                '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: 'transparent'
-                },
-                '& .MuiSvgIcon-root': {
-                  color: 'white'
-                },
-                '&:hover .MuiOutlinedInput-notchedOutline': {
-                  borderColor: 'transparent'
-                },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                  borderColor: 'transparent'
-                }
-              }}
-            >
-              <MenuItem value="campaigns">
-                <Box>
-                  <Typography variant="caption" sx={{ color: 'white', display: 'block', lineHeight: 1, mb: '-2px' }}>
-                    Roku
-                  </Typography>
-                  <Typography sx={{ color: 'white' }}>
-                    Wally's Windows
+          <Button
+            onClick={(e) => setAccountPickerAnchor(e.currentTarget)}
+            sx={{
+              color: 'white',
+              backgroundColor: '#5D12B7',
+              height: '36px',
+              textTransform: 'none',
+              px: 2,
+              '&:hover': { backgroundColor: '#4a0e96' },
+            }}
+            endIcon={<ArrowDropDownIcon />}
+          >
+            <Box sx={{ textAlign: 'left' }}>
+              <Typography variant="caption" sx={{ display: 'block', lineHeight: 1, mb: '-2px', color: 'white' }}>{selectedAccount.org}{accountOrgs.find(o => o.name === selectedAccount.org)?.managed && ' (Managed)'}</Typography>
+              <Typography sx={{ color: 'white', fontSize: '0.875rem', fontWeight: 'bold' }}>{selectedAccount.account}</Typography>
+            </Box>
+          </Button>
+          <Popover
+            open={Boolean(accountPickerAnchor)}
+            anchorEl={accountPickerAnchor}
+            onClose={() => { setAccountPickerAnchor(null); setAccountSearchQuery(''); }}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+            PaperProps={{ sx: { width: 480, maxHeight: 600, p: 0 } }}
+            disableAutoFocus
+            disableEnforceFocus
+          >
+            <Box sx={{ p: 2 }}>
+              <TextField
+                fullWidth
+                size="small"
+                inputRef={(input) => { if (input) setTimeout(() => input.focus(), 100); }}
+                placeholder="Search for your account"
+                value={accountSearchQuery}
+                onChange={(e) => setAccountSearchQuery(e.target.value)}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start"><SearchIcon sx={{ fontSize: 20, color: 'text.secondary' }} /></InputAdornment>,
+                  endAdornment: accountSearchQuery && (
+                    <InputAdornment position="end">
+                      <IconButton size="small" onClick={() => setAccountSearchQuery('')} edge="end">
+                        <ClearIcon sx={{ fontSize: 18 }} />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{ mb: 2 }}
+              />
+              <Divider sx={{ mb: 2, mx: -2 }} />
+              {/* Recent Accounts */}
+              {!accountSearchQuery && (
+              <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'text.secondary' }}>Recent accounts</Typography>
+              )}
+              {filteredRecentAccounts.map((acct, i) => (
+                <Box
+                  key={i}
+                  sx={{ py: 1, px: 0, cursor: 'pointer', borderRadius: 1, '&:hover': { backgroundColor: '#f5f5f5' } }}
+                  onClick={() => handleAccountSelect(acct)}
+                >
+                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{acct.account}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {acct.org}{accountOrgs.find(o => o.name === acct.org)?.managed && <> • <span style={{ color: '#6a1b9a', fontWeight: 'bold' }}>Managed</span></>}
                   </Typography>
                 </Box>
-              </MenuItem>
-              <MenuItem value="audiences">Audiences</MenuItem>
-              <MenuItem value="reports">Reports</MenuItem>
-            </Select>
-          </FormControl>
+              ))}
+              {/* All Accounts */}
+              {!accountSearchQuery && (
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, mt: 2 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: 'text.secondary' }}>All accounts</Typography>
+                <Button variant="outlined" size="small" sx={{ textTransform: 'none', fontSize: '0.75rem' }}>View all</Button>
+              </Box>
+              )}
+              {filteredOrgs.map((org, i) => (
+                <Box key={i} sx={{ mb: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, backgroundColor: '#f5f5f5', borderRadius: 0, py: 1, px: 2, mx: -2 }}>
+                    <Avatar sx={{ width: 28, height: 28, fontSize: '0.75rem', bgcolor: '#9e9e9e' }}>{org.name.split(' ').map(w => w[0]).join('')}</Avatar>
+                    <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                      {org.name}{org.managed && <> • <span style={{ color: '#6a1b9a' }}>Managed</span></>}
+                    </Typography>
+                    <Chip label={`${org.accounts.length} accounts`} size="small" sx={{ ml: 'auto', fontSize: '0.7rem', height: 22, backgroundColor: '#e0e0e0', color: '#424242', fontWeight: 500 }} />
+                  </Box>
+                  {org.accounts.map((account, j) => (
+                    <Box
+                      key={j}
+                      sx={{ py: 1.5, pl: '36px', cursor: 'pointer', borderRadius: 1, '&:hover': { backgroundColor: '#f5f5f5' } }}
+                      onClick={() => handleAccountSelect({ org: org.name, account })}
+                    >
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>{account}</Typography>
+                    </Box>
+                  ))}
+                </Box>
+              ))}
+            </Box>
+          </Popover>
           <Box sx={{ flexGrow: 1 }} />
           <Button color="inherit" sx={{ 
             mr: 1,
@@ -4782,28 +8180,37 @@ export default function App() {
             }}
           >
             <MenuItem 
-              onClick={() => handleProfileMenuItemClick('All')}
-              selected={selectedProfileOption === 'All'}
+              onClick={() => handleProfileMenuItemClick('Self Service User')}
+              selected={selectedProfileOption === 'Self Service User'}
             >
-              All
+              Self Service User
             </MenuItem>
             <MenuItem 
-              onClick={() => handleProfileMenuItemClick('Self')}
-              selected={selectedProfileOption === 'Self'}
+              onClick={() => handleProfileMenuItemClick('Managed Service User')}
+              selected={selectedProfileOption === 'Managed Service User'}
             >
-              Self
-            </MenuItem>
-            <MenuItem 
-              onClick={() => handleProfileMenuItemClick('Managed')}
-              selected={selectedProfileOption === 'Managed'}
-            >
-              Managed
+              Managed Service User
             </MenuItem>
           </Menu>
         </Toolbar>
       </AppBar>
 
-      {currentView === 'list' ? (
+      {currentView === 'landing' ? (
+        <LandingPage
+          onCreateCampaign={() => {
+            setActiveNavItem('Campaigns');
+            setCurrentView('list');
+            handleCreateCampaign();
+          }}
+          onNavigateToCampaigns={() => {
+            setActiveNavItem('Campaigns');
+            handleBackToList();
+          }}
+          isManagedUser={selectedProfileOption === 'Managed Service User'}
+          onUseVideoCreative={handleCreateAwarenessWithVideoCreative}
+          onSetupLeadTracking={handleSetupLeadTracking}
+        />
+      ) : currentView === 'list' ? (
         <Container maxWidth={false} sx={{ p: "20px" }}>
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: "4px", width: "100%" }}>
@@ -5126,7 +8533,7 @@ export default function App() {
             </Tabs>
             
             {/* Create Campaign Button - only show when Campaigns tab is selected */}
-            {selectedTab === 0 && selectedProfileOption !== 'Managed' && (
+            {selectedTab === 0 && selectedProfileOption !== 'Managed Service User' && (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pr: 1, pb: 1 }}>
                 <Button 
                   variant="contained" 
@@ -5140,7 +8547,7 @@ export default function App() {
             )}
             
             {/* View Creatives Grid Control - only show when Creatives tab is selected */}
-            {selectedTab === 2 && selectedProfileOption !== 'Self' && (
+            {selectedTab === 2 && selectedProfileOption !== 'Self Service User' && (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pr: 1, pb: 1 }}>
                 <ButtonGroup variant="outlined" size="small">
                   <Button
@@ -5280,7 +8687,7 @@ export default function App() {
           )}
           
           {selectedTab === 2 ? (
-            <>
+            <React.Fragment key="creatives-table">
               {/* Creatives Selection Toolbar */}
               {selectedCreativesForAssignment?.length > 0 && (
                 <Box sx={{ 
@@ -5612,9 +9019,9 @@ export default function App() {
                 </TableBody>
               </Table>
             </TableContainer>
-            </>
-          ) : (
-            <>
+            </React.Fragment>
+          ) : selectedTab !== 2 ? (
+            <React.Fragment key="campaigns-adgroups-table">
               {selectedTab === 1 && (
                 <Box sx={{ 
                   display: 'flex', 
@@ -5865,35 +9272,46 @@ export default function App() {
                                     }
                                   };
 
-                                  return Object.entries(statusCounts).map(([status, count]) => (
-                                    <Box 
-                                      key={status} 
-                                      sx={{ 
-                                        display: 'flex', 
-                                        alignItems: 'center', 
-                                        gap: 0.5,
-                                        backgroundColor: getStatusPillColor(status),
-                                        borderRadius: '12px',
-                                        padding: '2px 6px',
-                                        border: '1px solid rgba(0, 0, 0, 0.1)'
-                                      }}
-                                    >
-                                      <StatusComponent status={status} />
-                                      <Chip 
-                                        label={count} 
-                                        size="small" 
+                                  return Object.entries(statusCounts).map(([status, count]) => {
+                                    const isActiveSort = adGroupStatusSort[parentCampaign] === status;
+                                    
+                                    return (
+                                      <Box 
+                                        key={status} 
+                                        onClick={(e) => handleStatusPillClick(parentCampaign, status, e)}
                                         sx={{ 
-                                          height: '16px', 
-                                          fontSize: '10px', 
-                                          minWidth: '16px',
-                                          backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                                          '& .MuiChip-label': {
-                                            fontWeight: 'normal'
+                                          display: 'flex', 
+                                          alignItems: 'center', 
+                                          gap: 0.5,
+                                          backgroundColor: getStatusPillColor(status),
+                                          borderRadius: '12px',
+                                          padding: '2px 6px',
+                                          border: isActiveSort ? '2px solid #4f01a3' : '1px solid rgba(0, 0, 0, 0.1)',
+                                          cursor: 'pointer',
+                                          transition: 'all 0.2s',
+                                          '&:hover': {
+                                            transform: 'scale(1.05)',
+                                            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
                                           }
                                         }}
-                                      />
-                                    </Box>
-                                  ));
+                                      >
+                                        <StatusComponent status={status} />
+                                        <Chip 
+                                          label={count} 
+                                          size="small" 
+                                          sx={{ 
+                                            height: '16px', 
+                                            fontSize: '10px', 
+                                            minWidth: '16px',
+                                            backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                                            '& .MuiChip-label': {
+                                              fontWeight: isActiveSort ? 'bold' : 'normal'
+                                            }
+                                          }}
+                                        />
+                                      </Box>
+                                    );
+                                  });
                                 })()}
                               </Box>
                               <Button 
@@ -5929,20 +9347,32 @@ export default function App() {
                           </TableCell>
                         </TableRow>
                         {/* Ad Group Rows - Only show if not collapsed */}
-                        {!collapsedCampaigns.has(parentCampaign) && adGroups.map((item) => (
-                          <TableRow key={item.id} hover>
-                            <TableCell padding="checkbox">
-                              <Checkbox
-                                size="small"
-                                checked={isSelected(item.id)}
-                                onChange={() => handleCampaignCheckboxClick(item.id)}
-                              />
-                            </TableCell>
-                            <TableCell component="th" scope="row" sx={{ paddingLeft: '32px' }}>
-                              <Link 
-                                href="#" 
-                                underline="hover"
-                                color="primary"
+                        {!collapsedCampaigns.has(parentCampaign) && (() => {
+                          // Sort ad groups if a status is selected for this campaign
+                          const sortedAdGroups = adGroupStatusSort[parentCampaign]
+                            ? [...adGroups].sort((a, b) => {
+                                const selectedStatus = adGroupStatusSort[parentCampaign];
+                                // Move matching status to the top
+                                if (a.status === selectedStatus && b.status !== selectedStatus) return -1;
+                                if (a.status !== selectedStatus && b.status === selectedStatus) return 1;
+                                return 0; // Keep original order for same priority
+                              })
+                            : adGroups;
+                          
+                          return sortedAdGroups.map((item) => (
+                            <TableRow key={item.id} hover>
+                              <TableCell padding="checkbox">
+                                <Checkbox
+                                  size="small"
+                                  checked={isSelected(item.id)}
+                                  onChange={() => handleCampaignCheckboxClick(item.id)}
+                                />
+                              </TableCell>
+                              <TableCell component="th" scope="row" sx={{ paddingLeft: '32px' }}>
+                                <Link 
+                                  href="#" 
+                                  underline="hover"
+                                  color="primary"
                                 sx={{ cursor: 'pointer' }}
                                 onClick={(e) => {
                                   e.preventDefault();
@@ -5998,7 +9428,8 @@ export default function App() {
                               </IconButton>
                             </TableCell>
                           </TableRow>
-                        ))}
+                          ));
+                        })()}
                       </React.Fragment>
                     ));
                   })()
@@ -6105,8 +9536,8 @@ export default function App() {
               </TableBody>
             </Table>
           </TableContainer>
-          </>
-          )}
+          </React.Fragment>
+          ) : null}
 
           {/* Audience Drawer for Ad Groups */}
           <AudienceDrawer
@@ -6121,33 +9552,10 @@ export default function App() {
           />
         </Container>
       ) : currentView === 'reports' ? (
+        <>
         <Container maxWidth={false} sx={{ p: "20px" }}>
           {/* Filter Controls */}
-          <Box sx={{ display: "flex", gap: 2, mb: 4, flexWrap: 'wrap' }}>
-            {/* Campaign Multi-select */}
-            <FormControl sx={{ minWidth: 300 }} size="small">
-              <InputLabel>Campaigns</InputLabel>
-              <Select
-                multiple
-                size="small"
-                value={reportsSelectedCampaigns}
-                onChange={(event) => setReportsSelectedCampaigns(event.target.value)}
-                label="Campaigns"
-                renderValue={(selected) => 
-                  selected.length === 0 
-                    ? 'Select campaigns...' 
-                    : `${selected.length} campaign${selected.length === 1 ? '' : 's'} selected`
-                }
-              >
-                {campaigns.map((campaign) => (
-                  <MenuItem key={campaign.id} value={campaign.id}>
-                    <Checkbox checked={reportsSelectedCampaigns.indexOf(campaign.id) > -1} />
-                    <ListItemText primary={campaign.campaign} />
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
+          <Box sx={{ display: "flex", gap: '6px', mb: 4, flexWrap: 'wrap', alignItems: 'flex-start' }}>
             {/* Date Range */}
             <DateRangeField 
               sx={{ gap: '6px' }}
@@ -6157,29 +9565,147 @@ export default function App() {
               onEndDateChange={(dateString) => setReportsEndDate(dateString ? new Date(dateString) : null)}
             />
 
+            {/* Campaign Multi-select */}
+            {(visibleReportFilters.campaigns || reportsSelectedCampaigns.length > 0) && (
+              <FormControl sx={{ minWidth: 120, maxWidth: 360 }} size="small">
+                <InputLabel shrink>Campaigns</InputLabel>
+                <Select
+                  multiple
+                  size="small"
+                  value={reportsSelectedCampaigns}
+                  onChange={(event) => setReportsSelectedCampaigns(event.target.value)}
+                  label="Campaigns"
+                  displayEmpty
+                  open={reportsCampaignsFilterOpen}
+                  onOpen={() => setReportsCampaignsFilterOpen(true)}
+                  onClose={() => setReportsCampaignsFilterOpen(false)}
+                  endAdornment={
+                    reportsSelectedCampaigns.length > 0 && (
+                      <IconButton
+                        size="small"
+                        sx={{ mr: 3 }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setReportsSelectedCampaigns([]);
+                        }}
+                      >
+                        <ClearIcon fontSize="small" />
+                      </IconButton>
+                    )
+                  }
+                  renderValue={(selected) => {
+                    if (selected.length === 0) {
+                      return 'All';
+                    } else if (selected.length === 1) {
+                      const campaign = campaigns.find(c => c.id === selected[0]);
+                      return campaign ? campaign.campaign : 'All';
+                    } else {
+                      return `${selected.length} campaigns selected`;
+                    }
+                  }}
+                >
+                  {campaigns.map((campaign) => (
+                    <MenuItem key={campaign.id} value={campaign.id}>
+                      <Checkbox checked={reportsSelectedCampaigns.indexOf(campaign.id) > -1} />
+                      <ListItemText primary={campaign.campaign} />
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+
             {/* Creatives Multi-select */}
-            <FormControl sx={{ minWidth: 300 }} size="small">
-              <InputLabel>Creatives</InputLabel>
-              <Select
-                multiple
-                size="small"
-                value={reportsSelectedCreatives}
-                onChange={(event) => setReportsSelectedCreatives(event.target.value)}
-                label="Creatives"
-                renderValue={(selected) => 
-                  selected.length === 0 
-                    ? 'Select creatives...' 
-                    : `${selected.length} creative${selected.length === 1 ? '' : 's'} selected`
+            {(visibleReportFilters.creatives || reportsSelectedCreatives.length > 0) && (
+              <FormControl sx={{ minWidth: 120, maxWidth: 360 }} size="small">
+                <InputLabel shrink>Creatives</InputLabel>
+                <Select
+                  multiple
+                  size="small"
+                  value={reportsSelectedCreatives}
+                  onChange={(event) => setReportsSelectedCreatives(event.target.value)}
+                  label="Ads"
+                  displayEmpty
+                  open={reportsCreativesFilterOpen}
+                  onOpen={() => setReportsCreativesFilterOpen(true)}
+                  onClose={() => setReportsCreativesFilterOpen(false)}
+                  endAdornment={
+                    reportsSelectedCreatives.length > 0 && (
+                      <IconButton
+                        size="small"
+                        sx={{ mr: 3 }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setReportsSelectedCreatives([]);
+                        }}
+                      >
+                        <ClearIcon fontSize="small" />
+                      </IconButton>
+                    )
+                  }
+                  renderValue={(selected) => {
+                    if (selected.length === 0) {
+                      return 'All';
+                    } else if (selected.length === 1) {
+                      const creative = creatives.find(c => c.id === selected[0]);
+                      return creative ? creative.campaign : 'All';
+                    } else {
+                      return `${selected.length} creatives selected`;
+                    }
+                  }}
+                >
+                  {creatives.map((creative) => (
+                    <MenuItem key={creative.id} value={creative.id}>
+                      <Checkbox checked={reportsSelectedCreatives.indexOf(creative.id) > -1} />
+                      <ListItemText primary={creative.campaign} />
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+
+            {/* Filter Menu Button */}
+            <IconButton 
+              size="small" 
+              onClick={(e) => setReportsFilterMenuAnchor(e.currentTarget)}
+              sx={{ 
+                border: '1px solid rgba(0, 0, 0, 0.23)',
+                borderRadius: '6px',
+                width: 36,
+                height: 36
+              }}
+            >
+              <TuneIcon fontSize="small" sx={{ color: 'primary.main' }} />
+            </IconButton>
+
+            {/* Filter Menu */}
+            <Menu
+              anchorEl={reportsFilterMenuAnchor}
+              open={Boolean(reportsFilterMenuAnchor)}
+              onClose={() => setReportsFilterMenuAnchor(null)}
+            >
+              <MenuItem onClick={() => {
+                const isCurrentlyVisible = visibleReportFilters.campaigns || reportsSelectedCampaigns.length > 0;
+                setVisibleReportFilters(prev => ({ ...prev, campaigns: !prev.campaigns }));
+                setReportsFilterMenuAnchor(null);
+                if (!isCurrentlyVisible) {
+                  setTimeout(() => setReportsCampaignsFilterOpen(true), 100);
                 }
-              >
-                {creatives.map((creative) => (
-                  <MenuItem key={creative.id} value={creative.id}>
-                    <Checkbox checked={reportsSelectedCreatives.indexOf(creative.id) > -1} />
-                    <ListItemText primary={creative.campaign} />
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+              }}>
+                <Checkbox checked={visibleReportFilters.campaigns || reportsSelectedCampaigns.length > 0} size="small" />
+                <ListItemText primary="Campaigns" />
+              </MenuItem>
+              <MenuItem onClick={() => {
+                const isCurrentlyVisible = visibleReportFilters.creatives || reportsSelectedCreatives.length > 0;
+                setVisibleReportFilters(prev => ({ ...prev, creatives: !prev.creatives }));
+                setReportsFilterMenuAnchor(null);
+                if (!isCurrentlyVisible) {
+                  setTimeout(() => setReportsCreativesFilterOpen(true), 100);
+                }
+              }}>
+                <Checkbox checked={visibleReportFilters.creatives || reportsSelectedCreatives.length > 0} size="small" />
+                <ListItemText primary="Creatives" />
+              </MenuItem>
+            </Menu>
           </Box>
 
           {/* Reports Tabs */}
@@ -6194,66 +9720,544 @@ export default function App() {
                 }
               }}
             >
-              <Tab label="Ad account" />
-              <Tab label="Location" />
-              <Tab label="Creative" />
-              <Tab label="Placement" />
+              <Tab label="Delivery & Engagement" sx={{ display: reportTabVisibility[0] ? 'inline-flex' : 'none' }} />
+              <Tab label="Channel & Content Transparency" sx={{ display: reportTabVisibility[1] ? 'inline-flex' : 'none' }} />
+              <Tab label="Native Ads & Sponsorship" sx={{ display: reportTabVisibility[2] ? 'inline-flex' : 'none' }} />
+              <Tab label="Audience insights" sx={{ display: reportTabVisibility[3] ? 'inline-flex' : 'none' }} />
             </Tabs>
           </Box>
 
-          {/* Metrics Card */}
-          <Box sx={{ 
-            display: 'flex', 
-            gap: 4, 
-            p: 3,
-            backgroundColor: 'white',
-            boxShadow: '0 1px 6px rgba(0, 0, 0, 0.1)',
-            borderRadius: 1,
-            mb: 4,
-            flexWrap: 'wrap',
-            justifyContent: 'space-between'
-          }}>
-            <Box sx={{ flex: 1, minWidth: '120px' }}>
-              <Typography variant="caption" color="text.secondary">Spend</Typography>
-              <Typography variant="body1" sx={{ fontWeight: 'bold' }}>$12,345.67</Typography>
-            </Box>
-            <Box sx={{ flex: 1, minWidth: '120px' }}>
-              <Typography variant="caption" color="text.secondary">Impressions</Typography>
-              <Typography variant="body1" sx={{ fontWeight: 'bold' }}>1,234,567</Typography>
-            </Box>
-            <Box sx={{ flex: 1, minWidth: '120px' }}>
-              <Typography variant="caption" color="text.secondary">Goal Actions</Typography>
-              <Typography variant="body1" sx={{ fontWeight: 'bold' }}>8,912</Typography>
-            </Box>
-            <Box sx={{ flex: 1, minWidth: '120px' }}>
-              <Typography variant="caption" color="text.secondary">Total Households Reached</Typography>
-              <Typography variant="body1" sx={{ fontWeight: 'bold' }}>345,678</Typography>
-            </Box>
-            <Box sx={{ flex: 1, minWidth: '120px' }}>
-              <Typography variant="caption" color="text.secondary">Active Campaigns</Typography>
-              <Typography variant="body1" sx={{ fontWeight: 'bold' }}>12</Typography>
-            </Box>
-            <Box sx={{ flex: 1, minWidth: '120px' }}>
-              <Typography variant="caption" color="text.secondary">CPM</Typography>
-              <Typography variant="body1" sx={{ fontWeight: 'bold' }}>$3.57</Typography>
-            </Box>
-            <Box sx={{ flex: 1, minWidth: '120px' }}>
-              <Typography variant="caption" color="text.secondary">CPA</Typography>
-              <Typography variant="body1" sx={{ fontWeight: 'bold' }}>$1.39</Typography>
-            </Box>
-            <Box sx={{ flex: 1, minWidth: '120px' }}>
-              <Typography variant="caption" color="text.secondary">Cost per Unique Reach</Typography>
-              <Typography variant="body1" sx={{ fontWeight: 'bold' }}>$0.04</Typography>
-            </Box>
-          </Box>
+          {/* Tab Content */}
+          {reportsSelectedTab !== 3 && (
+            <>
+          {/* Summary Card - Delivery & Engagement tab only */}
+          {reportsSelectedTab === 0 && reportCardVisibility.summary && (
+            <Box sx={{ p: 3, mb: 4, backgroundColor: 'white', boxShadow: '0 1px 6px rgba(0, 0, 0, 0.1)', borderRadius: 1, '& .MuiTypography-caption': { fontSize: '12px' }, '& .MuiTypography-subtitle2': { fontSize: '12px' } }}>
+              {/* Header */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Typography variant="h2" sx={{ fontWeight: 'bold' }}>Summary</Typography>
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                  <IconButton size="small" onClick={handleSummaryMenuOpen}><MoreHorizIcon /></IconButton>
+                  <Menu
+                    anchorEl={summaryMenuAnchor}
+                    open={Boolean(summaryMenuAnchor)}
+                    onClose={handleSummaryMenuClose}
+                  >
+                    <MenuItem onClick={() => handleSummarySectionToggle('impression')}>
+                      <Checkbox checked={visibleSummarySections.impression} />
+                      <ListItemText primary="Impressions" />
+                    </MenuItem>
+                    <MenuItem onClick={() => handleSummarySectionToggle('spend')}>
+                      <Checkbox checked={visibleSummarySections.spend} />
+                      <ListItemText primary="Spend" />
+                    </MenuItem>
+                    <MenuItem onClick={() => handleSummarySectionToggle('engagement')}>
+                      <Checkbox checked={visibleSummarySections.engagement} />
+                      <ListItemText primary="Engagement" />
+                    </MenuItem>
+                  </Menu>
+                </Box>
+              </Box>
 
-          {/* Chart Card */}
-          <Paper sx={{ p: 3, mb: 4 }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Daily Impressions/Spend
-            </Typography>
-            <Box sx={{ height: 400 }}>
-              <Bar 
+              <Box sx={{ display: 'flex', gap: 0 }}>
+                {/* Impression Section */}
+                {visibleSummarySections.impression && (
+                <Box sx={{ flex: 1, px: 2.5, borderRight: '1px solid', borderColor: 'divider' }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Impression</Typography>
+                    <Chip label="Out performing" size="small" sx={{ backgroundColor: '#e8f5e9', color: '#2e7d32', fontWeight: 600, fontSize: '0.7rem', height: 24 }} />
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">Delivered Impressions</Typography>
+                      <Typography variant="h1" sx={{ fontWeight: 'bold' }}>11.6M</Typography>
+                      <Typography variant="caption">of <strong>11.7M</strong> booked</Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <Box sx={{ width: 120, height: 120, position: 'relative' }}>
+                        <Doughnut
+                          data={{
+                            datasets: [{
+                              data: [88, 12],
+                              backgroundColor: ['#4caf50', '#e0e0e0'],
+                              borderWidth: 0,
+                            }]
+                          }}
+                          options={{
+                            cutout: '75%',
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: { legend: { display: false }, tooltip: { enabled: false } }
+                          }}
+                        />
+                        <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
+                          <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.7rem' }}>88%</Typography>
+                        </Box>
+                      </Box>
+                      <Typography variant="caption" sx={{ mt: 0.5, fontWeight: 'bold', color: '#4caf50' }}>88% delivered</Typography>
+                    </Box>
+                    <Divider orientation="vertical" flexItem />
+                    <Box sx={{ textAlign: 'right' }}>
+                      <Typography variant="caption" color="text.secondary">HH Frequency</Typography>
+                      <Typography variant="h1" sx={{ fontWeight: 'bold' }}>1.83</Typography>
+                    </Box>
+                  </Box>
+                </Box>
+                )}
+
+                {/* Spend Section */}
+                {visibleSummarySections.spend && (
+                <Box sx={{ flex: 1, px: 2.5, borderRight: '1px solid', borderColor: 'divider' }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Spend</Typography>
+                    <Chip label="Near limit" size="small" sx={{ backgroundColor: '#fff3e0', color: '#e65100', fontWeight: 600, fontSize: '0.7rem', height: 24 }} />
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">Delivered Spending</Typography>
+                      <Typography variant="h1" sx={{ fontWeight: 'bold' }}>$161k</Typography>
+                      <Typography variant="caption">of <strong>$162k</strong> booked</Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <Box sx={{ width: 120, height: 120, position: 'relative' }}>
+                        <Doughnut
+                          data={{
+                            datasets: [{
+                              data: [99, 1],
+                              backgroundColor: ['#bf360c', '#e0e0e0'],
+                              borderWidth: 0,
+                            }]
+                          }}
+                          options={{
+                            cutout: '75%',
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: { legend: { display: false }, tooltip: { enabled: false } }
+                          }}
+                        />
+                        <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
+                          <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.7rem' }}>99%</Typography>
+                        </Box>
+                      </Box>
+                      <Typography variant="caption" sx={{ mt: 0.5, fontWeight: 'bold', color: '#bf360c' }}>99% spent</Typography>
+                    </Box>
+                    <Divider orientation="vertical" flexItem />
+                    <Box sx={{ textAlign: 'right' }}>
+                      <Typography variant="caption" color="text.secondary">eCPM</Typography>
+                      <Typography variant="h1" sx={{ fontWeight: 'bold' }}>$13.84</Typography>
+                    </Box>
+                  </Box>
+                </Box>
+                )}
+
+                {/* Engagement Section */}
+                {visibleSummarySections.engagement && (
+                <Box sx={{ flex: 1, px: 2.5 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Engagement</Typography>
+                    <Chip label="On track" size="small" sx={{ backgroundColor: '#e8f5e9', color: '#2e7d32', fontWeight: 600, fontSize: '0.7rem', height: 24 }} />
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 3, alignItems: 'flex-start' }}>
+                    {/* Click Performance */}
+                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Click Performance</Typography>
+                      <Box sx={{ display: 'flex', gap: 3, mt: 'auto', mb: 1, pt: '28px' }}>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary">Clicks</Typography>
+                          <Typography variant="h1" sx={{ fontWeight: 'bold' }}>29,872</Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary">CTR</Typography>
+                          <Typography variant="h1" sx={{ fontWeight: 'bold' }}>0.26%</Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                    {/* Video Completion */}
+                    <Box sx={{ flex: 1 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Video Completion</Typography>
+                        <Box sx={{ textAlign: 'right' }}>
+                          <Typography variant="caption" color="text.secondary">VCR</Typography>
+                          <Typography variant="h1" sx={{ fontWeight: 'bold' }}>4%</Typography>
+                        </Box>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 0.5, mt: 3, height: 100 }}>
+                        {[
+                          { label: '25%', value: 0.9, color: '#0d47a1' },
+                          { label: '50%', value: 0.55, color: '#1565c0' },
+                          { label: '75%', value: 0.25, color: '#42a5f5' },
+                          { label: '100%', value: 0.10, color: '#90caf9' },
+                        ].map((bar) => (
+                          <Box key={bar.label} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
+                            <Box sx={{ width: '100%', maxWidth: 28, height: bar.value * 100, backgroundColor: bar.color, borderRadius: '2px 2px 0 0' }} />
+                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem', mt: 0.5 }}>{bar.label}</Typography>
+                          </Box>
+                        ))}
+                      </Box>
+                    </Box>
+                  </Box>
+                </Box>
+                )}
+              </Box>
+            </Box>
+          )}
+
+              {/* Branded Experience - Ad Reach Card (Native Ads & Sponsorship tab only) */}
+              {reportsSelectedTab === 2 && reportCardVisibility.sponsorshipInsights && (
+              <Paper sx={{ p: 3, mb: 4 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Typography variant="h2" sx={{ fontWeight: 'bold' }}>
+                    Sponsorship Insights
+                  </Typography>
+                  <IconButton size="small" onClick={(e) => setSponsorshipInsightsMenuAnchor(e.currentTarget)}>
+                    <MoreHorizIcon />
+                  </IconButton>
+                  <Menu
+                    anchorEl={sponsorshipInsightsMenuAnchor}
+                    open={Boolean(sponsorshipInsightsMenuAnchor)}
+                    onClose={() => setSponsorshipInsightsMenuAnchor(null)}
+                  >
+                    <MenuItem onClick={() => handleSponsorshipChartToggle('nonSponsorshipPie')}>
+                      <Checkbox checked={visibleSponsorshipCharts.nonSponsorshipPie} />
+                      <ListItemText primary="Non-sponsorship Video and Sponsorship" />
+                    </MenuItem>
+                    <MenuItem onClick={() => handleSponsorshipChartToggle('videoSponsorshipPie')}>
+                      <Checkbox checked={visibleSponsorshipCharts.videoSponsorshipPie} />
+                      <ListItemText primary="Video and Sponsorship" />
+                    </MenuItem>
+                    <MenuItem onClick={() => handleSponsorshipChartToggle('brandedExperience')}>
+                      <Checkbox checked={visibleSponsorshipCharts.brandedExperience} />
+                      <ListItemText primary="Branded Experience - Ad Reach" />
+                    </MenuItem>
+                    <MenuItem onClick={() => handleSponsorshipChartToggle('nativeAdsBreakout')}>
+                      <Checkbox checked={visibleSponsorshipCharts.nativeAdsBreakout} />
+                      <ListItemText primary="Native Ads - Breakout" />
+                    </MenuItem>
+                  </Menu>
+                </Box>
+                {/* Pie Charts Row */}
+                {(visibleSponsorshipCharts.nonSponsorshipPie || visibleSponsorshipCharts.videoSponsorshipPie) && (
+                <Box sx={{ display: 'flex', gap: 3, mb: 4 }}>
+                  {visibleSponsorshipCharts.nonSponsorshipPie && (
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 'bold' }}>Non-sponsorship Video and Sponsorship</Typography>
+                    <Box sx={{ height: 300, display: 'flex', justifyContent: 'center' }}>
+                      <Pie
+                        data={{
+                          labels: ['Sponsorship', 'Sponsorship & Video', 'Video Only'],
+                          datasets: [{
+                            data: [35, 40, 25],
+                            backgroundColor: ['#4a148c', '#8e24aa', '#ce93d8'],
+                            borderColor: '#fff',
+                            borderWidth: 2,
+                          }]
+                        }}
+                        options={{
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          plugins: {
+                            legend: {
+                              position: 'bottom',
+                              labels: {
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                boxWidth: 8,
+                                boxHeight: 8,
+                              }
+                            },
+                          },
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                  )}
+                  {visibleSponsorshipCharts.videoSponsorshipPie && (
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 'bold' }}>Video and Sponsorship</Typography>
+                    <Box sx={{ height: 300, display: 'flex', justifyContent: 'center' }}>
+                      <Pie
+                        data={{
+                          labels: ['Sponsorship (non-video)', 'Video and Sponsorship', 'Video only'],
+                          datasets: [{
+                            data: [28, 45, 27],
+                            backgroundColor: ['#4a148c', '#8e24aa', '#ce93d8'],
+                            borderColor: '#fff',
+                            borderWidth: 2,
+                          }]
+                        }}
+                        options={{
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          plugins: {
+                            legend: {
+                              position: 'bottom',
+                              labels: {
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                boxWidth: 8,
+                                boxHeight: 8,
+                              }
+                            },
+                          },
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                  )}
+                </Box>
+                )}
+                {/* Waterfall Charts Row */}
+                {(visibleSponsorshipCharts.brandedExperience || visibleSponsorshipCharts.nativeAdsBreakout) && (
+                <Box sx={{ display: 'flex', gap: 3 }}>
+                {visibleSponsorshipCharts.brandedExperience && (
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 'bold' }}>Branded Experience - Ad Reach</Typography>
+                  <Box sx={{ height: 400 }}>
+                  <Bar
+                    plugins={[{
+                      id: 'waterfallLabels',
+                      afterDatasetsDraw(chart) {
+                        const { ctx } = chart;
+                        chart.getDatasetMeta(0).data.forEach((bar, index) => {
+                          const raw = chart.data.datasets[0].data[index];
+                          const value = Array.isArray(raw) ? raw[1] - raw[0] : raw;
+                          ctx.save();
+                          ctx.fillStyle = '#fff';
+                          ctx.font = 'bold 18px sans-serif';
+                          ctx.textAlign = 'center';
+                          ctx.textBaseline = 'middle';
+                          ctx.fillText(value + '%', bar.x, (bar.y + bar.base) / 2);
+                          ctx.restore();
+                        });
+                      }
+                    }]}
+                    data={{
+                      labels: ['Native Ads', 'Added Value\nNative Ads', 'Sponsorship\nVideo', 'Added Value\nSponsorship Ads', 'Roku City'],
+                      datasets: [{
+                        label: 'Reach',
+                        data: [
+                          [0, 35],
+                          [35, 55],
+                          [55, 72],
+                          [72, 87],
+                          [87, 100],
+                        ],
+                        backgroundColor: [
+                          '#4a148c',
+                          '#6a1b9a',
+                          '#8e24aa',
+                          '#ab47bc',
+                          '#ce93d8',
+                        ],
+                        borderColor: [
+                          '#4a148c',
+                          '#6a1b9a',
+                          '#8e24aa',
+                          '#ab47bc',
+                          '#ce93d8',
+                        ],
+                        borderWidth: 1,
+                        borderSkipped: false,
+                      }]
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          display: false,
+                        },
+                        tooltip: {
+                          enabled: false,
+                          external: (context) => {
+                            let tooltipEl = document.getElementById('waterfall-tooltip');
+                            if (!tooltipEl) {
+                              tooltipEl = document.createElement('div');
+                              tooltipEl.id = 'waterfall-tooltip';
+                              tooltipEl.style.cssText = 'background: rgba(0,0,0,0.8); color: #fff; border-radius: 6px; padding: 10px 14px; pointer-events: none; position: absolute; transition: all 0.1s ease; font-family: sans-serif; z-index: 9999;';
+                              document.body.appendChild(tooltipEl);
+                            }
+                            const tooltipModel = context.tooltip;
+                            if (tooltipModel.opacity === 0) {
+                              tooltipEl.style.opacity = 0;
+                              return;
+                            }
+                            const dataIndex = tooltipModel.dataPoints?.[0]?.dataIndex;
+                            const raw = tooltipModel.dataPoints?.[0]?.raw;
+                            const base = Array.isArray(raw) ? raw[0] : 0;
+                            const top = Array.isArray(raw) ? raw[1] : raw;
+                            let html = '';
+                            if (dataIndex === 0) {
+                              html += '<div style="font-size:12px;margin-bottom:8px;">Locations<br/>- Tiles (Where to Watch, Featured Free, Roku Channel)<br/>- Native Ads (Marquee, Billboard, Spotlight Ads)</div>';
+                            } else if (dataIndex === 1) {
+                              html += '<div style="font-size:12px;margin-bottom:8px;">Locations<br/>- Tiles (Where to Watch, Featured Free, Roku Channel)<br/>- Title Cards<br/>- Pause Ads<br/>- Native Ads (Spotlight Ads)<br/>- Microsites (Passes, Playlists, Zones)</div>';
+                            } else if (dataIndex === 2) {
+                              html += '<div style="font-size:12px;margin-bottom:8px;">Locations<br/>- Sponsorship Ad Video (Standard Ad Video, Takeover Pod)<br/>- Custom Videos (Vignettes, Tagged Tune Ins)<br/>- Action Ads (Standard Ad Video + Overlay, Scannable Ads, 3P Brightline/Innvoid Action Ads)</div>';
+                            } else if (dataIndex === 4) {
+                              html += '<div style="font-size:12px;margin-bottom:8px;">Buildings, Cars, Neighborhoods</div>';
+                            }
+                            html += '<div style="font-size:18px;font-weight:bold;">Reach: ' + (top - base) + '%</div>';
+                            tooltipEl.innerHTML = html;
+                            const position = context.chart.canvas.getBoundingClientRect();
+                            tooltipEl.style.opacity = 1;
+                            tooltipEl.style.left = position.left + window.scrollX + tooltipModel.caretX + 'px';
+                            tooltipEl.style.top = position.top + window.scrollY + tooltipModel.caretY - 10 + 'px';
+                            tooltipEl.style.transform = 'translate(-50%, -100%)';
+                          }
+                        }
+                      },
+                      scales: {
+                        x: {
+                          display: true,
+                          ticks: {
+                            font: { size: 11 },
+                          },
+                          grid: {
+                            display: false,
+                          }
+                        },
+                        y: {
+                          display: true,
+                          min: 0,
+                          max: 100,
+                          title: {
+                            display: true,
+                            text: 'Reach (%)',
+                          },
+                          ticks: {
+                            callback: (value) => value + '%',
+                          },
+                        },
+                      },
+                    }}
+                  />
+                </Box>
+                </Box>
+                )}
+                {visibleSponsorshipCharts.nativeAdsBreakout && (
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 'bold' }}>Native Ads - Breakout</Typography>
+                  <Box sx={{ height: 400 }}>
+                  <Bar
+                    plugins={[{
+                      id: 'waterfallLabels2',
+                      afterDatasetsDraw(chart) {
+                        const { ctx } = chart;
+                        chart.getDatasetMeta(0).data.forEach((bar, index) => {
+                          const raw = chart.data.datasets[0].data[index];
+                          const value = Array.isArray(raw) ? raw[1] - raw[0] : raw;
+                          ctx.save();
+                          ctx.fillStyle = '#fff';
+                          ctx.font = 'bold 18px sans-serif';
+                          ctx.textAlign = 'center';
+                          ctx.textBaseline = 'middle';
+                          ctx.fillText(value + '%', bar.x, (bar.y + bar.base) / 2);
+                          ctx.restore();
+                        });
+                      }
+                    }]}
+                    data={{
+                      labels: ['Marquee Ad\n- Video', 'Marquee Ad\n- Banner', 'Spotlight\nAd', 'Added Value\nSponsorship Video'],
+                      datasets: [{
+                        label: 'Reach',
+                        data: [
+                          [0, 38],
+                          [38, 62],
+                          [62, 82],
+                          [82, 100],
+                        ],
+                        backgroundColor: [
+                          '#4a148c',
+                          '#6a1b9a',
+                          '#8e24aa',
+                          '#ab47bc',
+                        ],
+                        borderColor: [
+                          '#4a148c',
+                          '#6a1b9a',
+                          '#8e24aa',
+                          '#ab47bc',
+                        ],
+                        borderWidth: 1,
+                        borderSkipped: false,
+                      }]
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          display: false,
+                        },
+                        tooltip: {
+                          enabled: false,
+                          external: (context) => {
+                            let tooltipEl = document.getElementById('waterfall-tooltip-2');
+                            if (!tooltipEl) {
+                              tooltipEl = document.createElement('div');
+                              tooltipEl.id = 'waterfall-tooltip-2';
+                              tooltipEl.style.cssText = 'background: rgba(0,0,0,0.8); color: #fff; border-radius: 6px; padding: 10px 14px; pointer-events: none; position: absolute; transition: all 0.1s ease; font-family: sans-serif; z-index: 9999;';
+                              document.body.appendChild(tooltipEl);
+                            }
+                            const tooltipModel = context.tooltip;
+                            if (tooltipModel.opacity === 0) {
+                              tooltipEl.style.opacity = 0;
+                              return;
+                            }
+                            const raw = tooltipModel.dataPoints?.[0]?.raw;
+                            const base = Array.isArray(raw) ? raw[0] : 0;
+                            const top = Array.isArray(raw) ? raw[1] : raw;
+                            let html = '<div style="font-size:18px;font-weight:bold;">Reach: ' + (top - base) + '%</div>';
+                            tooltipEl.innerHTML = html;
+                            const position = context.chart.canvas.getBoundingClientRect();
+                            tooltipEl.style.opacity = 1;
+                            tooltipEl.style.left = position.left + window.scrollX + tooltipModel.caretX + 'px';
+                            tooltipEl.style.top = position.top + window.scrollY + tooltipModel.caretY - 10 + 'px';
+                            tooltipEl.style.transform = 'translate(-50%, -100%)';
+                          }
+                        }
+                      },
+                      scales: {
+                        x: {
+                          display: true,
+                          ticks: {
+                            font: { size: 11 },
+                          },
+                          grid: {
+                            display: false,
+                          }
+                        },
+                        y: {
+                          display: true,
+                          min: 0,
+                          max: 100,
+                          title: {
+                            display: true,
+                            text: 'Reach (%)',
+                          },
+                          ticks: {
+                            callback: (value) => value + '%',
+                          },
+                        },
+                      },
+                    }}
+                  />
+                </Box>
+                </Box>
+                )}
+                </Box>
+                )}
+              </Paper>
+              )}
+
+              {/* Chart Card */}
+              {reportsSelectedTab !== 1 && reportsSelectedTab !== 2 && reportCardVisibility.dailyImpressionsSpend && (
+              <Paper sx={{ p: 3, mb: 4 }}>
+                <Typography variant="h2" sx={{ mb: 2, fontWeight: 'bold' }}>
+                  Daily Impressions/Spend
+                </Typography>
+                <Box sx={{ height: 400 }}>
+                  <Bar 
                 data={generateChartData(
                   reportsStartDate, 
                   reportsEndDate, 
@@ -6265,7 +10269,13 @@ export default function App() {
                   maintainAspectRatio: false,
                   plugins: {
                     legend: {
-                      position: 'top',
+                      position: 'bottom',
+                      labels: {
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        boxWidth: 6,
+                        boxHeight: 6,
+                      }
                     },
                     title: {
                       display: false,
@@ -6305,25 +10315,1067 @@ export default function App() {
               />
             </Box>
           </Paper>
+              )}
 
-          {/* Reports Content */}
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Report Data
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              {reportsSelectedCampaigns.length === 0 && reportsSelectedCreatives.length === 0
-                ? 'Please select campaigns and/or creatives to view report data.'
-                : `Showing data for ${reportsSelectedCampaigns.length} campaign${reportsSelectedCampaigns.length === 1 ? '' : 's'} and ${reportsSelectedCreatives.length} creative${reportsSelectedCreatives.length === 1 ? '' : 's'}.`
-              }
-            </Typography>
-            {(reportsStartDate || reportsEndDate) && (
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                Date range: {reportsStartDate ? reportsStartDate.toLocaleDateString() : 'Start date not set'} - {reportsEndDate ? reportsEndDate.toLocaleDateString() : 'End date not set'}
-              </Typography>
+            </>
+          )}
+
+          {/* Audience Insights Tab Content */}
+          {reportsSelectedTab === 3 && (
+            <>
+          {/* Audience Insights Tile */}
+          {reportCardVisibility.audienceInsights && <AudienceInsightsTile />}
+          
+          {/* Demographic Card */}
+          {reportCardVisibility.demographic && (
+          <Box sx={{ p: 3, mb: 4, backgroundColor: 'white', boxShadow: '0 1px 6px rgba(0, 0, 0, 0.1)', borderRadius: 1 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+              <Box>
+                <Typography variant="h2" sx={{ fontWeight: 'bold' }}>Demographic</Typography>
+                <Typography variant="body2" color="text.secondary">Entry Ads &amp; Destination Formats Metrics</Typography>
+              </Box>
+              <IconButton size="small" onClick={(e) => setDemographicMenuAnchor(e.currentTarget)}>
+                <MoreHorizIcon />
+              </IconButton>
+              <Menu
+                anchorEl={demographicMenuAnchor}
+                open={Boolean(demographicMenuAnchor)}
+                onClose={() => setDemographicMenuAnchor(null)}
+              >
+                <MenuItem onClick={() => handleDemographicSectionToggle('ageDistribution')}>
+                  <Checkbox checked={visibleDemographicSections.ageDistribution} />
+                  <ListItemText primary="Age Distribution" />
+                </MenuItem>
+                <MenuItem onClick={() => handleDemographicSectionToggle('gender')}>
+                  <Checkbox checked={visibleDemographicSections.gender} />
+                  <ListItemText primary="Gender" />
+                </MenuItem>
+                <MenuItem onClick={() => handleDemographicSectionToggle('maritalStatus')}>
+                  <Checkbox checked={visibleDemographicSections.maritalStatus} />
+                  <ListItemText primary="Marital Status" />
+                </MenuItem>
+                <MenuItem onClick={() => handleDemographicSectionToggle('userEngagement')}>
+                  <Checkbox checked={visibleDemographicSections.userEngagement} />
+                  <ListItemText primary="User Engagement" />
+                </MenuItem>
+              </Menu>
+            </Box>
+
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+              {/* Age Distribution */}
+              {visibleDemographicSections.ageDistribution && (
+              <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Age Distribution</Typography>
+                  <IconButton size="small"><MoreHorizIcon /></IconButton>
+                </Box>
+                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Box sx={{ width: 10, height: 10, backgroundColor: '#7b1fa2', borderRadius: '2px' }} />
+                    <Typography variant="caption">Metric</Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Box sx={{ width: 10, height: 10, backgroundColor: '#bdbdbd', borderRadius: '2px' }} />
+                    <Typography variant="caption">Baseline</Typography>
+                  </Box>
+                </Box>
+                <Box sx={{ height: 180 }}>
+                  <Bar
+                    data={{
+                      labels: ['18-20', '21-24', '25-29', '30-34', '35-39', '40-44', '45-49', '50-54', '55-64'],
+                      datasets: [
+                        {
+                          label: 'Metric',
+                          data: [8, 15, 22, 28, 32, 25, 18, 12, 7],
+                          backgroundColor: '#7b1fa2',
+                          borderRadius: 2,
+                          barPercentage: 0.7,
+                          categoryPercentage: 0.8,
+                        },
+                        {
+                          label: 'Baseline',
+                          data: [10, 12, 18, 22, 26, 22, 20, 15, 10],
+                          backgroundColor: '#bdbdbd',
+                          borderRadius: 2,
+                          barPercentage: 0.7,
+                          categoryPercentage: 0.8,
+                        },
+                      ],
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: { legend: { display: false }, tooltip: { enabled: true } },
+                      scales: {
+                        x: { grid: { display: false } },
+                        y: {
+                          ticks: { callback: (val) => val + '%' },
+                          grid: { color: '#f0f0f0' },
+                        },
+                      },
+                    }}
+                  />
+                </Box>
+                <Box sx={{ textAlign: 'center', mt: 1 }} onClick={() => setAgeDistributionExpanded(prev => !prev)}>
+                  <Typography variant="caption" color="primary" sx={{ cursor: 'pointer' }}>{ageDistributionExpanded ? 'Collapse ▴' : 'Expand ▾'}</Typography>
+                </Box>
+                {ageDistributionExpanded && (
+                  <Box sx={{ mt: 2 }}>
+                    <Box sx={{ display: 'flex', gap: 2, mb: 1 }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Age range</Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold', flex: 1 }}>Performance Vs. Baseline</Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold', width: 80, textAlign: 'right' }}>% of accounts</Typography>
+                    </Box>
+                    <Divider sx={{ mb: 0 }} />
+                    <Box sx={{ display: 'flex' }}>
+                    <Box sx={{ flex: 1, height: 200 }}>
+                      <Bar
+                        plugins={[{
+                          id: 'barLabels',
+                          afterDatasetsDraw(chart) {
+                            const { ctx } = chart;
+                            chart.data.datasets[0].data.forEach((value, index) => {
+                              const meta = chart.getDatasetMeta(0);
+                              const bar = meta.data[index];
+                              const { x, y } = bar.tooltipPosition();
+                              ctx.save();
+                              ctx.font = 'bold 11px sans-serif';
+                              ctx.fillStyle = '#fff';
+                              ctx.textBaseline = 'middle';
+                              const label = `${value}%`;
+                              const textWidth = ctx.measureText(label).width;
+                              const barWidth = Math.abs(bar.width);
+                              if (barWidth > textWidth + 8) {
+                                ctx.textAlign = value < 0 ? 'left' : 'right';
+                                const xPos = value < 0 ? bar.x + 6 : bar.x - 6;
+                                ctx.fillText(label, xPos, y);
+                              } else {
+                                ctx.fillStyle = '#333';
+                                ctx.textAlign = value < 0 ? 'right' : 'left';
+                                const xPos = value < 0 ? bar.x - 4 : bar.x + 4;
+                                ctx.fillText(label, xPos, y);
+                              }
+                              ctx.restore();
+                            });
+                          }
+                        }, {
+                          id: 'zeroLine',
+                          afterDraw(chart) {
+                            const { ctx, chartArea: { top, bottom }, scales: { x } } = chart;
+                            const xPos = x.getPixelForValue(0);
+                            ctx.save();
+                            ctx.beginPath();
+                            ctx.moveTo(xPos, top);
+                            ctx.lineTo(xPos, bottom);
+                            ctx.strokeStyle = '#9e9e9e';
+                            ctx.lineWidth = 1;
+                            ctx.stroke();
+                            ctx.restore();
+                          }
+                        }]
+                        }
+                        data={{
+                          labels: ['18-24', '25-34', '35-44', '45-54', '55-64', '65+'],
+                          datasets: [{
+                            data: [-38.21, -24.18, -2.87, 16.23, 10.42, 17.85],
+                            backgroundColor: (ctx) => {
+                              const value = ctx.raw;
+                              if (value < -25) return '#c62828';
+                              if (value < 0) return '#e57373';
+                              if (value < 12) return '#66bb6a';
+                              if (value < 17) return '#43a047';
+                              return '#2e7d32';
+                            },
+                            borderRadius: 4,
+                            barThickness: 16,
+                          }],
+                        }}
+                        options={{
+                          indexAxis: 'y',
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                              callbacks: {
+                                label: (ctx) => `${ctx.raw}%`,
+                              },
+                            },
+                          },
+                          scales: {
+                            x: {
+                              min: -50,
+                              max: 50,
+                              position: 'top',
+                              grid: { display: false },
+                              ticks: { display: false },
+                              border: { display: false },
+                            },
+                            y: {
+                              title: { display: false },
+                              grid: { display: false },
+                              border: { display: false },
+                              ticks: {
+                                font: { size: 13 },
+                                crossAlign: 'center',
+                              },
+                            },
+                          },
+                        }}
+                      />
+                    </Box>
+                    <Box sx={{ width: 80, display: 'flex', flexDirection: 'column', justifyContent: 'space-around', height: 200, textAlign: 'right', py: '5px' }}>
+                      {['6.2%', '37%', '75.7%', '40%', '72.1%', '79.2%'].map((val, i) => (
+                        <Typography key={i} variant="body2">{val}</Typography>
+                      ))}
+                    </Box>
+                    </Box>
+                    {/* Gradient bar */}
+                    <Box sx={{ ml: '50px', mr: '80px', display: 'flex', height: 6, mt: 0, borderRadius: 1, overflow: 'hidden' }}>
+                      <Box sx={{ flex: 1, background: 'linear-gradient(to right, #c62828, #ef9a9a)' }} />
+                      <Box sx={{ flex: 1, background: 'linear-gradient(to right, #a5d6a7, #1b5e20)' }} />
+                    </Box>
+                    <Box sx={{ ml: '50px', mr: '80px', display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
+                      <Typography variant="caption" color="text.secondary">Under-indexing</Typography>
+                      <Typography variant="caption" color="text.secondary">Over-indexing</Typography>
+                    </Box>
+                  </Box>
+                )}
+              </Box>
+              )}
+
+              {/* Gender */}
+              {visibleDemographicSections.gender && (
+              <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Gender</Typography>
+                  <IconButton size="small"><MoreHorizIcon /></IconButton>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <Box sx={{ width: 160, height: 160, position: 'relative' }}>
+                    <Doughnut
+                      data={{
+                        labels: ['Male', 'Female'],
+                        datasets: [{
+                          data: [51.2, 48.8],
+                          backgroundColor: ['#7b1fa2', '#ce93d8'],
+                          borderWidth: 0,
+                        }],
+                      }}
+                      options={{
+                        cutout: '65%',
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: { legend: { display: false }, tooltip: { enabled: true } },
+                      }}
+                    />
+                  </Box>
+                  <Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                      <Box sx={{ width: 12, height: 12, backgroundColor: '#7b1fa2', borderRadius: '2px' }} />
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>Male</Typography>
+                        <Typography variant="body2"><strong>51.2%</strong> <Typography component="span" variant="caption" color="success.main">↑ 5.6%</Typography> <Typography component="span" variant="caption" color="text.secondary">vs Baseline</Typography></Typography>
+                      </Box>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box sx={{ width: 12, height: 12, backgroundColor: '#ce93d8', borderRadius: '2px' }} />
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>Female</Typography>
+                        <Typography variant="body2"><strong>49.8%</strong> <Typography component="span" variant="caption" color="error.main">↓ 3.2%</Typography> <Typography component="span" variant="caption" color="text.secondary">vs Baseline</Typography></Typography>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Box>
+                <Box sx={{ textAlign: 'center', mt: 1 }} onClick={() => setGenderExpanded(prev => !prev)}>
+                  <Typography variant="caption" color="primary" sx={{ cursor: 'pointer' }}>{genderExpanded ? 'Collapse ▴' : 'More info ▾'}</Typography>
+                </Box>
+                {genderExpanded && (
+                  <Box sx={{ mt: 2 }}>
+                    <Box sx={{ display: 'flex', gap: 2, mb: 1 }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Gender</Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold', flex: 1 }}>Performance Vs. Baseline</Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold', width: 80, textAlign: 'right' }}>% of accounts</Typography>
+                    </Box>
+                    <Divider sx={{ mb: 0 }} />
+                    <Box sx={{ display: 'flex' }}>
+                    <Box sx={{ flex: 1, height: 66 }}>
+                      <Bar
+                        plugins={[{
+                          id: 'barLabels',
+                          afterDatasetsDraw(chart) {
+                            const { ctx } = chart;
+                            chart.data.datasets[0].data.forEach((value, index) => {
+                              const meta = chart.getDatasetMeta(0);
+                              const bar = meta.data[index];
+                              const { x, y } = bar.tooltipPosition();
+                              ctx.save();
+                              ctx.font = 'bold 11px sans-serif';
+                              ctx.fillStyle = '#fff';
+                              ctx.textBaseline = 'middle';
+                              const label = `${value}%`;
+                              const textWidth = ctx.measureText(label).width;
+                              const barWidth = Math.abs(bar.width);
+                              if (barWidth > textWidth + 8) {
+                                ctx.textAlign = value < 0 ? 'left' : 'right';
+                                const xPos = value < 0 ? bar.x + 6 : bar.x - 6;
+                                ctx.fillText(label, xPos, y);
+                              } else {
+                                ctx.fillStyle = '#333';
+                                ctx.textAlign = value < 0 ? 'right' : 'left';
+                                const xPos = value < 0 ? bar.x - 4 : bar.x + 4;
+                                ctx.fillText(label, xPos, y);
+                              }
+                              ctx.restore();
+                            });
+                          }
+                        }, {
+                          id: 'zeroLine',
+                          afterDraw(chart) {
+                            const { ctx, chartArea: { top, bottom }, scales: { x } } = chart;
+                            const xPos = x.getPixelForValue(0);
+                            ctx.save();
+                            ctx.beginPath();
+                            ctx.moveTo(xPos, top);
+                            ctx.lineTo(xPos, bottom);
+                            ctx.strokeStyle = '#9e9e9e';
+                            ctx.lineWidth = 1;
+                            ctx.stroke();
+                            ctx.restore();
+                          }
+                        }]
+                        }
+                        data={{
+                          labels: ['Male', 'Female'],
+                          datasets: [{
+                            data: [5.6, -3.2],
+                            backgroundColor: (ctx) => {
+                              const value = ctx.raw;
+                              if (value < -25) return '#c62828';
+                              if (value < 0) return '#e57373';
+                              if (value < 12) return '#66bb6a';
+                              if (value < 17) return '#43a047';
+                              return '#2e7d32';
+                            },
+                            borderRadius: 4,
+                            barThickness: 16,
+                          }],
+                        }}
+                        options={{
+                          indexAxis: 'y',
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                              callbacks: {
+                                label: (ctx) => `${ctx.raw}%`,
+                              },
+                            },
+                          },
+                          scales: {
+                            x: {
+                              min: -50,
+                              max: 50,
+                              position: 'top',
+                              grid: { display: false },
+                              ticks: { display: false },
+                              border: { display: false },
+                            },
+                            y: {
+                              title: { display: false },
+                              grid: { display: false },
+                              border: { display: false },
+                              ticks: {
+                                font: { size: 13 },
+                                crossAlign: 'center',
+                              },
+                            },
+                          },
+                        }}
+                      />
+                    </Box>
+                    <Box sx={{ width: 80, display: 'flex', flexDirection: 'column', justifyContent: 'space-around', height: 66, textAlign: 'right', py: '5px' }}>
+                      {['51.2%', '48.8%'].map((val, i) => (
+                        <Typography key={i} variant="body2">{val}</Typography>
+                      ))}
+                    </Box>
+                    </Box>
+                    {/* Gradient bar */}
+                    <Box sx={{ ml: '50px', mr: '80px', display: 'flex', height: 6, mt: 0, borderRadius: 1, overflow: 'hidden' }}>
+                      <Box sx={{ flex: 1, background: 'linear-gradient(to right, #c62828, #ef9a9a)' }} />
+                      <Box sx={{ flex: 1, background: 'linear-gradient(to right, #a5d6a7, #1b5e20)' }} />
+                    </Box>
+                    <Box sx={{ ml: '50px', mr: '80px', display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
+                      <Typography variant="caption" color="text.secondary">Under-indexing</Typography>
+                      <Typography variant="caption" color="text.secondary">Over-indexing</Typography>
+                    </Box>
+                  </Box>
+                )}
+              </Box>
+              )}
+
+              {/* Marital Status */}
+              {visibleDemographicSections.maritalStatus && (
+              <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Marital Status</Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <IconButton size="small" onClick={() => setShowMaritalInsight(prev => !prev)}><NotificationsActiveOutlinedIcon sx={{ color: '#7b1fa2' }} /></IconButton>
+                    <IconButton size="small"><MoreHorizIcon /></IconButton>
+                  </Box>
+                </Box>
+                {showMaritalInsight && (
+                  <Box sx={{ mb: 2, p: 2, backgroundColor: '#f3e5f5', borderRadius: 1, border: '1px solid #ce93d8', display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                    <NotificationsActiveOutlinedIcon sx={{ color: '#7b1fa2', fontSize: 20, mt: 0.25 }} />
+                    <Typography variant="body2" sx={{ color: '#7b1fa2' }}>
+                      The overwhelming majority of this audience is married.
+                    </Typography>
+                  </Box>
+                )}
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                  <Box sx={{ width: 160, height: 160, position: 'relative' }}>
+                    <Doughnut
+                      data={{
+                        labels: ['Single', 'Married'],
+                        datasets: [{
+                          data: [36.6, 63.4],
+                          backgroundColor: ['#ce93d8', '#7b1fa2'],
+                          borderWidth: 0,
+                        }],
+                      }}
+                      options={{
+                        cutout: '65%',
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: { legend: { display: false }, tooltip: { enabled: true } },
+                      }}
+                    />
+                  </Box>
+                  <Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                      <Box sx={{ width: 12, height: 12, backgroundColor: '#ce93d8', borderRadius: '2px' }} />
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>Single</Typography>
+                        <Typography variant="body2"><strong>36.6%</strong> <Typography component="span" variant="caption" color="success.main">↑ 5%</Typography> <Typography component="span" variant="caption" color="text.secondary">vs Baseline</Typography></Typography>
+                      </Box>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box sx={{ width: 12, height: 12, backgroundColor: '#7b1fa2', borderRadius: '2px' }} />
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>Married</Typography>
+                        <Typography variant="body2"><strong>63.4%</strong> <Typography component="span" variant="caption" color="error.main">↓ 1.4%</Typography> <Typography component="span" variant="caption" color="text.secondary">vs Baseline</Typography></Typography>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Box>
+                <Box sx={{ textAlign: 'center', mt: 1 }} onClick={() => setMaritalStatusExpanded(prev => !prev)}>
+                  <Typography variant="caption" color="primary" sx={{ cursor: 'pointer' }}>{maritalStatusExpanded ? 'Collapse ▴' : 'More info ▾'}</Typography>
+                </Box>
+                {maritalStatusExpanded && (
+                  <Box sx={{ mt: 2 }}>
+                    <Box sx={{ display: 'flex', gap: 2, mb: 1 }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Marital status</Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold', flex: 1 }}>Performance Vs. Baseline</Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold', width: 80, textAlign: 'right' }}>% of accounts</Typography>
+                    </Box>
+                    <Divider sx={{ mb: 0 }} />
+                    <Box sx={{ display: 'flex' }}>
+                    <Box sx={{ flex: 1, height: 66 }}>
+                      <Bar
+                        plugins={[{
+                          id: 'barLabels',
+                          afterDatasetsDraw(chart) {
+                            const { ctx } = chart;
+                            chart.data.datasets[0].data.forEach((value, index) => {
+                              const meta = chart.getDatasetMeta(0);
+                              const bar = meta.data[index];
+                              const { x, y } = bar.tooltipPosition();
+                              ctx.save();
+                              ctx.font = 'bold 11px sans-serif';
+                              ctx.fillStyle = '#fff';
+                              ctx.textBaseline = 'middle';
+                              const label = `${value}%`;
+                              const textWidth = ctx.measureText(label).width;
+                              const barWidth = Math.abs(bar.width);
+                              if (barWidth > textWidth + 8) {
+                                ctx.textAlign = value < 0 ? 'left' : 'right';
+                                const xPos = value < 0 ? bar.x + 6 : bar.x - 6;
+                                ctx.fillText(label, xPos, y);
+                              } else {
+                                ctx.fillStyle = '#333';
+                                ctx.textAlign = value < 0 ? 'right' : 'left';
+                                const xPos = value < 0 ? bar.x - 4 : bar.x + 4;
+                                ctx.fillText(label, xPos, y);
+                              }
+                              ctx.restore();
+                            });
+                          }
+                        }, {
+                          id: 'zeroLine',
+                          afterDraw(chart) {
+                            const { ctx, chartArea: { top, bottom }, scales: { x } } = chart;
+                            const xPos = x.getPixelForValue(0);
+                            ctx.save();
+                            ctx.beginPath();
+                            ctx.moveTo(xPos, top);
+                            ctx.lineTo(xPos, bottom);
+                            ctx.strokeStyle = '#9e9e9e';
+                            ctx.lineWidth = 1;
+                            ctx.stroke();
+                            ctx.restore();
+                          }
+                        }]
+                        }
+                        data={{
+                          labels: ['Single', 'Married'],
+                          datasets: [{
+                            data: [5.0, -1.4],
+                            backgroundColor: (ctx) => {
+                              const value = ctx.raw;
+                              if (value < -25) return '#c62828';
+                              if (value < 0) return '#e57373';
+                              if (value < 12) return '#66bb6a';
+                              if (value < 17) return '#43a047';
+                              return '#2e7d32';
+                            },
+                            borderRadius: 4,
+                            barThickness: 16,
+                          }],
+                        }}
+                        options={{
+                          indexAxis: 'y',
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                              callbacks: {
+                                label: (ctx) => `${ctx.raw}%`,
+                              },
+                            },
+                          },
+                          scales: {
+                            x: {
+                              min: -50,
+                              max: 50,
+                              position: 'top',
+                              grid: { display: false },
+                              ticks: { display: false },
+                              border: { display: false },
+                            },
+                            y: {
+                              title: { display: false },
+                              grid: { display: false },
+                              border: { display: false },
+                              ticks: {
+                                font: { size: 13 },
+                                crossAlign: 'center',
+                              },
+                            },
+                          },
+                        }}
+                      />
+                    </Box>
+                    <Box sx={{ width: 80, display: 'flex', flexDirection: 'column', justifyContent: 'space-around', height: 66, textAlign: 'right', py: '5px' }}>
+                      {['36.6%', '63.4%'].map((val, i) => (
+                        <Typography key={i} variant="body2">{val}</Typography>
+                      ))}
+                    </Box>
+                    </Box>
+                    {/* Gradient bar */}
+                    <Box sx={{ ml: '50px', mr: '80px', display: 'flex', height: 6, mt: 0, borderRadius: 1, overflow: 'hidden' }}>
+                      <Box sx={{ flex: 1, background: 'linear-gradient(to right, #c62828, #ef9a9a)' }} />
+                      <Box sx={{ flex: 1, background: 'linear-gradient(to right, #a5d6a7, #1b5e20)' }} />
+                    </Box>
+                    <Box sx={{ ml: '50px', mr: '80px', display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
+                      <Typography variant="caption" color="text.secondary">Under-indexing</Typography>
+                      <Typography variant="caption" color="text.secondary">Over-indexing</Typography>
+                    </Box>
+                  </Box>
+                )}
+              </Box>
+              )}
+
+              {/* User Engagement */}
+              {visibleDemographicSections.userEngagement && (
+              <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>User Engagement</Typography>
+                  <IconButton size="small"><MoreHorizIcon /></IconButton>
+                </Box>
+                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Box sx={{ width: 10, height: 10, backgroundColor: '#7b1fa2', borderRadius: '2px' }} />
+                    <Typography variant="caption">Metric</Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Box sx={{ width: 10, height: 10, backgroundColor: '#bdbdbd', borderRadius: '2px' }} />
+                    <Typography variant="caption">Baseline</Typography>
+                  </Box>
+                </Box>
+                <Box sx={{ height: 180 }}>
+                  <Bar
+                    data={{
+                      labels: ['Average Hours Streamed', 'Average Days Streamed'],
+                      datasets: [
+                        {
+                          label: 'Metric',
+                          data: [85, 62],
+                          backgroundColor: '#7b1fa2',
+                          borderRadius: 2,
+                          barPercentage: 0.5,
+                          categoryPercentage: 0.6,
+                        },
+                        {
+                          label: 'Baseline',
+                          data: [70, 55],
+                          backgroundColor: '#bdbdbd',
+                          borderRadius: 2,
+                          barPercentage: 0.5,
+                          categoryPercentage: 0.6,
+                        },
+                      ],
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: { legend: { display: false }, tooltip: { enabled: true } },
+                      scales: {
+                        x: { grid: { display: false } },
+                        y: {
+                          ticks: { callback: (val) => val + '%' },
+                          grid: { color: '#f0f0f0' },
+                        },
+                      },
+                    }}
+                  />
+                </Box>
+                <Box sx={{ textAlign: 'right', mt: 1 }}>
+                  <Typography variant="caption" color="primary" sx={{ cursor: 'pointer' }}>More info ▾</Typography>
+                </Box>
+              </Box>
+              )}
+            </Box>
+          </Box>
+          )}
+
+          {/* Top Over-Indexing Features Card */}
+          {reportCardVisibility.topOverIndexingFeatures && (
+          <Box sx={{ p: 3, mb: 4, backgroundColor: 'white', boxShadow: '0 1px 6px rgba(0, 0, 0, 0.1)', borderRadius: 1 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Typography variant="h2" sx={{ fontWeight: 'bold' }}>Top Over-Indexing Features</Typography>
+              <IconButton size="small" onClick={(e) => setOverIndexMenuAnchor(e.currentTarget)}><MoreHorizIcon /></IconButton>
+              <Menu
+                anchorEl={overIndexMenuAnchor}
+                open={Boolean(overIndexMenuAnchor)}
+                onClose={() => setOverIndexMenuAnchor(null)}
+              >
+                <MenuItem onClick={() => handleOverIndexColumnToggle('metric')}>
+                  <Checkbox checked={visibleOverIndexColumns.metric} />
+                  <ListItemText primary="Metric" />
+                </MenuItem>
+                <MenuItem onClick={() => handleOverIndexColumnToggle('baseline')}>
+                  <Checkbox checked={visibleOverIndexColumns.baseline} />
+                  <ListItemText primary="Baseline" />
+                </MenuItem>
+                <MenuItem onClick={() => handleOverIndexColumnToggle('index')}>
+                  <Checkbox checked={visibleOverIndexColumns.index} />
+                  <ListItemText primary="Index" />
+                </MenuItem>
+              </Menu>
+            </Box>
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 'bold', borderBottom: '2px solid #7b1fa2' }}>Top Over-Indexing Features</TableCell>
+                    {visibleOverIndexColumns.metric && <TableCell sx={{ fontWeight: 'bold', borderBottom: '2px solid #7b1fa2' }} align="right">Metric</TableCell>}
+                    {visibleOverIndexColumns.baseline && <TableCell sx={{ fontWeight: 'bold', borderBottom: '2px solid #7b1fa2' }} align="right">Baseline</TableCell>}
+                    {visibleOverIndexColumns.index && <TableCell sx={{ fontWeight: 'bold', borderBottom: '2px solid #7b1fa2', width: 180 }} align="right">Index</TableCell>}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {[
+                    { feature: 'Adult General Education Content', metric: '3.2%', baseline: '1.1%', index: 187.7, color: '#7b1fa2' },
+                    { feature: 'Fitness & Wellness Content', metric: '4.8%', baseline: '3.4%', index: 141.3, color: '#8e24aa' },
+                    { feature: 'Home & Garden (HGTV-like) Content', metric: '6.1%', baseline: '4.5%', index: 135.6, color: '#9c27b0' },
+                    { feature: 'Natural Health/DIY Remedies Content', metric: '3.9%', baseline: '3.0%', index: 130.0, color: '#ab47bc' },
+                    { feature: 'Cooking & Food Content', metric: '7.2%', baseline: '5.8%', index: 124.1, color: '#ba68c8' },
+                    { feature: 'True Crime & Investigation Content', metric: '5.5%', baseline: '4.6%', index: 119.6, color: '#ce93d8' },
+                    { feature: 'Family TV & Kids Programming', metric: '8.3%', baseline: '7.1%', index: 116.9, color: '#e040fb' },
+                    { feature: 'Outdoor/Wildlife Content', metric: '4.1%', baseline: '3.6%', index: 113.9, color: '#e91e63' },
+                    { feature: 'Drama/Thriller Content (premium)', metric: '9.7%', baseline: '8.6%', index: 112.8, color: '#f06292' },
+                    { feature: 'Sci-Fi/Fantasy Content (premium)', metric: '6.4%', baseline: '5.9%', index: 108.5, color: '#f48fb1' },
+                  ].map((row, index) => (
+                    <TableRow key={index} sx={{ '&:last-child td': { borderBottom: 0 } }}>
+                      <TableCell>{row.feature}</TableCell>
+                      {visibleOverIndexColumns.metric && <TableCell align="right">{row.metric}</TableCell>}
+                      {visibleOverIndexColumns.baseline && <TableCell align="right">{row.baseline}</TableCell>}
+                      {visibleOverIndexColumns.index && (
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Box sx={{ flex: 1, backgroundColor: '#f0f0f0', borderRadius: 1, height: 18, position: 'relative' }}>
+                            <Box sx={{ width: `${Math.min((row.index / 200) * 100, 100)}%`, height: '100%', backgroundColor: row.color, borderRadius: 1 }} />
+                          </Box>
+                          <Typography variant="body2" sx={{ fontWeight: 600, minWidth: 40, textAlign: 'right' }}>{row.index}</Typography>
+                        </Box>
+                      </TableCell>
+                      )}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <Box sx={{ textAlign: 'center', mt: 2 }}>
+              <Typography variant="caption" color="primary" sx={{ cursor: 'pointer' }}>More info ▾</Typography>
+            </Box>
+          </Box>
+          )}
+
+          {/* Account Tenure Card */}
+          {reportCardVisibility.accountTenure && (
+          <Box sx={{ p: 3, mb: 4, backgroundColor: 'white', boxShadow: '0 1px 6px rgba(0, 0, 0, 0.1)', borderRadius: 1 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Typography variant="h2" sx={{ fontWeight: 'bold' }}>Account Tenure</Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <IconButton size="small" onClick={() => setShowTenureInsight(prev => !prev)}><NotificationsActiveOutlinedIcon sx={{ color: '#7b1fa2' }} /></IconButton>
+                <IconButton size="small"><MoreHorizIcon /></IconButton>
+              </Box>
+            </Box>
+            {showTenureInsight && (
+              <Box sx={{ mb: 3, p: 2, backgroundColor: '#f3e5f5', borderRadius: 1, border: '1px solid #ce93d8', display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                <NotificationsActiveOutlinedIcon sx={{ color: '#7b1fa2', fontSize: 20, mt: 0.25 }} />
+                <Typography variant="body2" sx={{ color: '#7b1fa2' }}>
+                  This campaign's audience is heavily concentrated in long-tenured accounts, with most users on the platform for over 4 years and closely aligned with the baseline.
+                </Typography>
+              </Box>
             )}
-          </Paper>
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Tenure</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }} align="right">Performance Vs. Baseline</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }} align="right">% of Accounts</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {[
+                    { tenure: '0 to 1 month', performance: '0%', accounts: '0.1%' },
+                    { tenure: '2 to 6 months', performance: '+35.5%', accounts: '3.9%' },
+                    { tenure: '7 to 24 months', performance: '-6.1%', accounts: '14.8%' },
+                    { tenure: '2 to 4 years', performance: '-1%', accounts: '20.6%' },
+                    { tenure: '4+ years', performance: '-0.2%', accounts: '60.6%' },
+                  ].map((row, index) => (
+                    <TableRow key={index} sx={{ '&:last-child td': { borderBottom: 0 } }}>
+                      <TableCell>{row.tenure}</TableCell>
+                      <TableCell align="right">
+                        {row.performance.startsWith('+') ? (
+                          <Chip icon={<ShowChartIcon sx={{ fontSize: 16, color: '#2e7d32 !important' }} />} label={row.performance} size="small" sx={{ backgroundColor: '#e8f5e9', color: '#2e7d32', border: '1px solid #2e7d32', fontWeight: 600, fontSize: '0.75rem', borderRadius: '6px' }} />
+                        ) : row.performance.startsWith('-') ? (
+                          <Chip icon={<ShowChartIcon sx={{ fontSize: 16, color: '#d32f2f !important', transform: 'scaleY(-1)' }} />} label={row.performance} size="small" sx={{ backgroundColor: '#ffebee', color: '#d32f2f', border: '1px solid #d32f2f', fontWeight: 600, fontSize: '0.75rem', borderRadius: '6px' }} />
+                        ) : (
+                          <Chip icon={<ShowChartIcon sx={{ fontSize: 16, color: '#1565c0 !important', transform: 'rotate(0deg)' }} />} label={row.performance} size="small" sx={{ backgroundColor: '#e3f2fd', color: '#1565c0', border: '1px solid #1565c0', fontWeight: 600, fontSize: '0.75rem', borderRadius: '6px' }} />
+                        )}
+                      </TableCell>
+                      <TableCell align="right">{row.accounts}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
+          )}
+
+        </>
+        )}
+
+          {/* Channel & Content Transparency Tab Content */}
+          {reportsSelectedTab === 1 && (
+            <>
+          {reportCardVisibility.rokuChannelDelivery && <RokuChannelDeliveryTile />}
+
+          {/* Tables Row */}
+          <Box sx={{ display: 'flex', gap: 3, mb: 4 }}>
+            {/* Channel Report Table */}
+            {reportCardVisibility.channelReport && (
+            <Paper sx={{ p: 3, flex: 1 }}>
+              <Typography variant="h2" sx={{ mb: 2, fontWeight: 'bold' }}>
+                Channel report
+              </Typography>
+              <TableContainer sx={{ maxHeight: 440 }}>
+                <Table stickyHeader>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: 'bold', backgroundColor: 'white' }}>Channel</TableCell>
+                      <TableCell sx={{ fontWeight: 'bold', backgroundColor: 'white' }} align="right">% of impressions</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {[
+                      { channel: 'Netflix', percentage: 24.5 },
+                      { channel: 'Hulu', percentage: 18.3 },
+                      { channel: 'Disney+', percentage: 15.7 },
+                      { channel: 'Prime Video', percentage: 12.4 },
+                      { channel: 'HBO Max', percentage: 9.8 },
+                      { channel: 'Peacock', percentage: 7.2 },
+                      { channel: 'Paramount+', percentage: 5.6 },
+                      { channel: 'Apple TV+', percentage: 3.4 },
+                      { channel: 'Discovery+', percentage: 2.1 },
+                      { channel: 'Showtime', percentage: 1.0 },
+                    ].map((item, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{item.channel}</TableCell>
+                        <TableCell align="right">{item.percentage}%</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Paper>
+            )}
+
+            {/* Top TRC Content Titles Table */}
+            {reportCardVisibility.topTrcContentTitles && (
+            <Paper sx={{ p: 3, flex: 1 }}>
+              <Typography variant="h2" sx={{ mb: 2, fontWeight: 'bold' }}>
+                Top TRC Content Titles
+              </Typography>
+              <TableContainer sx={{ maxHeight: 440 }}>
+                <Table stickyHeader>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: 'bold', backgroundColor: 'white' }}>Content title</TableCell>
+                      <TableCell sx={{ fontWeight: 'bold', backgroundColor: 'white' }}>Type</TableCell>
+                      <TableCell sx={{ fontWeight: 'bold', backgroundColor: 'white' }} align="right">% of impressions</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {Array.from({ length: 50 }, (_, index) => {
+                      const contentTitles = [
+                        { title: 'The Roku Channel', type: 'Live channel' },
+                        { title: 'Weird: The Al Yankovic Story', type: 'Movie' },
+                        { title: 'Die Hard', type: 'Movie' },
+                        { title: 'Home Alone', type: 'Movie' },
+                        { title: 'The Office', type: 'TV show' },
+                        { title: 'Parks and Recreation', type: 'TV show' },
+                        { title: 'Brooklyn Nine-Nine', type: 'TV show' },
+                        { title: 'Friends', type: 'TV show' },
+                        { title: 'Seinfeld', type: 'TV show' },
+                        { title: 'The Good Place', type: 'TV show' },
+                        { title: 'NBC News NOW', type: 'Live channel' },
+                        { title: 'ABC News Live', type: 'Live channel' },
+                        { title: 'CBS News', type: 'Live channel' },
+                        { title: 'The Walking Dead', type: 'TV show' },
+                        { title: 'Breaking Bad', type: 'TV show' },
+                        { title: 'Stranger Things', type: 'TV show' },
+                        { title: 'The Crown', type: 'TV show' },
+                        { title: 'Ozark', type: 'TV show' },
+                        { title: 'Bridgerton', type: 'TV show' },
+                        { title: 'The Mandalorian', type: 'TV show' },
+                      ];
+                      const content = contentTitles[index % contentTitles.length];
+                      const percentage = (8 - (index * 0.15)).toFixed(2);
+                      
+                      return (
+                        <TableRow key={index}>
+                          <TableCell>{content.title}</TableCell>
+                          <TableCell>{content.type}</TableCell>
+                          <TableCell align="right">{percentage}%</TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Paper>
+            )}
+          </Box>
+
+          {/* Live TV Channels Row */}
+          {reportCardVisibility.liveTvChannels && (
+          <Box sx={{ display: 'flex', gap: 3, mb: 4 }}>
+            {/* Live TV Channels Table */}
+            <Paper sx={{ p: 3, flex: 1 }}>
+              <Typography variant="h2" sx={{ mb: 2, fontWeight: 'bold' }}>
+                Live TV channels
+              </Typography>
+              <TableContainer sx={{ maxHeight: 440 }}>
+                <Table stickyHeader>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: 'bold', backgroundColor: 'white' }}>Live TV channels</TableCell>
+                      <TableCell sx={{ fontWeight: 'bold', backgroundColor: 'white' }} align="right">% of impressions</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {[
+                      { channel: 'ABC News Live', percentage: 18.5 },
+                      { channel: 'NBC News NOW', percentage: 16.3 },
+                      { channel: 'CBS News', percentage: 14.7 },
+                      { channel: 'The Roku Channel', percentage: 12.4 },
+                      { channel: 'FOX News', percentage: 10.8 },
+                      { channel: 'CNN', percentage: 8.2 },
+                      { channel: 'ESPN', percentage: 6.6 },
+                      { channel: 'Weather Channel', percentage: 5.4 },
+                      { channel: 'Bloomberg TV', percentage: 4.1 },
+                      { channel: 'Newsy', percentage: 3.0 },
+                    ].map((item, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{item.channel}</TableCell>
+                        <TableCell align="right">{item.percentage}%</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Paper>
+          </Box>
+          )}
+            </>
+          )}
+
+          {/* Other Tiles - Only visible in tabs 0, 1, 2 */}
+          {reportsSelectedTab !== 3 && (
+            <>
+          {/* Reports Content */}
+          {reportsSelectedCampaigns.length > 0 && reportCardVisibility.adGroupOverview ? (
+            <>
+              {/* Render Ad Group Overview Tiles for selected campaigns */}
+              {adGroupsData
+                .filter(adGroup => {
+                  // Filter ad groups by selected campaigns
+                  const campaign = campaigns.find(c => c.campaign === adGroup.parentCampaign);
+                  return campaign && reportsSelectedCampaigns.includes(campaign.id);
+                })
+                .map(adGroup => {
+                  // Get creatives for this ad group
+                  const adGroupCreatives = getCreativesForAdGroup(adGroup);
+                  
+                  // Get the campaign for this ad group
+                  const campaign = campaigns.find(c => c.campaign === adGroup.parentCampaign);
+                  
+                  // Sample destination data for this ad group
+                  const sampleDestinations = [
+                    {
+                      title: 'The Mandalorian',
+                      type: 'TV Show',
+                      impressions: '45,678',
+                      ctr: '2.3%',
+                      vcr: '85%',
+                      reach: '12,345',
+                      frequency: '3.7',
+                      totalMinutesPerHousehold: '42.5'
+                    },
+                    {
+                      title: 'Avengers: Endgame',
+                      type: 'Movie',
+                      impressions: '32,456',
+                      ctr: '1.8%',
+                      vcr: '92%',
+                      reach: '9,876',
+                      frequency: '3.3',
+                      totalMinutesPerHousehold: '156.2'
+                    },
+                    {
+                      title: 'Stranger Things',
+                      type: 'TV Show',
+                      impressions: '28,901',
+                      ctr: '2.1%',
+                      vcr: '88%',
+                      reach: '8,234',
+                      frequency: '3.5',
+                      totalMinutesPerHousehold: '38.9'
+                    }
+                  ];
+
+                  return (
+                    <AdGroupOverviewTile
+                      key={adGroup.id}
+                      adGroup={adGroup}
+                      campaign={campaign}
+                      creatives={adGroupCreatives}
+                      destinations={sampleDestinations}
+                    />
+                  );
+                })}
+            </>
+          ) : null}
+          
+          {/* Frequency Report Tile */}
+          {reportsSelectedTab !== 2 && reportCardVisibility.frequency && (
+          <FrequencyReportTile 
+            startDate={reportsStartDate}
+            endDate={reportsEndDate}
+          />
+          )}
+          
+          {/* DAR Metrics Tile */}
+          {reportsSelectedTab !== 2 && reportCardVisibility.darMetrics && (
+          <DARMetricsTile />
+          )}
+          
+          {/* Creatives Report Tile - Always visible */}
+          {reportCardVisibility.creatives && (
+          <CreativesReportTile 
+            adGroups={adGroups} 
+            campaigns={campaigns}
+            selectedCampaignIds={reportsSelectedCampaigns}
+          />
+          )}
+        </>
+        )}
         </Container>
+
+        {/* Bottom Toolbar for Reports Page */}
+        <Box sx={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: 'white',
+          borderTop: '1px solid #e0e0e0',
+          p: 2,
+          boxShadow: '0 -2px 8px rgba(0, 0, 0, 0.1)',
+          zIndex: 1000
+        }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: 'none', mx: 'auto' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <IconButton size="small" onClick={(e) => setReportsToolbarMenuAnchor(e.currentTarget)}>
+                <MoreHorizIcon />
+              </IconButton>
+              <Menu
+                anchorEl={reportsToolbarMenuAnchor}
+                open={Boolean(reportsToolbarMenuAnchor)}
+                onClose={() => setReportsToolbarMenuAnchor(null)}
+              >
+                <MenuItem onClick={() => setReportsToolbarMenuAnchor(null)}>
+                  <ListItemText primary="Delete" />
+                </MenuItem>
+                <MenuItem onClick={() => setReportsToolbarMenuAnchor(null)}>
+                  <ListItemText primary="Archive" />
+                </MenuItem>
+                <MenuItem onClick={() => setReportsToolbarMenuAnchor(null)}>
+                  <ListItemText primary="Clone" />
+                </MenuItem>
+              </Menu>
+            </Box>
+
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <Typography variant="caption" color="text.secondary" sx={{ mr: 2 }}>
+                Last updated {new Date().toLocaleString()}
+              </Typography>
+              <Button variant="outlined" size="medium" onClick={() => { setEditDashboardTab(reportsSelectedTab); setSavedCardVisibility({ ...reportCardVisibility }); setSavedTabVisibility({ ...reportTabVisibility }); setEditDashboardDrawerOpen(true); }}>
+                Customize view
+              </Button>
+              <Button variant="contained" color="primary" size="medium" onClick={() => setExportDrawerOpen(true)}>
+                Export
+              </Button>
+            </Box>
+          </Box>
+        </Box>
+        </>
       ) : currentView === 'details' && selectedCampaignForDetails ? (
         (() => {
           console.log('Rendering CampaignDetails - currentView:', currentView, 'selectedCampaignForDetails:', selectedCampaignForDetails);
@@ -6350,6 +11402,17 @@ export default function App() {
           setScheduleEditDrawerOpen={setScheduleEditDrawerOpen}
           setTempDayparting={setTempDayparting}
           handleMultipleAdGroupsInfoDrawerOpen={handleMultipleAdGroupsInfoDrawerOpen}
+          setSelectedCreativeType={setSelectedCreativeType}
+          setCreativesDrawerOpen={setCreativesDrawerOpen}
+          setSelectedAdGroupForCreatives={setSelectedAdGroupForCreatives}
+          automaticPlacement={automaticPlacement}
+          setAutomaticPlacement={setAutomaticPlacement}
+          placementToggle={placementToggle}
+          setPlacementToggle={setPlacementToggle}
+          setCurrentView={setCurrentView}
+          setReportsSelectedCampaigns={setReportsSelectedCampaigns}
+          setReportsStartDate={setReportsStartDate}
+          setReportsEndDate={setReportsEndDate}
         />
         );
       })()
@@ -6361,6 +11424,7 @@ export default function App() {
               adGroups={adGroups} 
               currentCampaign={selectedAdGroupForDetails?.parentCampaign || 'Holiday Sale 2024'}
               selectedAdGroupId={selectedAdGroupForDetails?.id}
+              campaignGoal={selectedCampaignForDetails?.goal || 'Conversion'}
             />
           );
         })()
@@ -6381,6 +11445,14 @@ export default function App() {
             setDrawerOpen={setDrawerOpen}
             setCurrentView={setCurrentView}
             setActiveNavItem={setActiveNavItem}
+            automaticPlacement={automaticPlacement}
+            setAutomaticPlacement={setAutomaticPlacement}
+            placementToggle={placementToggle}
+            setPlacementToggle={setPlacementToggle}
+            setReportsSelectedCampaigns={setReportsSelectedCampaigns}
+            setReportsStartDate={setReportsStartDate}
+            setReportsEndDate={setReportsEndDate}
+            campaignGoal={selectedCampaignForDetails?.goal || 'Conversion'}
           />
         );
       })()
@@ -6399,6 +11471,147 @@ export default function App() {
       >
         <MenuItem onClick={handleRunReport}>Run report</MenuItem>
       </Menu>
+
+      <Drawer
+        anchor="right"
+        open={editDashboardDrawerOpen}
+        onClose={() => setEditDashboardDrawerOpen(false)}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: '95vw',
+            boxSizing: 'border-box',
+          },
+        }}
+      >
+        <Box sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h2">
+              Edit dashboard
+            </Typography>
+            <IconButton onClick={() => setEditDashboardDrawerOpen(false)} size="small">
+              <CloseIcon />
+            </IconButton>
+          </Box>
+          <Tabs
+            value={editDashboardTab}
+            onChange={(e, v) => setEditDashboardTab(v)}
+            sx={{ borderBottom: 1, borderColor: 'divider', mb: 2, '& .MuiTab-root': { textTransform: 'none' } }}
+          >
+            <Tab label="Delivery & Engagement" />
+            <Tab label="Channel & Content Transparency" />
+            <Tab label="Native Ads & Sponsorship" />
+            <Tab label="Audience insights" />
+          </Tabs>
+          {editDashboardTab === 0 && (
+            <>
+            <FormControlLabel control={<Switch checked={reportTabVisibility[0]} onChange={() => setReportTabVisibility(prev => ({ ...prev, 0: !prev[0] }))} />} label="Show tab" sx={{ mb: 2 }} />
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              <FormControlLabel sx={{ width: 300, height: 75, border: '1px solid', borderColor: reportCardVisibility.summary ? '#7b1fa2' : '#e0e0e0', borderRadius: '6px', backgroundColor: reportCardVisibility.summary ? '#F6F1FE' : 'white', m: 0, px: 2 }} control={<Checkbox checked={reportCardVisibility.summary} onChange={() => setReportCardVisibility(prev => ({ ...prev, summary: !prev.summary }))} />} label="Summary" />
+              <FormControlLabel sx={{ width: 300, height: 75, border: '1px solid', borderColor: reportCardVisibility.dailyImpressionsSpend ? '#7b1fa2' : '#e0e0e0', borderRadius: '6px', backgroundColor: reportCardVisibility.dailyImpressionsSpend ? '#F6F1FE' : 'white', m: 0, px: 2 }} control={<Checkbox checked={reportCardVisibility.dailyImpressionsSpend} onChange={() => setReportCardVisibility(prev => ({ ...prev, dailyImpressionsSpend: !prev.dailyImpressionsSpend }))} />} label="Daily Impressions/Spend" />
+              <FormControlLabel sx={{ width: 300, height: 75, border: '1px solid', borderColor: reportCardVisibility.adGroupOverview ? '#7b1fa2' : '#e0e0e0', borderRadius: '6px', backgroundColor: reportCardVisibility.adGroupOverview ? '#F6F1FE' : 'white', m: 0, px: 2 }} control={<Checkbox checked={reportCardVisibility.adGroupOverview} onChange={() => setReportCardVisibility(prev => ({ ...prev, adGroupOverview: !prev.adGroupOverview }))} />} label="Ad Group Overview" />
+              <FormControlLabel sx={{ width: 300, height: 75, border: '1px solid', borderColor: reportCardVisibility.frequency ? '#7b1fa2' : '#e0e0e0', borderRadius: '6px', backgroundColor: reportCardVisibility.frequency ? '#F6F1FE' : 'white', m: 0, px: 2 }} control={<Checkbox checked={reportCardVisibility.frequency} onChange={() => setReportCardVisibility(prev => ({ ...prev, frequency: !prev.frequency }))} />} label="Frequency" />
+              <FormControlLabel sx={{ width: 300, height: 75, border: '1px solid', borderColor: reportCardVisibility.darMetrics ? '#7b1fa2' : '#e0e0e0', borderRadius: '6px', backgroundColor: reportCardVisibility.darMetrics ? '#F6F1FE' : 'white', m: 0, px: 2 }} control={<Checkbox checked={reportCardVisibility.darMetrics} onChange={() => setReportCardVisibility(prev => ({ ...prev, darMetrics: !prev.darMetrics }))} />} label="DAR Metrics" />
+              <FormControlLabel sx={{ width: 300, height: 75, border: '1px solid', borderColor: reportCardVisibility.creatives ? '#7b1fa2' : '#e0e0e0', borderRadius: '6px', backgroundColor: reportCardVisibility.creatives ? '#F6F1FE' : 'white', m: 0, px: 2 }} control={<Checkbox checked={reportCardVisibility.creatives} onChange={() => setReportCardVisibility(prev => ({ ...prev, creatives: !prev.creatives }))} />} label="Creatives" />
+            </Box>
+            </>
+          )}
+          {editDashboardTab === 1 && (
+            <>
+            <FormControlLabel control={<Switch checked={reportTabVisibility[1]} onChange={() => setReportTabVisibility(prev => ({ ...prev, 1: !prev[1] }))} />} label="Show tab" sx={{ mb: 2 }} />
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              <FormControlLabel sx={{ width: 300, height: 75, border: '1px solid', borderColor: reportCardVisibility.rokuChannelDelivery ? '#7b1fa2' : '#e0e0e0', borderRadius: '6px', backgroundColor: reportCardVisibility.rokuChannelDelivery ? '#F6F1FE' : 'white', m: 0, px: 2 }} control={<Checkbox checked={reportCardVisibility.rokuChannelDelivery} onChange={() => setReportCardVisibility(prev => ({ ...prev, rokuChannelDelivery: !prev.rokuChannelDelivery }))} />} label="Roku Channel Delivery" />
+              <FormControlLabel sx={{ width: 300, height: 75, border: '1px solid', borderColor: reportCardVisibility.channelReport ? '#7b1fa2' : '#e0e0e0', borderRadius: '6px', backgroundColor: reportCardVisibility.channelReport ? '#F6F1FE' : 'white', m: 0, px: 2 }} control={<Checkbox checked={reportCardVisibility.channelReport} onChange={() => setReportCardVisibility(prev => ({ ...prev, channelReport: !prev.channelReport }))} />} label="Channel Report" />
+              <FormControlLabel sx={{ width: 300, height: 75, border: '1px solid', borderColor: reportCardVisibility.topTrcContentTitles ? '#7b1fa2' : '#e0e0e0', borderRadius: '6px', backgroundColor: reportCardVisibility.topTrcContentTitles ? '#F6F1FE' : 'white', m: 0, px: 2 }} control={<Checkbox checked={reportCardVisibility.topTrcContentTitles} onChange={() => setReportCardVisibility(prev => ({ ...prev, topTrcContentTitles: !prev.topTrcContentTitles }))} />} label="Top TRC Content Titles" />
+              <FormControlLabel sx={{ width: 300, height: 75, border: '1px solid', borderColor: reportCardVisibility.liveTvChannels ? '#7b1fa2' : '#e0e0e0', borderRadius: '6px', backgroundColor: reportCardVisibility.liveTvChannels ? '#F6F1FE' : 'white', m: 0, px: 2 }} control={<Checkbox checked={reportCardVisibility.liveTvChannels} onChange={() => setReportCardVisibility(prev => ({ ...prev, liveTvChannels: !prev.liveTvChannels }))} />} label="Live TV Channels" />
+              <FormControlLabel sx={{ width: 300, height: 75, border: '1px solid', borderColor: reportCardVisibility.adGroupOverview ? '#7b1fa2' : '#e0e0e0', borderRadius: '6px', backgroundColor: reportCardVisibility.adGroupOverview ? '#F6F1FE' : 'white', m: 0, px: 2 }} control={<Checkbox checked={reportCardVisibility.adGroupOverview} onChange={() => setReportCardVisibility(prev => ({ ...prev, adGroupOverview: !prev.adGroupOverview }))} />} label="Ad Group Overview" />
+              <FormControlLabel sx={{ width: 300, height: 75, border: '1px solid', borderColor: reportCardVisibility.frequency ? '#7b1fa2' : '#e0e0e0', borderRadius: '6px', backgroundColor: reportCardVisibility.frequency ? '#F6F1FE' : 'white', m: 0, px: 2 }} control={<Checkbox checked={reportCardVisibility.frequency} onChange={() => setReportCardVisibility(prev => ({ ...prev, frequency: !prev.frequency }))} />} label="Frequency" />
+              <FormControlLabel sx={{ width: 300, height: 75, border: '1px solid', borderColor: reportCardVisibility.darMetrics ? '#7b1fa2' : '#e0e0e0', borderRadius: '6px', backgroundColor: reportCardVisibility.darMetrics ? '#F6F1FE' : 'white', m: 0, px: 2 }} control={<Checkbox checked={reportCardVisibility.darMetrics} onChange={() => setReportCardVisibility(prev => ({ ...prev, darMetrics: !prev.darMetrics }))} />} label="DAR Metrics" />
+              <FormControlLabel sx={{ width: 300, height: 75, border: '1px solid', borderColor: reportCardVisibility.creatives ? '#7b1fa2' : '#e0e0e0', borderRadius: '6px', backgroundColor: reportCardVisibility.creatives ? '#F6F1FE' : 'white', m: 0, px: 2 }} control={<Checkbox checked={reportCardVisibility.creatives} onChange={() => setReportCardVisibility(prev => ({ ...prev, creatives: !prev.creatives }))} />} label="Creatives" />
+            </Box>
+            </>
+          )}
+          {editDashboardTab === 2 && (
+            <>
+            <FormControlLabel control={<Switch checked={reportTabVisibility[2]} onChange={() => setReportTabVisibility(prev => ({ ...prev, 2: !prev[2] }))} />} label="Show tab" sx={{ mb: 2 }} />
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              <FormControlLabel sx={{ width: 300, height: 75, border: '1px solid', borderColor: reportCardVisibility.sponsorshipInsights ? '#7b1fa2' : '#e0e0e0', borderRadius: '6px', backgroundColor: reportCardVisibility.sponsorshipInsights ? '#F6F1FE' : 'white', m: 0, px: 2 }} control={<Checkbox checked={reportCardVisibility.sponsorshipInsights} onChange={() => setReportCardVisibility(prev => ({ ...prev, sponsorshipInsights: !prev.sponsorshipInsights }))} />} label="Sponsorship Insights" />
+              <FormControlLabel sx={{ width: 300, height: 75, border: '1px solid', borderColor: reportCardVisibility.adGroupOverview ? '#7b1fa2' : '#e0e0e0', borderRadius: '6px', backgroundColor: reportCardVisibility.adGroupOverview ? '#F6F1FE' : 'white', m: 0, px: 2 }} control={<Checkbox checked={reportCardVisibility.adGroupOverview} onChange={() => setReportCardVisibility(prev => ({ ...prev, adGroupOverview: !prev.adGroupOverview }))} />} label="Ad Group Overview" />
+              <FormControlLabel sx={{ width: 300, height: 75, border: '1px solid', borderColor: reportCardVisibility.creatives ? '#7b1fa2' : '#e0e0e0', borderRadius: '6px', backgroundColor: reportCardVisibility.creatives ? '#F6F1FE' : 'white', m: 0, px: 2 }} control={<Checkbox checked={reportCardVisibility.creatives} onChange={() => setReportCardVisibility(prev => ({ ...prev, creatives: !prev.creatives }))} />} label="Creatives" />
+            </Box>
+            </>
+          )}
+          {editDashboardTab === 3 && (
+            <>
+            <FormControlLabel control={<Switch checked={reportTabVisibility[3]} onChange={() => setReportTabVisibility(prev => ({ ...prev, 3: !prev[3] }))} />} label="Show tab" sx={{ mb: 2 }} />
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              <FormControlLabel sx={{ width: 300, height: 75, border: '1px solid', borderColor: reportCardVisibility.audienceInsights ? '#7b1fa2' : '#e0e0e0', borderRadius: '6px', backgroundColor: reportCardVisibility.audienceInsights ? '#F6F1FE' : 'white', m: 0, px: 2 }} control={<Checkbox checked={reportCardVisibility.audienceInsights} onChange={() => setReportCardVisibility(prev => ({ ...prev, audienceInsights: !prev.audienceInsights }))} />} label="Audience Insights" />
+              <FormControlLabel sx={{ width: 300, height: 75, border: '1px solid', borderColor: reportCardVisibility.demographic ? '#7b1fa2' : '#e0e0e0', borderRadius: '6px', backgroundColor: reportCardVisibility.demographic ? '#F6F1FE' : 'white', m: 0, px: 2 }} control={<Checkbox checked={reportCardVisibility.demographic} onChange={() => setReportCardVisibility(prev => ({ ...prev, demographic: !prev.demographic }))} />} label="Demographic" />
+              <FormControlLabel sx={{ width: 300, height: 75, border: '1px solid', borderColor: reportCardVisibility.topOverIndexingFeatures ? '#7b1fa2' : '#e0e0e0', borderRadius: '6px', backgroundColor: reportCardVisibility.topOverIndexingFeatures ? '#F6F1FE' : 'white', m: 0, px: 2 }} control={<Checkbox checked={reportCardVisibility.topOverIndexingFeatures} onChange={() => setReportCardVisibility(prev => ({ ...prev, topOverIndexingFeatures: !prev.topOverIndexingFeatures }))} />} label="Top Over-Indexing Features" />
+              <FormControlLabel sx={{ width: 300, height: 75, border: '1px solid', borderColor: reportCardVisibility.accountTenure ? '#7b1fa2' : '#e0e0e0', borderRadius: '6px', backgroundColor: reportCardVisibility.accountTenure ? '#F6F1FE' : 'white', m: 0, px: 2 }} control={<Checkbox checked={reportCardVisibility.accountTenure} onChange={() => setReportCardVisibility(prev => ({ ...prev, accountTenure: !prev.accountTenure }))} />} label="Account Tenure" />
+            </Box>
+            </>
+          )}
+        </Box>
+        <Box sx={{ position: 'sticky', bottom: 0, backgroundColor: 'white', borderTop: '1px solid #e0e0e0', p: 2, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+          <Button variant="outlined" onClick={() => { if (savedCardVisibility) setReportCardVisibility(savedCardVisibility); if (savedTabVisibility) setReportTabVisibility(savedTabVisibility); setEditDashboardDrawerOpen(false); }}>Cancel</Button>
+          <Button variant="contained" color="primary" onClick={() => setEditDashboardDrawerOpen(false)}>Save</Button>
+        </Box>
+      </Drawer>
+
+      <Drawer
+        anchor="right"
+        open={exportDrawerOpen}
+        onClose={() => setExportDrawerOpen(false)}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: 850,
+            boxSizing: 'border-box',
+          },
+        }}
+      >
+        <Box sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Typography variant="h2">
+              Export dashboard
+            </Typography>
+            <IconButton onClick={() => setExportDrawerOpen(false)} size="small">
+              <CloseIcon />
+            </IconButton>
+          </Box>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Configure your export and once exported a download link will be emailed to you.
+          </Typography>
+          <RadioGroup
+            row
+            value={exportFormat}
+            onChange={(e) => setExportFormat(e.target.value)}
+            sx={{ gap: 1, justifyContent: 'center' }}
+          >
+            <FormControlLabel
+              value="powerpoint"
+              control={<Radio />}
+              sx={{ width: 300, height: 75, border: '1px solid', borderColor: exportFormat === 'powerpoint' ? '#7b1fa2' : '#e0e0e0', borderRadius: '6px', backgroundColor: exportFormat === 'powerpoint' ? '#F6F1FE' : 'white', m: 0, px: 2 }}
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <SlideshowIcon sx={{ fontSize: 20 }} />
+                  Export to PowerPoint
+                </Box>
+              }
+            />
+            <FormControlLabel
+              value="csv"
+              control={<Radio />}
+              sx={{ width: 300, height: 75, border: '1px solid', borderColor: exportFormat === 'csv' ? '#7b1fa2' : '#e0e0e0', borderRadius: '6px', backgroundColor: exportFormat === 'csv' ? '#F6F1FE' : 'white', m: 0, px: 2 }}
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <TableChartIcon sx={{ fontSize: 20 }} />
+                  Export to CSV
+                </Box>
+              }
+            />
+          </RadioGroup>
+        </Box>
+      </Drawer>
 
       <Drawer
         anchor="right"
@@ -6566,38 +11779,17 @@ export default function App() {
                 Which conversion event do you want to track?
               </Typography>
               
-              <Box sx={{ display: 'flex', gap: '4px', mb: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px', flex: 1 }}>
-                  <Typography variant="body2" sx={{ color: 'grey', whiteSpace: 'nowrap' }}>
-                    Within this
-                  </Typography>
-                  
-                  <FormControl variant="outlined" size="small" sx={{ width: '100%', mr: '4px' }}>
-                    <InputLabel>Event group</InputLabel>
-                    <Select
-                      label="Event group"
-                      placeholder="Select"
-                      size="small"
-                    >
-                      <MenuItem value="XDNEuttoJA">Default event group (XDNEuttoJA)</MenuItem>
-                      <MenuItem value="ABCEuttoJA">Shopify connection (ABCEuttoJA)</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Box>
-                
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px', flex: 1 }}>
-                  <Typography variant="body2" sx={{ color: 'grey', whiteSpace: 'nowrap' }}>
-                    optimize for this
-                  </Typography>
-                  
-                  <FormControl variant="outlined" size="small" sx={{ width: '100%' }}>
-                    <InputLabel>Conversion event</InputLabel>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                <Typography variant="body2" sx={{ color: 'grey', whiteSpace: 'nowrap', width: '140px', minWidth: '140px' }}>
+                  Conversion event
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1 }}>
+                  <FormControl variant="outlined" size="small" sx={{ minWidth: 200 }}>
+                    <InputLabel>Event</InputLabel>
                     <Select
                       value={selectedConversionEvent}
                       onChange={(e) => setSelectedConversionEvent(e.target.value)}
-                      label="Conversion event"
-                      placeholder="Select"
-                      size="small"
+                      label="Event"
                       renderValue={(selected) => {
                         const eventData = {
                           'page_views': { label: 'Page views', icon: <PageviewIcon sx={{ fontSize: 20 }} /> },
@@ -6622,9 +11814,7 @@ export default function App() {
                           <PageviewIcon sx={{ fontSize: 20 }} />
                           <Box>
                             <Typography variant="body2">Page views</Typography>
-                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                              Track when users visit specific pages
-                            </Typography>
+                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>Track when users visit specific pages</Typography>
                           </Box>
                         </Box>
                       </MenuItem>
@@ -6633,9 +11823,7 @@ export default function App() {
                           <PersonAddIcon sx={{ fontSize: 20 }} />
                           <Box>
                             <Typography variant="body2">Sign ups</Typography>
-                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                              Track user registrations and account creation
-                            </Typography>
+                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>Track user registrations and account creation</Typography>
                           </Box>
                         </Box>
                       </MenuItem>
@@ -6644,9 +11832,7 @@ export default function App() {
                           <LeadsIcon sx={{ fontSize: 20 }} />
                           <Box>
                             <Typography variant="body2">Leads</Typography>
-                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                              Track form submissions and contact requests
-                            </Typography>
+                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>Track form submissions and contact requests</Typography>
                           </Box>
                         </Box>
                       </MenuItem>
@@ -6655,9 +11841,7 @@ export default function App() {
                           <DownloadIcon sx={{ fontSize: 20 }} />
                           <Box>
                             <Typography variant="body2">Downloads</Typography>
-                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                              Track file and content downloads
-                            </Typography>
+                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>Track file and content downloads</Typography>
                           </Box>
                         </Box>
                       </MenuItem>
@@ -6666,9 +11850,7 @@ export default function App() {
                           <ShoppingCartIcon sx={{ fontSize: 20 }} />
                           <Box>
                             <Typography variant="body2">Purchases</Typography>
-                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                              Track completed transactions and sales
-                            </Typography>
+                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>Track completed transactions and sales</Typography>
                           </Box>
                         </Box>
                       </MenuItem>
@@ -6677,9 +11859,7 @@ export default function App() {
                           <PhoneAndroidIcon sx={{ fontSize: 20 }} />
                           <Box>
                             <Typography variant="body2">App installs</Typography>
-                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                              Track mobile app installations
-                            </Typography>
+                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>Track mobile app installations</Typography>
                           </Box>
                         </Box>
                       </MenuItem>
@@ -6706,23 +11886,29 @@ export default function App() {
                             }
                           }}
                         >
-                          <Box sx={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: 1, 
-                            width: '100%',
-                            pointerEvents: 'auto'
-                          }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%', pointerEvents: 'auto' }}>
                             <SubscriptionsIcon sx={{ fontSize: 20 }} />
                             <Box>
                               <Typography variant="body2">Subscriptions</Typography>
-                              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                                Track recurring subscription signups
-                              </Typography>
+                              <Typography variant="caption" sx={{ color: 'text.secondary' }}>Track recurring subscription signups</Typography>
                             </Box>
                           </Box>
                         </Tooltip>
                       </MenuItem>
+                    </Select>
+                  </FormControl>
+                  <Typography variant="body2" sx={{ color: 'grey' }}>
+                    in
+                  </Typography>
+                  <FormControl variant="outlined" size="small" sx={{ minWidth: 200 }}>
+                    <InputLabel>Event group</InputLabel>
+                    <Select
+                      value={selectedEventGroup}
+                      onChange={(e) => setSelectedEventGroup(e.target.value)}
+                      label="Event group"
+                    >
+                      <MenuItem value="XDNEuttoJA">Default event group (XDNEuttoJA)</MenuItem>
+                      <MenuItem value="ABCEuttoJA">Shopify connection (ABCEuttoJA)</MenuItem>
                     </Select>
                   </FormControl>
                 </Box>
@@ -9176,32 +14362,13 @@ export default function App() {
                 Which conversion event do you want to track?
               </Typography>
               
-              <Box sx={{ display: 'flex', gap: '4px', mb: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px', flex: 1 }}>
-                  <Typography variant="body2" sx={{ color: 'grey', whiteSpace: 'nowrap' }}>
-                    Within this
-                  </Typography>
-                  
-                  <FormControl variant="outlined" size="small" sx={{ width: '100%', mr: '4px' }}>
-                    <InputLabel>Event group</InputLabel>
-                    <Select
-                      label="Event group"
-                      placeholder="Select"
-                      size="small"
-                    >
-                      <MenuItem value="XDNEuttoJA">Default event group (XDNEuttoJA)</MenuItem>
-                      <MenuItem value="ABCEuttoJA">Shopify connection (ABCEuttoJA)</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Box>
-                
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px', flex: 1 }}>
-                  <Typography variant="body2" sx={{ color: 'grey', whiteSpace: 'nowrap' }}>
-                    optimize for this
-                  </Typography>
-                  
-                  <FormControl variant="outlined" size="small" sx={{ width: '100%' }}>
-                    <InputLabel>Conversion event</InputLabel>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                <Typography variant="body2" sx={{ color: 'grey', whiteSpace: 'nowrap', width: '140px', minWidth: '140px' }}>
+                  Conversion event
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1 }}>
+                  <FormControl variant="outlined" size="small" sx={{ minWidth: 200 }}>
+                    <InputLabel>Event</InputLabel>
                     <Select
                       value={selectedCampaignForDetails?.conversionEvent || selectedConversionEvent}
                       onChange={(e) => {
@@ -9218,9 +14385,7 @@ export default function App() {
                         }
                         setSelectedConversionEvent(e.target.value);
                       }}
-                      label="Conversion event"
-                      placeholder="Select"
-                      size="small"
+                      label="Event"
                       renderValue={(selected) => {
                         const eventData = {
                           'page_views': { label: 'Page views', icon: <PageviewIcon sx={{ fontSize: 20 }} /> },
@@ -9245,9 +14410,7 @@ export default function App() {
                           <PageviewIcon sx={{ fontSize: 20 }} />
                           <Box>
                             <Typography variant="body2">Page views</Typography>
-                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                              Track when users visit specific pages
-                            </Typography>
+                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>Track when users visit specific pages</Typography>
                           </Box>
                         </Box>
                       </MenuItem>
@@ -9256,9 +14419,7 @@ export default function App() {
                           <PersonAddIcon sx={{ fontSize: 20 }} />
                           <Box>
                             <Typography variant="body2">Sign ups</Typography>
-                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                              Track user registrations and account creation
-                            </Typography>
+                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>Track user registrations and account creation</Typography>
                           </Box>
                         </Box>
                       </MenuItem>
@@ -9267,9 +14428,7 @@ export default function App() {
                           <LeadsIcon sx={{ fontSize: 20 }} />
                           <Box>
                             <Typography variant="body2">Leads</Typography>
-                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                              Track form submissions and contact requests
-                            </Typography>
+                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>Track form submissions and contact requests</Typography>
                           </Box>
                         </Box>
                       </MenuItem>
@@ -9278,9 +14437,7 @@ export default function App() {
                           <DownloadIcon sx={{ fontSize: 20 }} />
                           <Box>
                             <Typography variant="body2">Downloads</Typography>
-                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                              Track file downloads and resource access
-                            </Typography>
+                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>Track file downloads and resource access</Typography>
                           </Box>
                         </Box>
                       </MenuItem>
@@ -9289,9 +14446,7 @@ export default function App() {
                           <ShoppingCartIcon sx={{ fontSize: 20 }} />
                           <Box>
                             <Typography variant="body2">Purchases</Typography>
-                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                              Track completed transactions and sales
-                            </Typography>
+                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>Track completed transactions and sales</Typography>
                           </Box>
                         </Box>
                       </MenuItem>
@@ -9300,9 +14455,7 @@ export default function App() {
                           <PhoneAndroidIcon sx={{ fontSize: 20 }} />
                           <Box>
                             <Typography variant="body2">App installs</Typography>
-                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                              Track mobile app downloads and installations
-                            </Typography>
+                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>Track mobile app downloads and installations</Typography>
                           </Box>
                         </Box>
                       </MenuItem>
@@ -9311,12 +14464,36 @@ export default function App() {
                           <SubscriptionsIcon sx={{ fontSize: 20 }} />
                           <Box>
                             <Typography variant="body2">Subscriptions</Typography>
-                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                              Track recurring subscription sign-ups
-                            </Typography>
+                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>Track recurring subscription sign-ups</Typography>
                           </Box>
                         </Box>
                       </MenuItem>
+                    </Select>
+                  </FormControl>
+                  <Typography variant="body2" sx={{ color: 'grey' }}>
+                    in
+                  </Typography>
+                  <FormControl variant="outlined" size="small" sx={{ minWidth: 200 }}>
+                    <InputLabel>Event group</InputLabel>
+                    <Select
+                      value={selectedCampaignForDetails?.eventGroup || ''}
+                      onChange={(e) => {
+                        if (selectedCampaignForDetails) {
+                          setSelectedCampaignForDetails(prev => ({
+                            ...prev,
+                            eventGroup: e.target.value
+                          }));
+                          setCampaigns(prev => prev.map(c => 
+                            c.id === selectedCampaignForDetails.id 
+                              ? { ...c, eventGroup: e.target.value }
+                              : c
+                          ));
+                        }
+                      }}
+                      label="Event group"
+                    >
+                      <MenuItem value="XDNEuttoJA">Default event group (XDNEuttoJA)</MenuItem>
+                      <MenuItem value="ABCEuttoJA">Shopify connection (ABCEuttoJA)</MenuItem>
                     </Select>
                   </FormControl>
                 </Box>
@@ -9411,6 +14588,163 @@ export default function App() {
         </Box>
       </Drawer>
 
+      {/* Placement Edit Drawer */}
+      <Drawer
+        anchor="right"
+        open={placementDrawerOpen}
+        onClose={() => setPlacementDrawerOpen(false)}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: '95%',
+            boxSizing: 'border-box',
+          },
+        }}
+      >
+        <Box sx={{ p: 3, pb: 10 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h2">
+              Edit Placement
+            </Typography>
+            <IconButton onClick={() => setPlacementDrawerOpen(false)} size="small">
+              <CloseIcon />
+            </IconButton>
+          </Box>
+          
+          <PlacementCard
+            automaticPlacement={automaticPlacement}
+            setAutomaticPlacement={setAutomaticPlacement}
+            placementToggle={placementToggle}
+            setPlacementToggle={setPlacementToggle}
+          />
+
+          {/* Genre Placement Card */}
+          <Box sx={{ 
+            boxShadow: '0 1px 6px rgba(0, 0, 0, 0.1)',
+            p: 3,
+            backgroundColor: 'white',
+            mb: 3
+          }}>
+            <Typography variant="h2" sx={{ mb: 1 }}>
+              Genre placement
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+              Lets you choose the genres that will show your ads. You can also exclude specific genres and content ratings.
+            </Typography>
+            
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+              <Checkbox
+                checked={excludeMatureContent}
+                onChange={(e) => setExcludeMatureContent(e.target.checked)}
+                size="small"
+              />
+              <Typography variant="body1">
+                Exclude unrated, TV-MA, and R-rated content
+              </Typography>
+            </Box>
+
+            {/* Genre Tiles */}
+            <Box sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(4, 1fr)', 
+              gap: 2,
+              mt: 3
+            }}>
+              {[
+                { name: 'Action & Adventure', image: ActionAdventure },
+                { name: 'Comedy', image: Comedy },
+                { name: 'Drama', image: Drama },
+                { name: 'Education', image: Education },
+                { name: 'Holiday', image: Holiday },
+                { name: 'Lifestyle', image: Lifestyle },
+                { name: 'Music', image: Music },
+                { name: 'News', image: News },
+                { name: 'Reality & Pop culture', image: RealityPopculture },
+                { name: 'Romance', image: Romance },
+                { name: 'Sci-Fi', image: SciFi },
+                { name: 'Sports', image: Sports }
+              ].map((genre) => (
+                <Box 
+                  key={genre.name}
+                  sx={{ 
+                    border: '1px solid #e0e0e0',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column'
+                  }}
+                >
+                  <Box 
+                    component="img" 
+                    src={genre.image} 
+                    alt={genre.name}
+                    sx={{ 
+                      width: '100%', 
+                      height: '120px',
+                      objectFit: 'cover'
+                    }} 
+                  />
+                  <Box sx={{ p: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>
+                      {genre.name}
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <Switch
+                        size="small"
+                        checked={genrePlacements[genre.name] === 'include'}
+                        onChange={(e) => {
+                          setGenrePlacements(prev => ({
+                            ...prev,
+                            [genre.name]: e.target.checked ? 'include' : 'exclude'
+                          }));
+                        }}
+                      />
+                      <Typography variant="body2" sx={{ fontSize: '0.75rem' }}>
+                        {genrePlacements[genre.name] === 'include' ? 'Include' : 'Exclude'}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+              ))}
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Bottom Toolbar for Placement Edit Drawer */}
+        <Box sx={{
+          position: 'fixed',
+          bottom: 0,
+          right: 0,
+          width: '95%',
+          backgroundColor: 'white',
+          borderTop: '1px solid #e0e0e0',
+          p: 2,
+          boxShadow: '0 -2px 8px rgba(0, 0, 0, 0.1)',
+          zIndex: 1001
+        }}>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 2, maxWidth: 'none', mx: 'auto' }}>
+            <Button 
+              variant="outlined" 
+              color="primary" 
+              size="medium"
+              onClick={() => setPlacementDrawerOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="contained" 
+              color="primary" 
+              size="medium"
+              onClick={() => {
+                // Save changes and close drawer
+                console.log('Saving placement changes');
+                setPlacementDrawerOpen(false);
+              }}
+            >
+              Save
+            </Button>
+          </Box>
+        </Box>
+      </Drawer>
+
       {/* Toast notification */}
       <Snackbar
         open={toastOpen}
@@ -9432,6 +14766,31 @@ export default function App() {
           }
         }}
       />
+
+      {/* Switch Confirmation Dialog */}
+      <Dialog
+        open={switchConfirmDialogOpen}
+        onClose={cancelSwitchChange}
+        aria-labelledby="switch-confirm-dialog-title"
+        aria-describedby="switch-confirm-dialog-description"
+      >
+        <DialogTitle id="switch-confirm-dialog-title">
+          Turn off?
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="switch-confirm-dialog-description">
+            This will prevent this from spending
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={cancelSwitchChange} color="primary">
+            No keep on
+          </Button>
+          <Button onClick={confirmSwitchChange} color="primary" variant="contained" autoFocus>
+            Yes turn off
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

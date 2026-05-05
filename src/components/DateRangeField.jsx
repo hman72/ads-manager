@@ -112,7 +112,7 @@ const DateRangeField = ({
           sx={{ width }}
         />
       </Box>
-      <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+      <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
         Timezone: {timezone}
       </Typography>
     </Box>

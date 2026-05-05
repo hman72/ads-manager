@@ -22,7 +22,8 @@ export default function PlacementCard({
   automaticPlacement,
   setAutomaticPlacement,
   placementToggle,
-  setPlacementToggle
+  setPlacementToggle,
+  onEdit
 }) {
   return (
     <Box sx={{ 
@@ -35,9 +36,11 @@ export default function PlacementCard({
         <Typography variant="h2">
           Placement
         </Typography>
-        <Button variant="outlined" size="small">
-          Edit
-        </Button>
+        {onEdit && (
+          <Button variant="outlined" size="small" onClick={onEdit}>
+            Edit
+          </Button>
+        )}
       </Box>
       
       <Typography variant="caption" color="text.secondary">

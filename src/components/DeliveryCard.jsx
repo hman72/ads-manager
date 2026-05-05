@@ -7,6 +7,10 @@ import {
   Tooltip,
   TextField,
   InputAdornment,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -19,7 +23,67 @@ export default function DeliveryCard({
   setMaxBid,
   showAdvancedSettings,
   setShowAdvancedSettings,
+  selectedProfileOption,
 }) {
+  const [priority, setPriority] = React.useState('auction');
+  const [bidStrategy, setBidStrategy] = React.useState('max_bid');
+  const [pacing, setPacing] = React.useState('even');
+
+  const prioritySelect = (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
+      <Typography variant="body1" color="text.secondary" sx={{ width: '150px', flexShrink: 0 }}>
+        Priority
+      </Typography>
+      <FormControl size="small" sx={{ minWidth: 200 }}>
+        <Select
+          value={priority}
+          onChange={(e) => setPriority(e.target.value)}
+        >
+          <MenuItem value="auction">Auction</MenuItem>
+          <MenuItem value="sponsorship">Sponsorship</MenuItem>
+          <MenuItem value="remnant">Remnant</MenuItem>
+        </Select>
+      </FormControl>
+    </Box>
+  );
+
+  const pacingSelect = (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
+      <Typography variant="body1" color="text.secondary" sx={{ width: '150px', flexShrink: 0 }}>
+        Pacing
+      </Typography>
+      <FormControl size="small" sx={{ minWidth: 200 }}>
+        <Select
+          value={pacing}
+          onChange={(e) => setPacing(e.target.value)}
+          renderValue={(value) => {
+            const labels = { ahead: 'Ahead', asap: 'ASAP', even: 'Even' };
+            return labels[value];
+          }}
+        >
+          <MenuItem value="ahead">
+            <Box>
+              <Typography variant="body2">Ahead</Typography>
+              <Typography variant="caption" color="text.secondary">Targets 10% more budget delivery than "even" pacing to protect against under-delivery</Typography>
+            </Box>
+          </MenuItem>
+          <MenuItem value="asap">
+            <Box>
+              <Typography variant="body2">ASAP</Typography>
+              <Typography variant="caption" color="text.secondary">Targets 30% more budget delivery than "even" pacing to protect against under-delivery</Typography>
+            </Box>
+          </MenuItem>
+          <MenuItem value="even">
+            <Box>
+              <Typography variant="body2">Even</Typography>
+              <Typography variant="caption" color="text.secondary">Distributes budget evenly throughout the ad group's schedule</Typography>
+            </Box>
+          </MenuItem>
+        </Select>
+      </FormControl>
+    </Box>
+  );
+
   return (
     <Box
       sx={{
@@ -35,6 +99,58 @@ export default function DeliveryCard({
         Campaigns are billed on delivered impressions
       </Typography>
 
+      {selectedProfileOption === 'Managed Service User' && (
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
+        <Typography variant="body1" color="text.secondary" sx={{ width: '150px', flexShrink: 0 }}>
+          Bid strategy
+        </Typography>
+        <FormControl size="small" sx={{ minWidth: 200 }}>
+          <Select
+            value={bidStrategy}
+            onChange={(e) => setBidStrategy(e.target.value)}
+            renderValue={(value) => {
+              const labels = { max_bid: 'Max bid', fixed: 'Fixed CPM', target_cpa: 'Target CPA' };
+              return labels[value];
+            }}
+          >
+            <MenuItem value="max_bid">
+              <Box>
+                <Typography variant="body2">Max bid</Typography>
+                <Typography variant="caption" color="text.secondary">Bid will not exceed the CPM</Typography>
+              </Box>
+            </MenuItem>
+            <MenuItem value="fixed">
+              <Box>
+                <Typography variant="body2">Fixed CPM</Typography>
+                <Typography variant="caption" color="text.secondary">Bid is always equal to the CPM</Typography>
+              </Box>
+            </MenuItem>
+            <MenuItem value="target_cpa">
+              <Box>
+                <Typography variant="body2">Target CPA</Typography>
+                <Typography variant="caption" color="text.secondary">Bids are optimized toward achieving your CPA</Typography>
+              </Box>
+            </MenuItem>
+          </Select>
+        </FormControl>
+        <TextField
+          variant="outlined"
+          size="small"
+          sx={{ width: '120px' }}
+          placeholder="0.00"
+          label={bidStrategy === 'target_cpa' ? 'CPA' : 'CPM'}
+          InputProps={{
+            startAdornment: <InputAdornment position="start">$</InputAdornment>,
+          }}
+        />
+      </Box>
+      )}
+
+      {selectedProfileOption === 'Managed Service User' && pacing !== 'even' && pacingSelect}
+
+      {selectedProfileOption === 'Managed Service User' && priority !== 'auction' && prioritySelect}
+
+      {selectedProfileOption === 'Self Service User' && (
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px', width: '150px' }}>
           <Typography variant="body1" color="text.secondary">
@@ -75,8 +191,9 @@ export default function DeliveryCard({
         </Box>
         <Switch size="small" checked={autoBid} onChange={(e) => setAutoBid(e.target.checked)} />
       </Box>
+      )}
 
-      {!autoBid && (
+      {selectedProfileOption === 'Self Service User' && !autoBid && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px', width: '150px' }}>
             <Typography variant="body1" color="text.secondary">
@@ -166,6 +283,11 @@ export default function DeliveryCard({
       </Box>
 
       {showAdvancedSettings && (
+        <>
+        {selectedProfileOption === 'Managed Service User' && pacing === 'even' && pacingSelect}
+
+        {selectedProfileOption === 'Managed Service User' && priority === 'auction' && prioritySelect}
+
         <Box
           sx={{
             display: 'flex',
@@ -198,6 +320,7 @@ export default function DeliveryCard({
             day(s)
           </Typography>
         </Box>
+        </>
       )}
     </Box>
   );
