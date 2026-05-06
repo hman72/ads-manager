@@ -225,37 +225,33 @@ const RokuLogo = () => (
   />
 );
 
-const StatusComponent = ({ status }) => {
+const StatusComponent = ({ status, tooltip }) => {
   const getStatusConfig = (status) => {
     switch (status) {
       case 'Active':
-        return { icon: <CheckCircleOutlineIcon />, color: '#3e7d32' };
-      case 'Approved':
         return { icon: <CheckCircleOutlineIcon />, color: '#3e7d32' };
       case 'Archived':
         return { icon: <ArchiveIcon />, color: '#4caf50' };
       case 'Creative in review':
         return { icon: <ImageSearchIcon />, color: 'infoMain' };
-      case 'In review':
-        return { icon: <ImageSearchIcon />, color: 'infoMain' };
-      case 'Creative needed':
-        return { icon: <AddPhotoAlternateIcon />, color: '#f44336' };
-      case 'Creatives required':
-        return { icon: <InfoOutlinedIcon />, color: '#f44336' };
+      case 'Creative rejected':
+        return { icon: <WarningIcon />, color: '#f44336' };
+      case 'Creative error':
+        return { icon: <WarningIcon />, color: '#f44336' };
+      case 'Creative processing':
+        return { icon: <ImageSearchIcon />, color: '#ff9800' };
       case 'Deactivated':
         return { icon: <MotionPhotosOffIcon />, color: '#f44336' };
       case 'Draft':
         return { icon: <CircleOutlinedIcon />, color: 'infoMain' };
       case 'Ended':
         return { icon: <StopCircleIcon />, color: '#424242' };
-      case 'Inactive':
+      case 'Not delivering':
+        return { icon: <StopCircleIcon />, color: '#424242' };
+      case 'Paused':
         return { icon: <PauseIcon />, color: '#ff9800' };
-      case 'Rejected':
-        return { icon: <WarningIcon />, color: '#f44336' };
       case 'Scheduled':
         return { icon: <ScheduleIcon />, color: 'infoMain' };
-      case 'Event not yet configured':
-        return { icon: <InfoOutlinedIcon />, color: 'infoMain' };
       default:
         return { icon: <PlayArrowIcon />, color: '#757575' };
     }
@@ -263,7 +259,7 @@ const StatusComponent = ({ status }) => {
 
   const { icon, color } = getStatusConfig(status);
 
-  return (
+  const content = (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
       <Box sx={{ 
         color, 
@@ -280,6 +276,11 @@ const StatusComponent = ({ status }) => {
       </Typography>
     </Box>
   );
+
+  if (tooltip) {
+    return <Tooltip title={tooltip} arrow>{content}</Tooltip>;
+  }
+  return content;
 };
 
 // Tile Component
@@ -2941,7 +2942,7 @@ const CreativesCard = ({ adGroup, isSelected, handleCampaignCheckboxClick, onAdd
                   </Link>
                 </TableCell>
                 <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                  <StatusComponent status={creative.status} />
+                  <StatusComponent status={creative.status} tooltip={creative.statusReason === 'campaign_paused' ? 'Campaign paused' : null} />
                 </TableCell>
                 <TableCell sx={{ whiteSpace: 'nowrap' }}>{creative.type}</TableCell>
               </TableRow>
@@ -3262,7 +3263,7 @@ const AdGroupDetailsSkeleton = ({ adGroups, currentCampaign = 'Holiday Sale 2024
                 Optimization goal
               </Typography>
               <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                App installs
+                {campaignGoal === 'Awareness' ? 'Reach' : 'App installs'}
               </Typography>
             </Box>
           </>
@@ -3484,8 +3485,8 @@ const campaignsData = [
     goal: "Conversion",
     conversionEvent: "leads",
     eventGroup: "ABCEuttoJA",
-    status: "Draft",
-    previousStatus: "Creative needed",
+    status: "Active",
+    previousStatus: "Draft",
     spend: "$0.00",
     impressions: "0",
     cpm: "$0.00",
@@ -3513,7 +3514,7 @@ const campaignsData = [
     campaign: "Caldor Upfront Holiday 2025",
     goal: "Awareness",
     conversionEvent: null,
-    status: "Draft",
+    status: "Active",
     previousStatus: "Draft",
     spend: "$0.00",
     impressions: "0",
@@ -3543,7 +3544,7 @@ const campaignsData = [
     campaign: "Paused Brand Campaign",
     goal: "Awareness",
     conversionEvent: null,
-    status: "Inactive",
+    status: "Paused",
     previousStatus: "Active",
     spend: "$1,567.43",
     impressions: "67,890",
@@ -3558,8 +3559,8 @@ const campaignsData = [
     campaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM",
     goal: "Awareness",
     conversionEvent: null,
-    status: "Scheduled",
-    previousStatus: "Scheduled",
+    status: "Not delivering",
+    previousStatus: "Not delivering",
     spend: "$0.00",
     impressions: "0",
     cpm: "$0.00",
@@ -3584,8 +3585,8 @@ const adGroupsData = [
     goalCpa: "$10.04",
     accessType: "managed", // This is managed
     creatives: [
-      { id: 10001, name: "Vandelay Industries Banner 1", type: "Billboard", status: "Approved" },
-      { id: 10002, name: "Vandelay Industries Banner 2", type: "Billboard", status: "Approved" }
+      { id: 10001, name: "Vandelay Industries Banner 1", type: "Billboard", status: "Active" },
+      { id: 10002, name: "Vandelay Industries Banner 2", type: "Billboard", status: "Active" }
     ]
   },
   { 
@@ -3600,8 +3601,8 @@ const adGroupsData = [
     goalCpa: "$10.04",
     accessType: "managed", // This is managed
     creatives: [
-      { id: 101, name: "Desktop Banner 1", type: "Billboard", status: "Approved" },
-      { id: 102, name: "Desktop Banner 2", type: "Billboard", status: "Approved" }
+      { id: 101, name: "Desktop Banner 1", type: "Billboard", status: "Active" },
+      { id: 102, name: "Desktop Banner 2", type: "Billboard", status: "Active" }
     ]
   },
   { 
@@ -3616,16 +3617,16 @@ const adGroupsData = [
     goalCpa: "$10.08",
     accessType: "self", // This is your own
     creatives: [
-      { id: 201, name: "Mobile Banner 1", type: "Marquee", status: "Approved" },
-      { id: 202, name: "Mobile Banner 2", type: "Marquee", status: "Approved" },
-      { id: 203, name: "Mobile Banner 3", type: "Marquee", status: "Approved" }
+      { id: 201, name: "Mobile Banner 1", type: "Marquee", status: "Active" },
+      { id: 202, name: "Mobile Banner 2", type: "Marquee", status: "Active" },
+      { id: 203, name: "Mobile Banner 3", type: "Marquee", status: "Active" }
     ]
   },
   { 
     id: 3, 
     campaign: "Young Adults - Sports Interest", 
     parentCampaign: "Holiday Sale 2024", 
-    status: "Active", 
+    status: "Draft", 
     spend: "$2,345.67", 
     impressions: "67,890", 
     cpm: "$3.46", 
@@ -3644,7 +3645,7 @@ const adGroupsData = [
     goalActions: "145", 
     goalCpa: "$10.05",
     creatives: [
-      { id: 401, name: "Howdy S3 Home Banner 1", type: "Billboard", status: "Approved" }
+      { id: 401, name: "Howdy S3 Home Banner 1", type: "Billboard", status: "Active" }
     ]
   },
   { 
@@ -3658,9 +3659,9 @@ const adGroupsData = [
     goalActions: "345", 
     goalCpa: "$10.02",
     creatives: [
-      { id: 501, name: "Electronics Video 1", type: "In-content video", status: "Approved" },
-      { id: 502, name: "Electronics Video 2", type: "In-content video", status: "Approved" },
-      { id: 503, name: "Electronics Video 3", type: "In-content video", status: "Approved" }
+      { id: 501, name: "Electronics Video 1", type: "In-content video", status: "Active" },
+      { id: 502, name: "Electronics Video 2", type: "In-content video", status: "Active" },
+      { id: 503, name: "Electronics Video 3", type: "In-content video", status: "Active" }
     ]
   },
   { 
@@ -3674,12 +3675,12 @@ const adGroupsData = [
     goalActions: "256", 
     goalCpa: "$10.03",
     creatives: [
-      { id: 601, name: "Fashion Video 1", type: "In-content video", status: "Rejected" },
-      { id: 602, name: "Fashion Video 2", type: "In-content video", status: "Approved" }
+      { id: 601, name: "Fashion Video 1", type: "In-content video", status: "Creative rejected" },
+      { id: 602, name: "Fashion Video 2", type: "In-content video", status: "Active" }
     ]
   },
-  { id: 7, campaign: "High Income - Luxury Goods", parentCampaign: "Holiday Sale 2024", status: "Active", spend: "$1,678.90", impressions: "54,321", cpm: "$3.09", goalActions: "167", goalCpa: "$10.05", creatives: [{ id: 701, name: "Luxury Banner 1", type: "Billboard", status: "In review" }, { id: 702, name: "Luxury Banner 2", type: "Billboard", status: "Approved" }] },
-  { id: 8, campaign: "432264404_Brand Showcase_Native Ads (Marquee)_50% SOVTakeover_1 (TFL0277361)", parentCampaign: "Caldor Upfront Holiday 2025", status: "Active", spend: "$1,789.01", impressions: "58,765", cpm: "$3.04", goalActions: "178", goalCpa: "$10.06", creatives: [{ id: 801, name: "Brand Showcase Marquee 1", type: "Marquee", status: "Approved" }, { id: 802, name: "Brand Showcase Marquee 2", type: "Marquee", status: "Approved" }] },
+  { id: 7, campaign: "High Income - Luxury Goods", parentCampaign: "Holiday Sale 2024", status: "Active", spend: "$1,678.90", impressions: "54,321", cpm: "$3.09", goalActions: "167", goalCpa: "$10.05", creatives: [{ id: 701, name: "Luxury Banner 1", type: "Billboard", status: "Creative in review" }, { id: 702, name: "Luxury Banner 2", type: "Billboard", status: "Active" }] },
+  { id: 8, campaign: "432264404_Brand Showcase_Native Ads (Marquee)_50% SOVTakeover_1 (TFL0277361)", parentCampaign: "Caldor Upfront Holiday 2025", status: "Active", spend: "$1,789.01", impressions: "58,765", cpm: "$3.04", goalActions: "178", goalCpa: "$10.06", creatives: [{ id: 801, name: "Brand Showcase Marquee 1", type: "Marquee", status: "Active" }, { id: 802, name: "Brand Showcase Marquee 2", type: "Marquee", status: "Active" }] },
   // Sterling Cooper US Campaign Ad Groups
   { id: 9001, campaign: "Video - TRC Targeted Base - AMARILLO (AMR) 30s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Active", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90001, name: "DeLorean DMC-12 Amarillo 30s Video", type: "In-content video", status: "Active" }] },
   { id: 9002, campaign: "Video - TRC Targeted Base - CORPUS CHRISTI (CC) 30s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Active", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90002, name: "DeLorean DMC-12 Corpus Christi 30s Video", type: "In-content video", status: "Active" }] },
@@ -3740,51 +3741,51 @@ const adGroupsData = [
   { id: 9057, campaign: "Video - TRC Targeted Base - LAFAYETTE (LAL) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Active", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90057, name: "DeLorean DMC-12 Lafayette 15s Video", type: "In-content video", status: "Active" }] },
   { id: 9058, campaign: "Video - TRC Targeted Base - LAKE CHARLES (LCH) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Active", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90058, name: "DeLorean DMC-12 Lake Charles 15s Video", type: "In-content video", status: "Active" }] },
   { id: 9059, campaign: "Video - TRC Targeted Base - LAREDO (LAR) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Active", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90059, name: "DeLorean DMC-12 Laredo 15s Video", type: "In-content video", status: "Active" }] },
-  { id: 9060, campaign: "Video - TRC Targeted Base - LTL RK, PN BLFF (LR) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Active", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90060, name: "DeLorean DMC-12 Little Rock Pine Bluff 15s Video", type: "In-content video", status: "Draft" }] },
-  { id: 9061, campaign: "Video - TRC Targeted Base - LUBBOCK(LUB) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Active", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90061, name: "DeLorean DMC-12 Lubbock 15s Video", type: "In-content video", status: "Draft" }] },
-  { id: 9062, campaign: "Video - TRC Targeted Base - MERIDIAN (MER) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Active", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90062, name: "DeLorean DMC-12 Meridian 15s Video", type: "In-content video", status: "Draft" }] },
-  { id: 9063, campaign: "Video - TRC Targeted Base - MONRO(MON) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Active", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90063, name: "DeLorean DMC-12 Monroe 15s Video", type: "In-content video", status: "Draft" }] },
-  { id: 9064, campaign: "Video - TRC Targeted Base - ODESSA (ODS) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Scheduled", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90064, name: "DeLorean DMC-12 Odessa 15s Video", type: "In-content video", status: "Draft" }] },
-  { id: 9065, campaign: "Video - TRC Targeted Base - OK CITY (OKC) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Scheduled", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90065, name: "DeLorean DMC-12 Oklahoma City 15s Video", type: "In-content video", status: "Draft" }] },
-  { id: 9066, campaign: "Video - TRC Targeted Base - SAN ANGELO (SAG) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Scheduled", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90066, name: "DeLorean DMC-12 San Angelo 15s Video", type: "In-content video", status: "Draft" }] },
-  { id: 9067, campaign: "Video - TRC Targeted Base - San Antonio (SAN) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Scheduled", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90067, name: "DeLorean DMC-12 San Antonio 15s Video", type: "In-content video", status: "Draft" }] },
-  { id: 9068, campaign: "Video - TRC Targeted Base - SHRMN (SHM) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Scheduled", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90068, name: "DeLorean DMC-12 Sherman 15s Video", type: "In-content video", status: "Draft" }] },
-  { id: 9069, campaign: "Video - TRC Targeted Base - VICTORIA(VIC) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Scheduled", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90069, name: "DeLorean DMC-12 Victoria 15s Video", type: "In-content video", status: "Draft" }] },
-  { id: 9070, campaign: "Video - TRC Targeted Base - SHREVEPORT (SHR) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Inactive", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90070, name: "DeLorean DMC-12 Shreveport 15s Video", type: "In-content video", status: "Draft" }] },
-  { id: 9071, campaign: "Video - TRC Targeted Base - TULSA (TUL) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Inactive", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90071, name: "DeLorean DMC-12 Tulsa 15s Video", type: "In-content video", status: "Draft" }] },
-  { id: 9072, campaign: "Video - TRC Targeted Base - TYLER, LONGVIEW (TYL) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Inactive", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90072, name: "DeLorean DMC-12 Tyler Longview 15s Video", type: "In-content video", status: "Draft" }] },
-  { id: 9073, campaign: "Video - TRC Targeted Base - WCO, TMPL, KILN (WAC) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Inactive", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90073, name: "DeLorean DMC-12 Waco Temple Killeen 15s Video", type: "In-content video", status: "Draft" }] },
-  { id: 9074, campaign: "Video - TRC Targeted Base - WCHT FLLS, LWTN (WIF) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Inactive", budget: "$1,630.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90074, name: "DeLorean DMC-12 Wichita Falls Lawton 15s Video", type: "In-content video", status: "Draft" }] },
-  { id: 10, campaign: "432264404_Brand Showcase_Native Ads (Marquee)_50% SOVTakeover_1 (TFL0277361)", parentCampaign: "Kmart Upfront Holiday Total Plan 2025", status: "Draft", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 1001, name: "Tech Banner 1", type: "Marquee", status: "Rejected" }, { id: 1002, name: "Tech Banner 2", type: "Marquee", status: "Approved" }, { id: 1003, name: "Tech Banner 3", type: "Marquee", status: "Approved" }] },
-  { id: 11, campaign: "Cart Abandoners - Retarget", parentCampaign: "Paused Brand Campaign", status: "Active", spend: "$892.34", impressions: "29,876", cpm: "$2.99", goalActions: "89", goalCpa: "$10.03", creatives: [{ id: 1101, name: "Retarget Banner 1", type: "Billboard", status: "Approved" }, { id: 1102, name: "Retarget Banner 2", type: "Billboard", status: "Approved" }] },
-  { id: 12, campaign: "Website Visitors - Retarget", parentCampaign: "Paused Brand Campaign", status: "Active", spend: "$1,123.45", impressions: "38,901", cpm: "$2.89", goalActions: "112", goalCpa: "$10.03", creatives: [{ id: 1201, name: "Website Banner 1", type: "Marquee", status: "In review" }] },
-  { id: 13, campaign: "High Value Customers - Lookalike", parentCampaign: "Holiday Sale 2024", status: "Active", spend: "$1,567.89", impressions: "49,234", cpm: "$3.18", goalActions: "156", goalCpa: "$10.05", creatives: [{ id: 1301, name: "Lookalike Banner 1", type: "Billboard", status: "Approved" }, { id: 1302, name: "Lookalike Banner 2", type: "Billboard", status: "Approved" }, { id: 1303, name: "Lookalike Banner 3", type: "Billboard", status: "In review" }] },
-  { id: 14, campaign: "Frequent Buyers - Lookalike", parentCampaign: "Holiday Sale 2024", status: "Active", spend: "$1,345.67", impressions: "42,108", cpm: "$3.20", goalActions: "134", goalCpa: "$10.04", creatives: [{ id: 1401, name: "Buyers Banner 1", type: "Billboard", status: "Rejected" }, { id: 1402, name: "Buyers Banner 2", type: "Billboard", status: "Approved" }] },
-  { id: 15, campaign: "Sports Fans - Weekend", parentCampaign: "Failed Campaign Test", status: "Inactive", spend: "$678.90", impressions: "21,567", cpm: "$3.15", goalActions: "67", goalCpa: "$10.13" },
-  { id: 16, campaign: "ALL-ALL-US_RTG-S3LINE2_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277228)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$987.65", impressions: "31,234", cpm: "$3.16", goalActions: "98", goalCpa: "$10.08", creatives: [{ id: 1601, name: "Howdy S3 Home Banner 2", type: "Billboard", status: "Approved" }] },
-  { id: 30, campaign: "ALL-ALL-US_RTG-S3LINE3_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277233)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3001, name: "Howdy S3 Home Banner 3", type: "Billboard", status: "Approved" }] },
-  { id: 31, campaign: "ALL-ALL-US_RTG-S3LINE4_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277235)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3101, name: "Howdy S3 Home Banner 4", type: "Billboard", status: "Approved" }] },
-  { id: 32, campaign: "ALL-ALL-US_RTG-S3LINE5_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277240)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3201, name: "Howdy S3 Home Banner 5", type: "Billboard", status: "Approved" }] },
-  { id: 33, campaign: "ALL-ALL-US_RTG-S3LINE7_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277243)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3301, name: "Howdy S3 Home Banner 7", type: "Billboard", status: "Approved" }] },
-  { id: 34, campaign: "ALL-ALL-US_RTG-S3LINE8_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277249)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3401, name: "Howdy S3 Home Banner 8", type: "Billboard", status: "Approved" }] },
-  { id: 35, campaign: "ALL-ALL-US_RTG-S3LINE9_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277252)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3501, name: "Howdy S3 Home Banner 9", type: "Billboard", status: "Approved" }] },
-  { id: 36, campaign: "ALL-ALL-US_RTG-S3LINE10_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277256)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3601, name: "Howdy S3 Home Banner 10 Nov", type: "Billboard", status: "Approved" }] },
-  { id: 37, campaign: "ALL-ALL-US_RTG-S3LINE10_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - October (TFL0277257)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Scheduled", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3701, name: "Howdy S3 Home Banner 10 Oct", type: "Billboard", status: "Draft" }] },
-  { id: 38, campaign: "ALL-ALL-US_RTG-S3LINE11_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277259)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3801, name: "Howdy S3 Home Banner 11", type: "Billboard", status: "Approved" }] },
-  { id: 39, campaign: "ALL-ALL-US_RTG-S3LINE12_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - October (TFL0277263)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Scheduled", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3901, name: "Howdy S3 Home Banner 12 Oct", type: "Billboard", status: "Draft" }] },
-  { id: 40, campaign: "ALL-ALL-US_RTG-S3LINE20_CPM_HOME-SPOTLIGHT_ALL_ROKU_NA_ROT-G_NA- November (TFL0277299)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cmp: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 4001, name: "Howdy S3 Home Spotlight", type: "Billboard", status: "Approved" }] },
-  { id: 17, campaign: "Urban Areas - Commute Hours", parentCampaign: "Q3 Product Archive", status: "Active", spend: "$1,234.56", impressions: "39,876", cpm: "$3.10", goalActions: "123", goalCpa: "$10.04", creatives: [{ id: 1701, name: "Urban Video 1", type: "In-content video", status: "Approved" }, { id: 1702, name: "Urban Video 2", type: "In-content video", status: "Approved" }, { id: 1703, name: "Urban Video 3", type: "In-content video", status: "In review" }] },
-  { id: 18, campaign: "Suburban Areas - Evening", parentCampaign: "Q3 Product Archive", status: "Active", spend: "$1,456.78", impressions: "46,543", cpm: "$3.13", goalActions: "145", goalCpa: "$10.05", creatives: [{ id: 1801, name: "Suburban Banner 1", type: "Billboard", status: "Approved" }] },
-  { id: 19, campaign: "432015535_Brand Showcase_Native Ads (Marquee)_50% SOVTakeover_2 (TFL0277363)", parentCampaign: "Caldor Upfront Holiday 2025", status: "Scheduled", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 1901, name: "Brand Showcase Marquee 2", type: "Marquee", status: "Draft" }] },
-  { id: 25, campaign: "432015526_Brand Showcase_Native Ads (Marquee)_50% SOVTakeover_3 (TFL0277366)", parentCampaign: "Caldor Upfront Holiday 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 2501, name: "Brand Showcase Marquee 3", type: "Marquee", status: "Approved" }] },
-  { id: 26, campaign: "432603873_BILLABLE_Theme_BETA_Sponsorship Display_Theme (TFL0277386)", parentCampaign: "Caldor Upfront Holiday 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 2601, name: "Theme Sponsorship Display", type: "Billboard", status: "In review" }] },
-  { id: 27, campaign: "432015559_Season's Streamings_Native Ads (Marquee Ad Video)_TKO_Hourly_Primetime 7-11pm UTZ (TFL0288536)", parentCampaign: "Caldor Upfront Holiday 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 2701, name: "Season's Streamings Marquee Video", type: "Marquee", status: "Approved" }] },
-  { id: 28, campaign: "432604569_Season's Streamings_Season's Streaming_Native Ads (Marquee + Billboard) (TFL0288538)", parentCampaign: "Caldor Upfront Holiday 2025", status: "Scheduled", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 2801, name: "Season's Streamings Marquee + Billboard", type: "Billboard", status: "Draft" }] },
-  { id: 29, campaign: "432262595_Season's Streamings_Season's Streaming_Premiere Tile_1A (TFL0288539)", parentCampaign: "Caldor Upfront Holiday 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 2901, name: "Season's Streamings Premiere Tile", type: "Billboard", status: "Approved" }] },
-  { id: 21, campaign: "Electronics Cross-sell", parentCampaign: "Black Friday 2023", status: "Active", spend: "$789.01", impressions: "25,432", cpm: "$3.10", goalActions: "78", goalCpa: "$10.12", creatives: [{ id: 2101, name: "Electronics Banner 1", type: "Billboard", status: "Approved" }] },
-  { id: 22, campaign: "Accessories Cross-sell", parentCampaign: "Holiday Sale 2024", status: "Active", spend: "$654.32", impressions: "21,098", cpm: "$3.10", goalActions: "65", goalCpa: "$10.07", creatives: [{ id: 2201, name: "Accessories Video 1", type: "In-content video", status: "In review" }, { id: 2202, name: "Accessories Video 2", type: "In-content video", status: "Approved" }, { id: 2203, name: "Accessories Video 3", type: "In-content video", status: "Approved" }, { id: 2204, name: "Accessories Video 4", type: "In-content video", status: "Approved" }] },
-  { id: 23, campaign: "Premium Products Upsell", parentCampaign: "Holiday Sale 2024", status: "Active", spend: "$1,098.76", impressions: "35,467", cpm: "$3.10", goalActions: "109", goalCpa: "$10.08", creatives: [{ id: 2301, name: "Premium Creative 1", type: "In-content video", status: "Approved" }, { id: 2302, name: "Premium Creative 2", type: "In-content video", status: "Approved" }] },
-  { id: 24, campaign: "432015535_Brand Showcase_Native Ads (Marquee)_50% SOVTakeover_2 (TFL0277363)", parentCampaign: "Kmart Upfront Holiday Total Plan 2025", status: "Creative in review", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 2401, name: "Brand Showcase Marquee 2", type: "Marquee", status: "In review" }] },
+  { id: 9060, campaign: "Video - TRC Targeted Base - LTL RK, PN BLFF (LR) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Not delivering", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90060, name: "DeLorean DMC-12 Little Rock Pine Bluff 15s Video", type: "In-content video", status: "Draft" }] },
+  { id: 9061, campaign: "Video - TRC Targeted Base - LUBBOCK(LUB) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Not delivering", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90061, name: "DeLorean DMC-12 Lubbock 15s Video", type: "In-content video", status: "Draft" }] },
+  { id: 9062, campaign: "Video - TRC Targeted Base - MERIDIAN (MER) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Not delivering", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90062, name: "DeLorean DMC-12 Meridian 15s Video", type: "In-content video", status: "Draft" }] },
+  { id: 9063, campaign: "Video - TRC Targeted Base - MONRO(MON) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Not delivering", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90063, name: "DeLorean DMC-12 Monroe 15s Video", type: "In-content video", status: "Draft" }] },
+  { id: 9064, campaign: "Video - TRC Targeted Base - ODESSA (ODS) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Scheduled", startDate: new Date("2026-07-01"), budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90064, name: "DeLorean DMC-12 Odessa 15s Video", type: "In-content video", status: "Draft" }] },
+  { id: 9065, campaign: "Video - TRC Targeted Base - OK CITY (OKC) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Scheduled", startDate: new Date("2026-07-01"), budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90065, name: "DeLorean DMC-12 Oklahoma City 15s Video", type: "In-content video", status: "Draft" }] },
+  { id: 9066, campaign: "Video - TRC Targeted Base - SAN ANGELO (SAG) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Scheduled", startDate: new Date("2026-07-01"), budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90066, name: "DeLorean DMC-12 San Angelo 15s Video", type: "In-content video", status: "Draft" }] },
+  { id: 9067, campaign: "Video - TRC Targeted Base - San Antonio (SAN) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Scheduled", startDate: new Date("2026-07-01"), budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90067, name: "DeLorean DMC-12 San Antonio 15s Video", type: "In-content video", status: "Draft" }] },
+  { id: 9068, campaign: "Video - TRC Targeted Base - SHRMN (SHM) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Scheduled", startDate: new Date("2026-07-01"), budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90068, name: "DeLorean DMC-12 Sherman 15s Video", type: "In-content video", status: "Draft" }] },
+  { id: 9069, campaign: "Video - TRC Targeted Base - VICTORIA(VIC) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Scheduled", startDate: new Date("2026-07-01"), budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90069, name: "DeLorean DMC-12 Victoria 15s Video", type: "In-content video", status: "Draft" }] },
+  { id: 9070, campaign: "Video - TRC Targeted Base - SHREVEPORT (SHR) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Paused", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90070, name: "DeLorean DMC-12 Shreveport 15s Video", type: "In-content video", status: "Draft" }] },
+  { id: 9071, campaign: "Video - TRC Targeted Base - TULSA (TUL) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Paused", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90071, name: "DeLorean DMC-12 Tulsa 15s Video", type: "In-content video", status: "Draft" }] },
+  { id: 9072, campaign: "Video - TRC Targeted Base - TYLER, LONGVIEW (TYL) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Paused", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90072, name: "DeLorean DMC-12 Tyler Longview 15s Video", type: "In-content video", status: "Draft" }] },
+  { id: 9073, campaign: "Video - TRC Targeted Base - WCO, TMPL, KILN (WAC) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Paused", budget: "$1,690.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90073, name: "DeLorean DMC-12 Waco Temple Killeen 15s Video", type: "In-content video", status: "Draft" }] },
+  { id: 9074, campaign: "Video - TRC Targeted Base - WCHT FLLS, LWTN (WIF) EQUIV 15s", parentCampaign: "Sterling Cooper US | DeLorean Regional/Local | DI | Gulf States DMC-12 Q3 25 GM", status: "Paused", budget: "$1,630.00", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 90074, name: "DeLorean DMC-12 Wichita Falls Lawton 15s Video", type: "In-content video", status: "Draft" }] },
+  { id: 10, campaign: "432264404_Brand Showcase_Native Ads (Marquee)_50% SOVTakeover_1 (TFL0277361)", parentCampaign: "Kmart Upfront Holiday Total Plan 2025", status: "Draft", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 1001, name: "Tech Banner 1", type: "Marquee", status: "Creative rejected" }, { id: 1002, name: "Tech Banner 2", type: "Marquee", status: "Active" }, { id: 1003, name: "Tech Banner 3", type: "Marquee", status: "Active" }] },
+  { id: 11, campaign: "Cart Abandoners - Retarget", parentCampaign: "Paused Brand Campaign", status: "Active", spend: "$892.34", impressions: "29,876", cpm: "$2.99", goalActions: "89", goalCpa: "$10.03", creatives: [{ id: 1101, name: "Retarget Banner 1", type: "Billboard", status: "Active" }, { id: 1102, name: "Retarget Banner 2", type: "Billboard", status: "Active" }] },
+  { id: 12, campaign: "Website Visitors - Retarget", parentCampaign: "Paused Brand Campaign", status: "Not delivering", spend: "$1,123.45", impressions: "38,901", cpm: "$2.89", goalActions: "112", goalCpa: "$10.03", creatives: [{ id: 1201, name: "Website Banner 1", type: "Marquee", status: "Creative in review" }] },
+  { id: 13, campaign: "High Value Customers - Lookalike", parentCampaign: "Holiday Sale 2024", status: "Active", spend: "$1,567.89", impressions: "49,234", cpm: "$3.18", goalActions: "156", goalCpa: "$10.05", creatives: [{ id: 1301, name: "Lookalike Banner 1", type: "Billboard", status: "Active" }, { id: 1302, name: "Lookalike Banner 2", type: "Billboard", status: "Active" }, { id: 1303, name: "Lookalike Banner 3", type: "Billboard", status: "Creative in review" }] },
+  { id: 14, campaign: "Frequent Buyers - Lookalike", parentCampaign: "Holiday Sale 2024", status: "Active", spend: "$1,345.67", impressions: "42,108", cpm: "$3.20", goalActions: "134", goalCpa: "$10.04", creatives: [{ id: 1401, name: "Buyers Banner 1", type: "Billboard", status: "Creative rejected" }, { id: 1402, name: "Buyers Banner 2", type: "Billboard", status: "Active" }] },
+  { id: 15, campaign: "Sports Fans - Weekend", parentCampaign: "Failed Campaign Test", status: "Paused", spend: "$678.90", impressions: "21,567", cpm: "$3.15", goalActions: "67", goalCpa: "$10.13" },
+  { id: 16, campaign: "ALL-ALL-US_RTG-S3LINE2_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277228)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$987.65", impressions: "31,234", cpm: "$3.16", goalActions: "98", goalCpa: "$10.08", creatives: [{ id: 1601, name: "Howdy S3 Home Banner 2", type: "Billboard", status: "Active" }] },
+  { id: 30, campaign: "ALL-ALL-US_RTG-S3LINE3_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277233)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3001, name: "Howdy S3 Home Banner 3", type: "Billboard", status: "Active" }] },
+  { id: 31, campaign: "ALL-ALL-US_RTG-S3LINE4_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277235)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3101, name: "Howdy S3 Home Banner 4", type: "Billboard", status: "Active" }] },
+  { id: 32, campaign: "ALL-ALL-US_RTG-S3LINE5_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277240)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3201, name: "Howdy S3 Home Banner 5", type: "Billboard", status: "Active" }] },
+  { id: 33, campaign: "ALL-ALL-US_RTG-S3LINE7_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277243)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3301, name: "Howdy S3 Home Banner 7", type: "Billboard", status: "Active" }] },
+  { id: 34, campaign: "ALL-ALL-US_RTG-S3LINE8_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277249)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3401, name: "Howdy S3 Home Banner 8", type: "Billboard", status: "Active" }] },
+  { id: 35, campaign: "ALL-ALL-US_RTG-S3LINE9_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277252)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3501, name: "Howdy S3 Home Banner 9", type: "Billboard", status: "Active" }] },
+  { id: 36, campaign: "ALL-ALL-US_RTG-S3LINE10_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277256)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3601, name: "Howdy S3 Home Banner 10 Nov", type: "Billboard", status: "Active" }] },
+  { id: 37, campaign: "ALL-ALL-US_RTG-S3LINE10_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - October (TFL0277257)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Scheduled", startDate: new Date("2026-07-01"), spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3701, name: "Howdy S3 Home Banner 10 Oct", type: "Billboard", status: "Draft" }] },
+  { id: 38, campaign: "ALL-ALL-US_RTG-S3LINE11_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - November (TFL0277259)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3801, name: "Howdy S3 Home Banner 11", type: "Billboard", status: "Active" }] },
+  { id: 39, campaign: "ALL-ALL-US_RTG-S3LINE12_CPM_HOME-BANNER_ALL_ROKU_NA_ROT-G_NA - October (TFL0277263)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Scheduled", startDate: new Date("2026-07-01"), spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 3901, name: "Howdy S3 Home Banner 12 Oct", type: "Billboard", status: "Draft" }] },
+  { id: 40, campaign: "ALL-ALL-US_RTG-S3LINE20_CPM_HOME-SPOTLIGHT_ALL_ROKU_NA_ROT-G_NA- November (TFL0277299)", parentCampaign: "Client Direct | Howdy | DI | Howdy S3 4Q 2025", status: "Active", spend: "$0.00", impressions: "0", cmp: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 4001, name: "Howdy S3 Home Spotlight", type: "Billboard", status: "Active" }] },
+  { id: 17, campaign: "Urban Areas - Commute Hours", parentCampaign: "Q3 Product Archive", status: "Active", spend: "$1,234.56", impressions: "39,876", cpm: "$3.10", goalActions: "123", goalCpa: "$10.04", creatives: [{ id: 1701, name: "Urban Video 1", type: "In-content video", status: "Active" }, { id: 1702, name: "Urban Video 2", type: "In-content video", status: "Active" }, { id: 1703, name: "Urban Video 3", type: "In-content video", status: "Creative in review" }] },
+  { id: 18, campaign: "Suburban Areas - Evening", parentCampaign: "Q3 Product Archive", status: "Active", spend: "$1,456.78", impressions: "46,543", cpm: "$3.13", goalActions: "145", goalCpa: "$10.05", creatives: [{ id: 1801, name: "Suburban Banner 1", type: "Billboard", status: "Active" }] },
+  { id: 19, campaign: "432015535_Brand Showcase_Native Ads (Marquee)_50% SOVTakeover_2 (TFL0277363)", parentCampaign: "Caldor Upfront Holiday 2025", status: "Scheduled", startDate: new Date("2026-07-01"), spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 1901, name: "Brand Showcase Marquee 2", type: "Marquee", status: "Draft" }] },
+  { id: 25, campaign: "432015526_Brand Showcase_Native Ads (Marquee)_50% SOVTakeover_3 (TFL0277366)", parentCampaign: "Caldor Upfront Holiday 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 2501, name: "Brand Showcase Marquee 3", type: "Marquee", status: "Active" }] },
+  { id: 26, campaign: "432603873_BILLABLE_Theme_BETA_Sponsorship Display_Theme (TFL0277386)", parentCampaign: "Caldor Upfront Holiday 2025", status: "Not delivering", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 2601, name: "Theme Sponsorship Display", type: "Billboard", status: "Creative in review" }] },
+  { id: 27, campaign: "432015559_Season's Streamings_Native Ads (Marquee Ad Video)_TKO_Hourly_Primetime 7-11pm UTZ (TFL0288536)", parentCampaign: "Caldor Upfront Holiday 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 2701, name: "Season's Streamings Marquee Video", type: "Marquee", status: "Active" }] },
+  { id: 28, campaign: "432604569_Season's Streamings_Season's Streaming_Native Ads (Marquee + Billboard) (TFL0288538)", parentCampaign: "Caldor Upfront Holiday 2025", status: "Scheduled", startDate: new Date("2026-07-01"), spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 2801, name: "Season's Streamings Marquee + Billboard", type: "Billboard", status: "Draft" }] },
+  { id: 29, campaign: "432262595_Season's Streamings_Season's Streaming_Premiere Tile_1A (TFL0288539)", parentCampaign: "Caldor Upfront Holiday 2025", status: "Active", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 2901, name: "Season's Streamings Premiere Tile", type: "Billboard", status: "Active" }] },
+  { id: 21, campaign: "Electronics Cross-sell", parentCampaign: "Black Friday 2023", status: "Active", spend: "$789.01", impressions: "25,432", cpm: "$3.10", goalActions: "78", goalCpa: "$10.12", creatives: [{ id: 2101, name: "Electronics Banner 1", type: "Billboard", status: "Active" }] },
+  { id: 22, campaign: "Accessories Cross-sell", parentCampaign: "Holiday Sale 2024", status: "Active", spend: "$654.32", impressions: "21,098", cpm: "$3.10", goalActions: "65", goalCpa: "$10.07", creatives: [{ id: 2201, name: "Accessories Video 1", type: "In-content video", status: "Creative in review" }, { id: 2202, name: "Accessories Video 2", type: "In-content video", status: "Active" }, { id: 2203, name: "Accessories Video 3", type: "In-content video", status: "Active" }, { id: 2204, name: "Accessories Video 4", type: "In-content video", status: "Active" }] },
+  { id: 23, campaign: "Premium Products Upsell", parentCampaign: "Holiday Sale 2024", status: "Active", spend: "$1,098.76", impressions: "35,467", cpm: "$3.10", goalActions: "109", goalCpa: "$10.08", creatives: [{ id: 2301, name: "Premium Creative 1", type: "In-content video", status: "Active" }, { id: 2302, name: "Premium Creative 2", type: "In-content video", status: "Active" }] },
+  { id: 24, campaign: "432015535_Brand Showcase_Native Ads (Marquee)_50% SOVTakeover_2 (TFL0277363)", parentCampaign: "Kmart Upfront Holiday Total Plan 2025", status: "Draft", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 2401, name: "Brand Showcase Marquee 2", type: "Marquee", status: "Creative in review" }] },
   { id: 25, campaign: "432015526_Brand Showcase_Native Ads (Marquee)_50% SOVTakeover_3 (TFL0277366)", parentCampaign: "Kmart Upfront Holiday Total Plan 2025", status: "Draft", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 2501, name: "Brand Showcase Marquee 3", type: "Marquee", status: "Draft" }] },
   { id: 26, campaign: "432603873_BILLABLE_Theme_BETA_Sponsorship Display_Theme (TFL0277386)", parentCampaign: "Kmart Upfront Holiday Total Plan 2025", status: "Draft", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 2601, name: "Theme Sponsorship Billboard", type: "Billboard", status: "Draft" }] },
   { id: 27, campaign: "432015559_Season's Streamings_Native Ads (Marquee Ad Video)_TKO_Hourly_Primetime 7-11pm UTZ (TFL0288536)", parentCampaign: "Kmart Upfront Holiday Total Plan 2025", status: "Draft", spend: "$0.00", impressions: "0", cpm: "$0.00", goalActions: "0", goalCpa: "$0.00", creatives: [{ id: 2701, name: "Season's Streamings Marquee Video", type: "Marquee", status: "Draft" }] },
@@ -3812,9 +3813,9 @@ const creativesData = [
     goalActions: "567",
     goalCpa: "$8.05",
     creatives: [
-      { id: 101, name: "Holiday Banner 1", type: "Marquee", size: "728x90", status: "Approved" },
-      { id: 102, name: "Holiday Video 1", type: "In-content video", size: "16:9", status: "Approved" },
-      { id: 103, name: "Holiday Banner 2", type: "Billboard", size: "300x250", status: "In review" }
+      { id: 101, name: "Holiday Banner 1", type: "Marquee", size: "728x90", status: "Active" },
+      { id: 102, name: "Holiday Video 1", type: "In-content video", size: "16:9", status: "Active" },
+      { id: 103, name: "Holiday Banner 2", type: "Billboard", size: "300x250", status: "Creative in review" }
     ]
   },
   {
@@ -3827,8 +3828,8 @@ const creativesData = [
     goalActions: "601",
     goalCpa: "$10.02",
     creatives: [
-      { id: 201, name: "Black Friday Special", type: "Billboard", size: "970x250", status: "Rejected" },
-      { id: 202, name: "BF Video Ad", type: "In-content video", size: "16:9", status: "Rejected" }
+      { id: 201, name: "Black Friday Special", type: "Billboard", size: "970x250", status: "Creative rejected" },
+      { id: 202, name: "BF Video Ad", type: "In-content video", size: "16:9", status: "Creative rejected" }
     ]
   },
   {
@@ -3906,17 +3907,17 @@ export default function App() {
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedCampaignId, setSelectedCampaignId] = useState(null);
+  const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState('Performance');
   const [dateRange, setDateRange] = useState('Last 7 days');
   const [statusFilter, setStatusFilter] = useState([
     'Active', 
-    'Creative in review', 
-    'Creative needed', 
     'Deactivated', 
     'Draft', 
-    'Ended', 
-    'Inactive', 
+    'Ended',
+    'Not delivering', 
+    'Paused',
     'Scheduled'
   ]);
   const [collapsedCampaigns, setCollapsedCampaigns] = useState(new Set());
@@ -4454,6 +4455,46 @@ export default function App() {
     handleMenuClose();
   };
 
+  const handleArchiveClick = () => {
+    handleMenuClose();
+    setArchiveDialogOpen(true);
+  };
+
+  const handleArchiveConfirm = () => {
+    const campaign = campaigns.find(c => c.id === selectedCampaignId);
+    if (!campaign) { setArchiveDialogOpen(false); return; }
+
+    if (campaign.status === 'Archived') {
+      // Unarchive - restore previous statuses
+      setCampaigns(prev => prev.map(c => c.id === selectedCampaignId ? { ...c, status: c.previousStatus || 'Active', previousStatus: 'Archived' } : c));
+      setAdGroups(prev => prev.map(ag => {
+        if (ag.parentCampaign === campaign.campaign && ag.statusReason === 'campaign_archived') {
+          const restoredCreatives = ag.creatives ? ag.creatives.map(c =>
+            c.statusReason === 'campaign_archived' ? { ...c, status: c.previousStatus || 'Active', statusReason: null, previousStatus: undefined } : c
+          ) : ag.creatives;
+          return { ...ag, status: ag.previousStatus || 'Active', statusReason: null, previousStatus: undefined, creatives: restoredCreatives };
+        }
+        return ag;
+      }));
+      setToastMessage('Campaign unarchived successfully');
+    } else {
+      // Archive - store current statuses and set to Archived
+      setCampaigns(prev => prev.map(c => c.id === selectedCampaignId ? { ...c, previousStatus: c.status, status: 'Archived' } : c));
+      setAdGroups(prev => prev.map(ag => {
+        if (ag.parentCampaign === campaign.campaign) {
+          const updatedCreatives = ag.creatives ? ag.creatives.map(c => ({
+            ...c, previousStatus: c.status, status: 'Archived', statusReason: 'campaign_archived'
+          })) : ag.creatives;
+          return { ...ag, previousStatus: ag.status, status: 'Archived', statusReason: 'campaign_archived', creatives: updatedCreatives };
+        }
+        return ag;
+      }));
+      setToastMessage('Campaign archived successfully');
+    }
+    setArchiveDialogOpen(false);
+    setToastOpen(true);
+  };
+
   const handleStatusChange = (event) => {
     setStatusFilter(event.target.value);
   };
@@ -4464,9 +4505,9 @@ export default function App() {
     
     // Update status filter based on view mode
     if (newViewMode === 'Pre-launch') {
-      setStatusFilter(['Draft', 'Creative in review', 'Creative needed', 'Scheduled']);
+      setStatusFilter(['Draft']);
     } else if (newViewMode === 'Performance') {
-      setStatusFilter(['Active', 'Creative in review', 'Creative needed', 'Deactivated', 'Draft', 'Ended', 'Inactive', 'Scheduled']);
+      setStatusFilter(['Active', 'Deactivated', 'Draft', 'Ended', 'Not delivering', 'Paused', 'Scheduled']);
     }
   };
 
@@ -4569,49 +4610,99 @@ export default function App() {
 
     const { id, isChecked } = pendingSwitchChange;
 
-    setCampaigns(prevCampaigns => 
-      prevCampaigns.map(campaign => {
-        if (campaign.id === id) {
-          if (isChecked) {
-            // Switch turned on - restore previous status
-            return {
-              ...campaign,
-              status: campaign.previousStatus
-            };
-          } else {
-            // Switch turned off - store current status and set to Inactive
-            return {
-              ...campaign,
-              previousStatus: campaign.status !== 'Inactive' ? campaign.status : campaign.previousStatus,
-              status: 'Inactive'
-            };
-          }
-        }
-        return campaign;
-      })
-    );
+    // Check if this is a campaign toggle
+    const targetCampaign = campaigns.find(c => c.id === id);
 
-    setAdGroups(prevAdGroups =>
-      prevAdGroups.map(adGroup => {
-        if (adGroup.id === id) {
-          if (isChecked) {
-            // Switch turned on - restore previous status
-            return {
-              ...adGroup,
-              status: adGroup.previousStatus
-            };
-          } else {
-            // Switch turned off - store current status and set to Inactive
-            return {
-              ...adGroup,
-              previousStatus: adGroup.status !== 'Inactive' ? adGroup.status : adGroup.previousStatus,
-              status: 'Inactive'
-            };
+    if (targetCampaign) {
+      // This is a campaign toggle
+      if (isChecked) {
+        // Switch turned on - restore campaign previous status
+        let restoredStatus = targetCampaign.previousStatus;
+        if (restoredStatus === 'Draft') {
+          const campaignAdGroups = adGroups.filter(ag => ag.parentCampaign === targetCampaign.campaign);
+          const allAdGroupsDraft = campaignAdGroups.length === 0 || campaignAdGroups.every(ag => ag.status === 'Draft');
+          if (!allAdGroupsDraft) {
+            restoredStatus = 'Active';
           }
         }
-        return adGroup;
-      })
-    );
+        setCampaigns(prev => prev.map(c => c.id === id ? { ...c, status: restoredStatus } : c));
+        // Restore ad groups and creatives that were set to Not delivering due to campaign pause
+        setAdGroups(prev => prev.map(ag => {
+          if (ag.parentCampaign === targetCampaign.campaign && ag.statusReason === 'campaign_paused') {
+            const restoredCreatives = ag.creatives ? ag.creatives.map(c => 
+              c.statusReason === 'campaign_paused' ? { ...c, status: c.previousStatus || c.status, statusReason: null, previousStatus: undefined } : c
+            ) : ag.creatives;
+            return { ...ag, status: ag.previousStatus || ag.status, statusReason: null, previousStatus: undefined, creatives: restoredCreatives };
+          }
+          return ag;
+        }));
+      } else {
+        // Switch turned off - pause campaign, set ad groups and creatives to Not delivering
+        setCampaigns(prev => prev.map(c => c.id === id ? { 
+          ...c, 
+          previousStatus: c.status !== 'Paused' ? c.status : c.previousStatus, 
+          status: 'Paused' 
+        } : c));
+        // Set all non-Draft ad groups to Not delivering with reason
+        setAdGroups(prev => prev.map(ag => {
+          if (ag.parentCampaign === targetCampaign.campaign && ag.status !== 'Draft') {
+            const updatedCreatives = ag.creatives ? ag.creatives.map(c => 
+              c.status !== 'Draft' ? { ...c, previousStatus: c.status, status: 'Not delivering', statusReason: 'campaign_paused' } : c
+            ) : ag.creatives;
+            return { 
+              ...ag, 
+              previousStatus: ag.status, 
+              status: 'Not delivering', 
+              statusReason: 'campaign_paused',
+              creatives: updatedCreatives
+            };
+          }
+          return ag;
+        }));
+      }
+    } else {
+      // This is an ad group toggle
+      setAdGroups(prevAdGroups =>
+        prevAdGroups.map(adGroup => {
+          if (adGroup.id === id) {
+            if (isChecked) {
+              // Switch turned on - restore previous status
+              let restoredStatus = adGroup.previousStatus;
+              if (restoredStatus === 'Active') {
+                const hasActiveCreative = adGroup.creatives && adGroup.creatives.some(c => c.status === 'Active');
+                if (!hasActiveCreative) {
+                  restoredStatus = 'Not delivering';
+                }
+              }
+              if (restoredStatus === 'Scheduled') {
+                const now = new Date();
+                if (!adGroup.startDate || new Date(adGroup.startDate) <= now) {
+                  restoredStatus = 'Active';
+                  const hasActiveCreative = adGroup.creatives && adGroup.creatives.some(c => c.status === 'Active');
+                  if (!hasActiveCreative) {
+                    restoredStatus = 'Not delivering';
+                  }
+                }
+              }
+              return {
+                ...adGroup,
+                status: restoredStatus,
+                statusReason: null
+              };
+            } else {
+              // Switch turned off - store current status and set to Paused
+              return {
+                ...adGroup,
+                previousStatus: adGroup.status !== 'Paused' ? adGroup.status : adGroup.previousStatus,
+                status: 'Paused',
+                statusReason: null
+              };
+            }
+          }
+          return adGroup;
+        })
+      );
+    }
 
     // Close dialog and clear pending change
     setSwitchConfirmDialogOpen(false);
@@ -4719,7 +4810,9 @@ export default function App() {
     setCurrentView('details');
 
     // Populate Budget card optimization goal from campaign data
-    if (selectedCampaignType === 'conversion' && selectedConversionEvent) {
+    if (selectedCampaignType === 'awareness') {
+      setBudgetConversionEvent('default_event_group');
+    } else if (selectedCampaignType === 'conversion' && selectedConversionEvent) {
       setBudgetConversionEvent(selectedConversionEvent);
     }
     if (selectedCampaignType === 'conversion' && selectedEventGroup) {
@@ -4798,7 +4891,7 @@ export default function App() {
       goalActions: "0",
       goalCpa: "$0.00",
       creatives: [
-        { id: campaignId + 3, name: "AI Generated Video Ad", type: "In-content video", size: "16:9", status: "In review" }
+        { id: campaignId + 3, name: "AI Generated Video Ad", type: "In-content video", size: "16:9", status: "Creative in review" }
       ]
     };
 
@@ -5055,7 +5148,7 @@ export default function App() {
   };
 
   const handleSelectAllCreatives = (event) => {
-    const allVisibleCreatives = adGroupsData.flatMap(adGroup => 
+    const allVisibleCreatives = filteredAdGroups.flatMap(adGroup => 
       getCreativesForAdGroup(adGroup)
         .filter(creative => 
           (selectedCreativeTypes.length === 0 || 
@@ -5090,7 +5183,11 @@ export default function App() {
       setCurrentView('details');
       
       // Populate Budget card optimization goal from campaign/ad group data
-      if (firstAdGroup.conversionEvent) setBudgetConversionEvent(firstAdGroup.conversionEvent);
+      if (campaign.goal === 'Awareness') {
+        setBudgetConversionEvent('default_event_group');
+      } else if (firstAdGroup.conversionEvent) {
+        setBudgetConversionEvent(firstAdGroup.conversionEvent);
+      }
       if (firstAdGroup.eventGroup) setBudgetEventGroup(firstAdGroup.eventGroup);
       
       // Simulate loading time (in real app, this would be an API call)
@@ -5106,7 +5203,11 @@ export default function App() {
       setCurrentView('details');
       
       // Populate Budget card optimization goal from campaign data
-      if (campaign.conversionEvent) setBudgetConversionEvent(campaign.conversionEvent);
+      if (campaign.goal === 'Awareness') {
+        setBudgetConversionEvent('default_event_group');
+      } else if (campaign.conversionEvent) {
+        setBudgetConversionEvent(campaign.conversionEvent);
+      }
       if (campaign.eventGroup) setBudgetEventGroup(campaign.eventGroup);
     } else {
       // No ad groups, navigate to campaign details
@@ -5116,7 +5217,11 @@ export default function App() {
       setCurrentView('details');
       
       // Populate Budget card optimization goal from campaign data
-      if (campaign.conversionEvent) setBudgetConversionEvent(campaign.conversionEvent);
+      if (campaign.goal === 'Awareness') {
+        setBudgetConversionEvent('default_event_group');
+      } else if (campaign.conversionEvent) {
+        setBudgetConversionEvent(campaign.conversionEvent);
+      }
       if (campaign.eventGroup) setBudgetEventGroup(campaign.eventGroup);
     }
   };
@@ -5388,13 +5493,12 @@ export default function App() {
   const statusPriority = {
     'Active': 1,
     'Draft': 2,
-    'Creative needed': 3,
-    'Creative in review': 4,
-    'Scheduled': 5,
-    'Inactive': 6,
+    'Paused': 3,
+    'Scheduled': 4,
+    'Not delivering': 5,
+    'Ended': 6,
     'Deactivated': 7,
-    'Ended': 8,
-    'Archived': 9
+    'Archived': 8
   };
 
   const filteredCampaigns = campaigns.filter(campaign => {
@@ -5467,13 +5571,22 @@ export default function App() {
     });
   };
 
+  // Compute effective ad group status - always Ended if end date has passed
+  const getEffectiveAdGroupStatus = (adGroup) => {
+    if (adGroup.endDate && new Date(adGroup.endDate) < new Date() && adGroup.status !== 'Draft') {
+      return 'Ended';
+    }
+    return adGroup.status;
+  };
+
   // Filter ad groups based on search term, selected statuses, and selected campaigns
   const filteredAdGroups = adGroups.filter(adGroup => {
     const matchesSearch = adGroup.campaign.toLowerCase().includes(searchTerm.toLowerCase());
     
     // For Performance view, exclude Archived status regardless of status filter
-    let matchesStatus = statusFilter.length === 0 || statusFilter.includes(adGroup.status);
-    if (viewMode === 'Performance' && adGroup.status === 'Archived') {
+    const effectiveStatus = getEffectiveAdGroupStatus(adGroup);
+    let matchesStatus = statusFilter.length === 0 || statusFilter.includes(effectiveStatus);
+    if (viewMode === 'Performance' && effectiveStatus === 'Archived') {
       matchesStatus = false;
     }
     
@@ -6089,6 +6202,37 @@ export default function App() {
         <Typography variant="h2">
           Optimization goal
         </Typography>
+        {campaign.goal === 'Awareness' ? (
+          <>
+          <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+            <Typography variant="body1" color="text.secondary" sx={{ width: '240px', minWidth: '240px', whiteSpace: 'nowrap', mr: 2 }}>
+              Goal
+            </Typography>
+            <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+              Reach
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+            <Typography variant="body1" color="text.secondary" sx={{ width: '240px', minWidth: '240px', whiteSpace: 'nowrap', mr: 2 }}>
+              Event tracking
+            </Typography>
+            <FormControl size="small" sx={{ minWidth: 200 }}>
+              <InputLabel>Event group</InputLabel>
+              <Select
+                value={budgetConversionEvent}
+                onChange={(e) => setBudgetConversionEvent(e.target.value)}
+                label="Event group"
+              >
+                <MenuItem value="default_event_group">Default Event Group</MenuItem>
+                <MenuItem value="impressions">Impressions</MenuItem>
+                <MenuItem value="video_views">Video views</MenuItem>
+                <MenuItem value="reach">Reach</MenuItem>
+                <MenuItem value="frequency">Frequency</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+          </>
+        ) : (
         <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
           <Typography variant="body1" color="text.secondary" sx={{ width: '240px', minWidth: '240px', whiteSpace: 'nowrap', mr: 2 }}>
             Conversion event
@@ -6196,6 +6340,7 @@ export default function App() {
           </FormControl>
           </Box>
         </Box>
+        )}
 
         <Divider sx={{ mt: 2 }} />
 
@@ -6861,9 +7006,38 @@ export default function App() {
           <Typography variant="caption" color="text.secondary" sx={{ alignSelf: 'center', mr: 2 }}>
             {isSaving ? '✓ Saved' : `Last updated ${new Date().toLocaleString()}`}
           </Typography>
-          <Button variant="contained" color="primary" size="medium">
-            Publish
-          </Button>
+          {campaign.status === 'Draft' && (() => {
+            const campaignAdGroups = adGroups.filter(ag => ag.parentCampaign === campaign.campaign);
+            const allAdGroupsDraft = campaignAdGroups.length === 0 || campaignAdGroups.every(ag => ag.status === 'Draft');
+            return allAdGroupsDraft ? (
+              <Button 
+                variant="contained" 
+                color="primary" 
+                size="medium"
+                disabled
+              >
+                Publish
+              </Button>
+            ) : null;
+          })()}
+          {(campaign.status === 'Active' || campaign.status === 'Ended') && (
+            <Button 
+              variant="contained" 
+              color="primary" 
+              size="medium"
+              onClick={() => {
+                setReportsSelectedCampaigns([campaign.id]);
+                const campaignStart = campaign.startDate ? new Date(campaign.startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+                const campaignEnd = campaign.endDate ? new Date(campaign.endDate) : new Date();
+                setReportsStartDate(campaignStart);
+                setReportsEndDate(campaignEnd);
+                setCurrentView('reports');
+                setActiveNavItem('Reports');
+              }}
+            >
+              Run report
+            </Button>
+          )}
         </Box>
       </Box>
     </Box>
@@ -7062,6 +7236,13 @@ export default function App() {
     const [lifetimeBudget, setLifetimeBudget] = useState(adGroup.lifetimeBudget?.replace('$', '') || "500");
     const [isSaving, setIsSaving] = useState(false);
     const [isBudgetSaving, setIsBudgetSaving] = useState(false);
+    const [budgetError, setBudgetError] = useState(false);
+    const [bufferPercent, setBufferPercent] = useState("1");
+    const [contractedImpressions, setContractedImpressions] = useState(
+      adGroup.lifetimeBudget && typeof adGroup.lifetimeBudget === 'string'
+        ? String(parseFloat(adGroup.lifetimeBudget.replace('$', '')) * 12)
+        : "6000"
+    );
     const [campaignDetailsExpanded, setCampaignDetailsExpanded] = useState(false);
     const [sidebarWidth, setSidebarWidth] = useState(250);
     const [isResizing, setIsResizing] = useState(false);
@@ -7293,6 +7474,14 @@ export default function App() {
       }
     };
 
+    const handleContractedImpressionsChange = (event) => {
+      const value = event.target.value.replace(/,/g, '');
+      if (value === '' || /^\d*\.?\d*$/.test(value)) {
+        setContractedImpressions(value);
+        setLifetimeBudget(value ? String(parseFloat(value) / 12) : '0');
+      }
+    };
+
     return (
     <>
     <Container maxWidth={false} sx={{ mt: 0, p: "20px" }}>
@@ -7351,32 +7540,10 @@ export default function App() {
           <>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
               <Typography variant="caption" color="text.secondary">
-                Event group
-              </Typography>
-              <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                XD8AAI1eMy
-              </Typography>
-            </Box>
-            
-            <Typography variant="body1" sx={{ fontWeight: 'bold', mb: 2 }}>
-              Goals & KPIs
-            </Typography>
-            
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-              <Typography variant="caption" color="text.secondary">
                 Advertising objective
               </Typography>
               <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
                 {campaignGoal}
-              </Typography>
-            </Box>
-            
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-              <Typography variant="caption" color="text.secondary">
-                Optimization goal
-              </Typography>
-              <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                App installs
               </Typography>
             </Box>
           </>
@@ -7437,8 +7604,11 @@ export default function App() {
                       'Draft': 0,
                       'Active': 1,
                       'Paused': 2,
-                      'Approval required': 3,
-                      'Stopped': 4
+                      'Scheduled': 3,
+                      'Ended': 4,
+                      'Deactivated': 5,
+                      'Not delivering': 6,
+                      'Archived': 7
                     };
                     
                     const priorityA = statusPriority[a.status] !== undefined ? statusPriority[a.status] : 999;
@@ -7536,7 +7706,7 @@ export default function App() {
           <Box sx={{ mb: 3 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
               <Box sx={{ pt: '6px' }}>
-                <StatusComponent status={adGroup.status} />
+                <StatusComponent status={getEffectiveAdGroupStatus(adGroup)} tooltip={adGroup.statusReason === 'campaign_paused' ? 'Campaign paused' : null} />
               </Box>
               <TextField
                 value={adGroupName}
@@ -7619,7 +7789,152 @@ export default function App() {
             backgroundColor: 'white',
             mb: 3
           }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Typography variant="h2">
+              Optimization goal
+            </Typography>
+            {campaignGoal === 'Awareness' ? (
+              <>
+              <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+                <Typography variant="body1" color="text.secondary" sx={{ width: '240px', minWidth: '240px', whiteSpace: 'nowrap', mr: 2 }}>
+                  Goal
+                </Typography>
+                <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                  Reach
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+                <Typography variant="body1" color="text.secondary" sx={{ width: '240px', minWidth: '240px', whiteSpace: 'nowrap', mr: 2 }}>
+                  Event tracking
+                </Typography>
+                <FormControl size="small" sx={{ minWidth: 200 }}>
+                  <InputLabel>Event group</InputLabel>
+                  <Select
+                    value={budgetConversionEvent}
+                    onChange={(e) => setBudgetConversionEvent(e.target.value)}
+                    label="Event group"
+                  >
+                    <MenuItem value="default_event_group">Default Event Group</MenuItem>
+                    <MenuItem value="impressions">Impressions</MenuItem>
+                    <MenuItem value="video_views">Video views</MenuItem>
+                    <MenuItem value="reach">Reach</MenuItem>
+                    <MenuItem value="frequency">Frequency</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+              </>
+            ) : (
+            <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+              <Typography variant="body1" color="text.secondary" sx={{ width: '240px', minWidth: '240px', whiteSpace: 'nowrap', mr: 2 }}>
+                Conversion event
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <InputLabel>Event</InputLabel>
+                <Select
+                  value={budgetConversionEvent}
+                  onChange={(e) => setBudgetConversionEvent(e.target.value)}
+                  label="Event"
+                  renderValue={(selected) => {
+                    const eventData = {
+                      'page_views': { label: 'Page views', icon: <PageviewIcon sx={{ fontSize: 20 }} /> },
+                      'sign_ups': { label: 'Sign ups', icon: <PersonAddIcon sx={{ fontSize: 20 }} /> },
+                      'leads': { label: 'Leads', icon: <LeadsIcon sx={{ fontSize: 20 }} /> },
+                      'downloads': { label: 'Downloads', icon: <DownloadIcon sx={{ fontSize: 20 }} /> },
+                      'purchases': { label: 'Purchases', icon: <ShoppingCartIcon sx={{ fontSize: 20 }} /> },
+                      'app_installs': { label: 'App installs', icon: <PhoneAndroidIcon sx={{ fontSize: 20 }} /> },
+                      'subscriptions': { label: 'Subscriptions', icon: <SubscriptionsIcon sx={{ fontSize: 20 }} /> }
+                    };
+                    const selectedEvent = eventData[selected];
+                    return selectedEvent ? (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {selectedEvent.icon}
+                        <Typography variant="body2">{selectedEvent.label}</Typography>
+                      </Box>
+                    ) : 'Select';
+                  }}
+                >
+                  <MenuItem value="page_views">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <PageviewIcon sx={{ fontSize: 20 }} />
+                      <Box>
+                        <Typography variant="body2">Page views</Typography>
+                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>Track when users visit specific pages</Typography>
+                      </Box>
+                    </Box>
+                  </MenuItem>
+                  <MenuItem value="sign_ups">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <PersonAddIcon sx={{ fontSize: 20 }} />
+                      <Box>
+                        <Typography variant="body2">Sign ups</Typography>
+                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>Track user registrations and account creation</Typography>
+                      </Box>
+                    </Box>
+                  </MenuItem>
+                  <MenuItem value="leads">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <LeadsIcon sx={{ fontSize: 20 }} />
+                      <Box>
+                        <Typography variant="body2">Leads</Typography>
+                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>Track form submissions and contact requests</Typography>
+                      </Box>
+                    </Box>
+                  </MenuItem>
+                  <MenuItem value="downloads">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <DownloadIcon sx={{ fontSize: 20 }} />
+                      <Box>
+                        <Typography variant="body2">Downloads</Typography>
+                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>Track file and content downloads</Typography>
+                      </Box>
+                    </Box>
+                  </MenuItem>
+                  <MenuItem value="purchases">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <ShoppingCartIcon sx={{ fontSize: 20 }} />
+                      <Box>
+                        <Typography variant="body2">Purchases</Typography>
+                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>Track completed transactions and sales</Typography>
+                      </Box>
+                    </Box>
+                  </MenuItem>
+                  <MenuItem value="app_installs">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <PhoneAndroidIcon sx={{ fontSize: 20 }} />
+                      <Box>
+                        <Typography variant="body2">App installs</Typography>
+                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>Track mobile app installations</Typography>
+                      </Box>
+                    </Box>
+                  </MenuItem>
+                  <MenuItem value="subscriptions" disabled>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, opacity: 0.5 }}>
+                      <SubscriptionsIcon sx={{ fontSize: 20 }} />
+                      <Box>
+                        <Typography variant="body2">Subscriptions</Typography>
+                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>Track recurring subscription signups</Typography>
+                      </Box>
+                    </Box>
+                  </MenuItem>
+                </Select>
+              </FormControl>
+              <Typography variant="body1" color="text.secondary">
+                in
+              </Typography>
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <InputLabel>Event group</InputLabel>
+                <Select value={budgetEventGroup} onChange={(e) => setBudgetEventGroup(e.target.value)} label="Event group">
+                  <MenuItem value="XD8AAI1eMy">XD8AAI1eMy</MenuItem>
+                  <MenuItem value="XDNEuttoJA">XDNEuttoJA</MenuItem>
+                </Select>
+              </FormControl>
+              </Box>
+            </Box>
+            )}
+
+            <Divider sx={{ mt: 2 }} />
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px', mt: 2 }}>
               <Typography variant="h2">
                 Budget
               </Typography>
@@ -7633,7 +7948,7 @@ export default function App() {
                       Set the maximum you'll spend overall for your ad group. Your ad group will stop delivering when your lifetime budget is reached.
                     </Typography>
                     <Typography variant="body2">
-                      $300 minimum required
+                      $500 minimum required
                     </Typography>
                   </Box>
                 }
@@ -7664,44 +7979,92 @@ export default function App() {
             </Box>
             
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
-              <Typography variant="body1" color="text.secondary" sx={{ width: '240px' }}>
-                Lifetime budget
+              <Typography variant="body1" color="text.secondary" sx={{ width: '240px', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                Lifetime
                 <Typography component="span" sx={{ color: 'red', ml: 0.5 }}>
                   *
                 </Typography>
               </Typography>
-              <TextField
-                value={lifetimeBudget}
-                onChange={handleLifetimeBudgetChange}
-                onBlur={handleLifetimeBudgetBlur}
-                onKeyPress={handleLifetimeBudgetKeyPress}
-                variant="outlined"
-                size="small"
-                sx={{ width: '240px' }}
-                placeholder="Enter amount"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      $
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      USD
-                    </InputAdornment>
-                  )
-                }}
-              />
-              {isBudgetSaving && (
-                <Typography variant="caption" color="success.main" sx={{ fontSize: '12px', ml: 1 }}>
-                  Saved
-                </Typography>
-              )}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <TextField
+                  value={lifetimeBudget ? parseFloat(parseFloat(lifetimeBudget).toFixed(2)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 }) : lifetimeBudget}
+                  onChange={handleLifetimeBudgetChange}
+                  onBlur={handleLifetimeBudgetBlur}
+                  onKeyPress={handleLifetimeBudgetKeyPress}
+                  variant="outlined"
+                  size="small"
+                  sx={{ width: '200px' }}
+                  label="Budget"
+                  placeholder="Enter amount"
+                  error={budgetError}
+                  helperText={budgetError ? '$500 minimum required' : ''}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        $
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        USD
+                      </InputAdornment>
+                    )
+                  }}
+                />
+                {isBudgetSaving && (
+                  <Typography variant="caption" color="success.main" sx={{ fontSize: '12px', ml: 1 }}>
+                    Saved
+                  </Typography>
+                )}
+                {selectedProfileOption === 'Managed Service User' && (
+                  <>
+                    <Typography variant="body1" color="text.secondary">=</Typography>
+                    <TextField
+                      label="Contracted impressions"
+                      value={contractedImpressions ? parseFloat(contractedImpressions).toLocaleString() : '0'}
+                      onChange={handleContractedImpressionsChange}
+                      variant="outlined"
+                      size="small"
+                      sx={{ width: '180px' }}
+                    />
+                    <Typography variant="body1" color="text.secondary">x</Typography>
+                    <TextField
+                      label="Buffer"
+                      value={bufferPercent}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === '' || /^\d*\.?\d*$/.test(val)) setBufferPercent(val);
+                      }}
+                      variant="outlined"
+                      size="small"
+                      sx={{ width: '70px' }}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">%</InputAdornment>
+                        )
+                      }}
+                    />
+                    <Typography variant="body1" color="text.secondary">=</Typography>
+                    <TextField
+                      label="Total impressions"
+                      value={
+                        contractedImpressions && bufferPercent
+                          ? Math.round(parseFloat(contractedImpressions) * (1 + parseFloat(bufferPercent) / 100)).toLocaleString()
+                          : '0'
+                      }
+                      variant="outlined"
+                      size="small"
+                      sx={{ width: '180px' }}
+                      InputProps={{ readOnly: true }}
+                    />
+                  </>
+                )}
+              </Box>
             </Box>
             
             <Divider sx={{ mt: 2 }} />
             
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
               <Typography variant="h2">
                 Schedule
               </Typography>
@@ -7925,14 +8288,14 @@ export default function App() {
           <IconButton size="small" color="primary">
             <MoreHorizIcon />
           </IconButton>
-          <StatusComponent status={adGroup.status} />
+          <StatusComponent status={getEffectiveAdGroupStatus(adGroup)} tooltip={adGroup.statusReason === 'campaign_paused' ? 'Campaign paused' : null} />
         </Box>
         
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Typography variant="caption" color="text.secondary" sx={{ alignSelf: 'center', mr: 2 }}>
             {isSaving || isBudgetSaving ? '✓ Saved' : `Last updated ${new Date().toLocaleString()}`}
           </Typography>
-          {adGroup.status === 'Active' ? (
+          {getEffectiveAdGroupStatus(adGroup) === 'Active' ? (
             <Button 
               variant="contained" 
               color="primary" 
@@ -7944,11 +8307,43 @@ export default function App() {
             >
               Run report
             </Button>
-          ) : (
-            <Button variant="contained" color="primary" size="medium">
+          ) : getEffectiveAdGroupStatus(adGroup) === 'Ended' ? (
+            <Button 
+              variant="contained" 
+              color="primary" 
+              size="medium"
+              onClick={() => {
+                setCurrentView('reports');
+                setActiveNavItem('Reports');
+              }}
+            >
+              Run report
+            </Button>
+          ) : adGroup.status === 'Draft' ? (
+            <Button 
+              variant="contained" 
+              color="primary" 
+              size="medium"
+              disabled={!(adGroup.lifetimeBudget || adGroup.budget) || !adGroup.startDate || !adGroup.endDate || !adGroup.creatives || adGroup.creatives.length === 0}
+              onClick={() => {
+                const now = new Date();
+                const newStatus = adGroup.startDate && new Date(adGroup.startDate) > now ? 'Scheduled' : 'Active';
+                // If going Active, must have an active creative
+                const finalStatus = newStatus === 'Active' && !(adGroup.creatives && adGroup.creatives.some(c => c.status === 'Active')) ? 'Not delivering' : newStatus;
+                setAdGroups(prev => prev.map(ag => ag.id === adGroup.id ? { ...ag, status: finalStatus, previousStatus: 'Draft' } : ag));
+                setSelectedAdGroupForDetails({ ...adGroup, status: finalStatus, previousStatus: 'Draft' });
+                // If parent campaign is Draft, transition it to Active since not all ad groups are Draft anymore
+                const parentCampaign = campaigns.find(c => c.campaign === adGroup.parentCampaign);
+                if (parentCampaign && parentCampaign.status === 'Draft') {
+                  setCampaigns(prev => prev.map(c => c.id === parentCampaign.id ? { ...c, status: 'Active', previousStatus: 'Draft' } : c));
+                }
+                setToastMessage('Ad group published successfully');
+                setToastOpen(true);
+              }}
+            >
               Publish
             </Button>
-          )}
+          ) : null}
         </Box>
       </Box>
     </Box>
@@ -8317,14 +8712,6 @@ export default function App() {
                   <Checkbox checked={statusFilter.indexOf('Archived') > -1} />
                   <ListItemText primary="Archived" />
                 </MenuItem>
-                <MenuItem value="Creative in review">
-                  <Checkbox checked={statusFilter.indexOf('Creative in review') > -1} />
-                  <ListItemText primary="Creative in review" />
-                </MenuItem>
-                <MenuItem value="Creative needed">
-                  <Checkbox checked={statusFilter.indexOf('Creative needed') > -1} />
-                  <ListItemText primary="Creative needed" />
-                </MenuItem>
                 <MenuItem value="Deactivated">
                   <Checkbox checked={statusFilter.indexOf('Deactivated') > -1} />
                   <ListItemText primary="Deactivated" />
@@ -8337,9 +8724,13 @@ export default function App() {
                   <Checkbox checked={statusFilter.indexOf('Ended') > -1} />
                   <ListItemText primary="Ended" />
                 </MenuItem>
-                <MenuItem value="Inactive">
-                  <Checkbox checked={statusFilter.indexOf('Inactive') > -1} />
-                  <ListItemText primary="Inactive" />
+                <MenuItem value="Not delivering">
+                  <Checkbox checked={statusFilter.indexOf('Not delivering') > -1} />
+                  <ListItemText primary="Not delivering" />
+                </MenuItem>
+                <MenuItem value="Paused">
+                  <Checkbox checked={statusFilter.indexOf('Paused') > -1} />
+                  <ListItemText primary="Paused" />
                 </MenuItem>
                 <MenuItem value="Scheduled">
                   <Checkbox checked={statusFilter.indexOf('Scheduled') > -1} />
@@ -8513,7 +8904,7 @@ export default function App() {
               <Tab 
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    Creatives
+                    Ads
                     <Chip 
                       label={selectedCampaigns[2]?.length > 0 ? `${selectedCampaigns[2].length} selected` : 
                         filteredAdGroups.reduce((total, adGroup) => {
@@ -8758,7 +9149,7 @@ export default function App() {
                 </TableHead>
                 <TableBody>
                   {/* Group creatives by ad groups, similar to how ad groups are grouped by campaigns */}
-                  {adGroupsData.map((adGroup) => {
+                  {filteredAdGroups.map((adGroup) => {
                     const creativesForAdGroup = getCreativesForAdGroup(adGroup)
                       .filter(creative => 
                         (selectedCreativeTypes.length === 0 || 
@@ -8988,7 +9379,7 @@ export default function App() {
                               </Link>
                             </TableCell>
                             <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                              <StatusComponent status={creative.status} />
+                              <StatusComponent status={creative.status} tooltip={creative.statusReason === 'campaign_paused' ? 'Campaign paused' : null} />
                             </TableCell>
                             <TableCell sx={{ whiteSpace: 'nowrap' }}>{creative.type}</TableCell>
                           </TableRow>
@@ -9383,7 +9774,7 @@ export default function App() {
                               </Link>
                             </TableCell>
                             <TableCell>
-                              <StatusComponent status={item.status} />
+                              <StatusComponent status={getEffectiveAdGroupStatus(item)} tooltip={item.statusReason === 'campaign_paused' ? 'Campaign paused' : null} />
                             </TableCell>
                             {viewMode === 'Pre-launch' && (
                               <TableCell align="right">
@@ -9396,7 +9787,8 @@ export default function App() {
                             {viewMode === 'Performance' && (
                               <TableCell>
                                 <Switch 
-                                  checked={item.status !== 'Inactive'}
+                                  checked={getEffectiveAdGroupStatus(item) !== 'Paused'}
+                                  disabled={getEffectiveAdGroupStatus(item) === 'Ended'}
                                   size="small"
                                   color="primary"
                                   onChange={(event) => handleSwitchChange(item.id, event.target.checked)}
@@ -9499,7 +9891,7 @@ export default function App() {
                     {viewMode === 'Performance' && (
                       <TableCell>
                         <Switch 
-                          checked={item.status !== 'Inactive'}
+                          checked={item.status !== 'Paused'}
                           size="small"
                           color="primary"
                           onChange={(event) => handleSwitchChange(item.id, event.target.checked)}
@@ -11470,7 +11862,52 @@ export default function App() {
         }}
       >
         <MenuItem onClick={handleRunReport}>Run report</MenuItem>
+        {(() => {
+          const campaign = campaigns.find(c => c.id === selectedCampaignId);
+          if (!campaign) return null;
+          const isArchived = campaign.status === 'Archived';
+          return (
+            <MenuItem 
+              onClick={handleArchiveClick}
+              disabled={!isArchived && campaign.status === 'Active'}
+            >
+              {isArchived ? 'Unarchive' : 'Archive'}
+            </MenuItem>
+          );
+        })()}
       </Menu>
+
+      {/* Archive Confirmation Dialog */}
+      <Dialog
+        open={archiveDialogOpen}
+        onClose={() => setArchiveDialogOpen(false)}
+      >
+        <DialogTitle>
+          {(() => {
+            const campaign = campaigns.find(c => c.id === selectedCampaignId);
+            return campaign?.status === 'Archived' ? 'Unarchive Campaign' : 'Archive Campaign';
+          })()}
+        </DialogTitle>
+        <DialogContent>
+          <Typography>
+            {(() => {
+              const campaign = campaigns.find(c => c.id === selectedCampaignId);
+              return campaign?.status === 'Archived' 
+                ? 'Are you sure you want to unarchive this campaign? All ad groups and creatives will be restored to their previous statuses.'
+                : 'Are you sure you want to archive this campaign? All ad groups and assigned creatives will also be archived.';
+            })()}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setArchiveDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleArchiveConfirm} variant="contained" color="primary">
+            {(() => {
+              const campaign = campaigns.find(c => c.id === selectedCampaignId);
+              return campaign?.status === 'Archived' ? 'Unarchive' : 'Archive';
+            })()}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Drawer
         anchor="right"
