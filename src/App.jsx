@@ -30,6 +30,7 @@ import PlacementCard from "./components/PlacementCard";
 import DeliveryCard from "./components/DeliveryCard";
 import AudienceDrawer from "./components/AudienceDrawer";
 import LandingPage from "./components/LandingPage";
+import EventsSetup from "./components/EventsSetup";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -8546,6 +8547,26 @@ export default function App() {
               Custom Reports
             </MenuItem>
           </Menu>
+          <Button 
+            color="inherit" 
+            sx={{ 
+              mr: 2,
+              padding: '4px 12px 4px 12px',
+              backgroundColor: activeNavItem === 'Events' ? '#fefefe26' : 'transparent',
+              border: activeNavItem === 'Events' ? '1px solid #fefefe40' : '1px solid transparent',
+              borderRadius: '6px',
+              '&:hover': {
+                border: '1px solid white',
+                borderRadius: '6px'
+              }
+            }} 
+            onClick={() => {
+              setActiveNavItem('Events');
+              setCurrentView('events');
+            }}
+          >
+            Events
+          </Button>
           <IconButton 
             color="inherit"
             onClick={handleProfileMenuClick}
@@ -11820,6 +11841,8 @@ export default function App() {
             />
           );
         })()
+      ) : currentView === 'events' ? (
+        <EventsSetup />
       ) : currentView === 'details' && selectedAdGroupForDetails ? (
         (() => {
           console.log('Rendering AdGroupDetails - currentView:', currentView, 'selectedAdGroupForDetails:', selectedAdGroupForDetails);
