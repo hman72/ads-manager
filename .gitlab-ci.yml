@@ -1,0 +1,25 @@
+image: node:22-alpine
+
+build:
+  stage: build
+  tags:
+    - cti-gitlab-runner-pool
+  script:
+    - npm install
+    - npm run build
+  rules:
+    - if: $CI_COMMIT_BRANCH != "main"
+
+pages:
+  stage: deploy
+  tags:
+    - cti-gitlab-runner-pool
+  script:
+    - npm install
+    - npm run build
+    - echo "Live site — $CI_PAGES_URL"
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
