@@ -9,7 +9,7 @@ import {
 } from '@mui/material';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import RokuTile from '../images/Channels/roku_chan.png';
-import DisneyTile from '../images/Channels/disney.png';
+import DisneyTile from '../images/Channels/Disney.png';
 import HuluTile from '../images/Channels/hulu.png';
 import HBOTile from '../images/Channels/hbo.png';
 import PeacockTile from '../images/Channels/peacock.png';
