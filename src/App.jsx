@@ -124,6 +124,7 @@ import PageviewIcon from "@mui/icons-material/Pageview";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import LeadsIcon from "@mui/icons-material/ContactPage";
 import DownloadIcon from "@mui/icons-material/Download";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import PhoneAndroidIcon from "@mui/icons-material/PhoneAndroid";
 import SubscriptionsIcon from "@mui/icons-material/Subscriptions";
@@ -215,6 +216,26 @@ const getImagePath = (imagePath) => {
   // Remove leading slash if present
   const cleanPath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;
   return `${import.meta.env.BASE_URL}${cleanPath}`;
+};
+
+const generateCampaignMetaId = (seed) => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const normalizedSeed = String(seed ?? '');
+  let hash = 0;
+
+  for (let i = 0; i < normalizedSeed.length; i += 1) {
+    hash = (hash * 31 + normalizedSeed.charCodeAt(i)) >>> 0;
+  }
+
+  let state = hash || 1;
+  let id = '';
+
+  for (let i = 0; i < 10; i += 1) {
+    state = (state * 1664525 + 1013904223) >>> 0;
+    id += chars[state % chars.length];
+  }
+
+  return id;
 };
 
 const RokuLogo = () => (
@@ -2755,9 +2776,6 @@ const CreativesCard = ({ adGroup, isSelected, handleCampaignCheckboxClick, onAdd
       
       {creativesToShow.length === 0 ? (
         <Box sx={{ backgroundColor: 'white', padding: 3 }}>
-          <Typography variant="h5" sx={{ mb: 2, textAlign: 'left' }}>
-            Select the type of creative you want to add to this ad group.
-          </Typography>
           <Box sx={{ 
             display: 'flex', 
             justifyContent: 'center', 
@@ -2927,20 +2945,25 @@ const CreativesCard = ({ adGroup, isSelected, handleCampaignCheckboxClick, onAdd
                   )}
                 </TableCell>
                 <TableCell component="th" scope="row" sx={{ width: '100%' }}>
-                  <Link 
-                    href="#" 
-                    underline="hover" 
-                    color="primary"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (creative.type === 'In-content video' && onEditCreative) {
-                        onEditCreative(creative);
-                      }
-                    }}
-                    sx={{ cursor: 'pointer' }}
-                  >
-                    {creative.name}
-                  </Link>
+                  <Box>
+                    <Link 
+                      href="#" 
+                      underline="hover" 
+                      color="primary"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (creative.type === 'In-content video' && onEditCreative) {
+                          onEditCreative(creative);
+                        }
+                      }}
+                      sx={{ cursor: 'pointer' }}
+                    >
+                      {creative.name}
+                    </Link>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                      {generateCampaignMetaId(`${creative.id}-${creative.name}`)}
+                    </Typography>
+                  </Box>
                 </TableCell>
                 <TableCell sx={{ whiteSpace: 'nowrap' }}>
                   <StatusComponent status={creative.status} tooltip={creative.statusReason === 'campaign_paused' ? 'Campaign paused' : null} />
@@ -4050,6 +4073,8 @@ export default function App() {
   const [impressionTags, setImpressionTags] = useState(['']);
   const [creativeDrawerTab, setCreativeDrawerTab] = useState(0);
   const [selectedCreativeFile, setSelectedCreativeFile] = useState(null);
+  const [creativeVideoTitle, setCreativeVideoTitle] = useState('');
+  const [newCreativeName, setNewCreativeName] = useState('');
   const [editCreativeDrawerOpen, setEditCreativeDrawerOpen] = useState(false);
   const [selectedCreativeToEdit, setSelectedCreativeToEdit] = useState(null);
   const [specialCategories, setSpecialCategories] = useState({
@@ -6738,9 +6763,14 @@ export default function App() {
             variant="outlined" 
             size="small"
             onClick={() => {
-              // For campaign level, we'll need to handle this differently
-              // For now, just console log
-              console.log('Add Creative to Campaign');
+              // Open creatives drawer at campaign level
+              const campaignAdGroups = adGroups.filter(adGroup => 
+                adGroup.campaign === campaign.campaign
+              );
+              if (campaignAdGroups.length > 0) {
+                setSelectedAdGroupForCreatives(campaignAdGroups[0]);
+              }
+              setCreativesDrawerOpen(true);
             }}
           >
             Add Creative
@@ -6782,6 +6812,9 @@ export default function App() {
                     // Set creative type
                     if (setSelectedCreativeType) {
                       console.log('Setting creative type to in-content-video');
+                      const now = new Date();
+                      const timestamp = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}-${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}`;
+                      setNewCreativeName(`New creative ${timestamp}`);
                       setSelectedCreativeType('in-content-video');
                     }
                     
@@ -9781,18 +9814,23 @@ export default function App() {
                                 />
                               </TableCell>
                               <TableCell component="th" scope="row" sx={{ paddingLeft: '32px' }}>
-                                <Link 
-                                  href="#" 
-                                  underline="hover"
-                                  color="primary"
-                                sx={{ cursor: 'pointer' }}
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  handleAdGroupClick(item);
-                                }}
-                              >
-                                {item.campaign}
-                              </Link>
+                                <Box>
+                                  <Link 
+                                    href="#" 
+                                    underline="hover"
+                                    color="primary"
+                                  sx={{ cursor: 'pointer' }}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    handleAdGroupClick(item);
+                                  }}
+                                >
+                                  {item.campaign}
+                                </Link>
+                                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                                    {generateCampaignMetaId(`${item.id}-${item.campaign}`)}
+                                  </Typography>
+                                </Box>
                             </TableCell>
                             <TableCell>
                               <StatusComponent status={getEffectiveAdGroupStatus(item)} tooltip={item.statusReason === 'campaign_paused' ? 'Campaign paused' : null} />
@@ -9858,22 +9896,29 @@ export default function App() {
                       />
                     </TableCell>
                     <TableCell component="th" scope="row">
-                      <Link 
-                        href="#" 
-                        underline="hover"
-                        color="primary"
-                        sx={{ cursor: 'pointer' }}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          if (selectedTab === 0) {
-                            handleCampaignClick(item);
-                          } else if (selectedTab === 1) {
-                            handleAdGroupClick(item);
-                          }
-                        }}
-                      >
-                        {item.campaign}
-                      </Link>
+                      <Box>
+                        <Link 
+                          href="#" 
+                          underline="hover"
+                          color="primary"
+                          sx={{ cursor: 'pointer' }}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (selectedTab === 0) {
+                              handleCampaignClick(item);
+                            } else if (selectedTab === 1) {
+                              handleAdGroupClick(item);
+                            }
+                          }}
+                        >
+                          {item.campaign}
+                        </Link>
+                        {selectedTab === 0 && (
+                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                            {generateCampaignMetaId(`${item.id}-${item.campaign}`)}
+                          </Typography>
+                        )}
+                      </Box>
                     </TableCell>
                     {selectedTab === 0 && (
                       <TableCell>
@@ -12747,26 +12792,45 @@ export default function App() {
         }}
       >
         <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <Box sx={{ p: 3, flex: 0, borderBottom: selectedCreativeType === 'in-content-video' && ['sms-email', 'shop-tv', 'microsite'].includes(selectedAction) ? 'none' : '1px solid #e0e0e0' }}>
+          <Box sx={{ p: 3, flex: 0 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0 }}>
+              {selectedCreativeType === 'in-content-video' ? (
+                <TextField
+                  value={newCreativeName || (() => {
+                    const now = new Date();
+                    const ts = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}-${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}`;
+                    return `New creative ${ts}`;
+                  })()}
+                  onChange={(e) => setNewCreativeName(e.target.value)}
+                  variant="outlined"
+                  size="small"
+                  sx={{ flex: 1 }}
+                />
+              ) : (
               <Typography variant="h2">
-                {selectedCreativeType === 'in-content-video' 
-                  ? 'Create In-content video creative' 
-                  : `Add creatives to ${selectedAdGroupForCreatives?.campaign}`}
+                Add creatives
               </Typography>
+              )}
             <IconButton size="small" onClick={handleCreativesDrawerClose}>
               <CloseIcon />
             </IconButton>
           </Box>
+          {selectedCreativeType !== 'in-content-video' && (
+            <Typography variant="body1" sx={{ color: 'text.secondary', mt: 1 }}>
+              Create a new creative or select an existing creative from your creative library.
+            </Typography>
+          )}
           </Box>
 
-          {/* Tabs for special actions */}
-          {selectedCreativeType === 'in-content-video' && ['sms-email', 'shop-tv', 'microsite'].includes(selectedAction) && (
+          {/* Tabs for creative editing */}
+          {selectedCreativeType === 'in-content-video' && (
             <Box sx={{ borderBottom: '1px solid #e0e0e0' }}>
               <Tabs value={creativeDrawerTab} onChange={(e, newValue) => setCreativeDrawerTab(newValue)}>
-                <Tab label="Creative" sx={{ textTransform: 'none' }} />
-                <Tab label="Call to action" sx={{ textTransform: 'none' }} />
-                <Tab label="Destination" sx={{ textTransform: 'none' }} />
+                <Tab label="Video" sx={{ textTransform: 'none' }} />
+                {selectedAction !== 'none' && <Tab label="Action" sx={{ textTransform: 'none' }} />}
+                <Tab label="Preview" sx={{ textTransform: 'none' }} />
+                <Tab label="Settings" sx={{ textTransform: 'none' }} />
+                <Tab label="Usage" sx={{ textTransform: 'none' }} />
               </Tabs>
             </Box>
           )}
@@ -12793,6 +12857,10 @@ export default function App() {
                       const files = e.dataTransfer.files;
                       if (files && files.length > 0) {
                         setSelectedCreativeFile(files[0]);
+                        if (!newCreativeName || newCreativeName.startsWith('New creative ')) {
+                          setNewCreativeName(files[0].name.replace(/\.[^/.]+$/, ''));
+                        }
+                        setCreativeVideoTitle(files[0].name.replace(/\.[^/.]+$/, ''));
                         console.log('File dropped:', files[0].name);
                       }
                     }}
@@ -12857,6 +12925,10 @@ export default function App() {
                         const file = e.target.files?.[0];
                         if (file) {
                           setSelectedCreativeFile(file);
+                          if (!newCreativeName || newCreativeName.startsWith('New creative ')) {
+                            setNewCreativeName(file.name.replace(/\.[^/.]+$/, ''));
+                          }
+                          setCreativeVideoTitle(file.name.replace(/\.[^/.]+$/, ''));
                           console.log('File selected:', file.name);
                         }
                       }}
@@ -12869,218 +12941,137 @@ export default function App() {
                 </Box>
                 
                 {/* Column 2 - 1/3 width */}
-                <Box sx={{ flex: 1, p: 3, borderLeft: '1px solid #e0e0e0', overflow: 'auto' }}>
-                  <Typography variant="h4" sx={{ mb: 2 }}>
-                    Creative details
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 3 }}>
-                    If your creative is in a different category than your business, change it here.
-                  </Typography>
-                  
-                  {/* Business Category Select */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-                    <FormControl sx={{ flex: 1 }} size="small">
-                      <InputLabel>Business category</InputLabel>
-                      <Select
-                        label="Business category"
-                        value="Automotive"
-                      >
-                        <MenuItem value="Automotive">Automotive</MenuItem>
-                      </Select>
-                    </FormControl>
-                    <Tooltip title="This is the category your business is listed as with the Interactive Advertising Bureau (IAB)">
-                      <HelpOutlineIcon sx={{ color: 'text.secondary', cursor: 'pointer' }} />
-                    </Tooltip>
-                  </Box>
-
-                  {/* Language Select */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-                    <FormControl sx={{ flex: 1 }} size="small">
-                      <InputLabel>Language</InputLabel>
-                      <Select
-                        label="Language"
-                        value="English"
-                      >
-                        <MenuItem value="English">English</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Box>
-
-                  {/* Destination Title */}
-                  <Typography variant="h4" sx={{ mb: 2 }}>
-                    Destination
-                  </Typography>
-
-                  <Typography variant="body2" sx={{ mb: 3 }}>
-                    This determines whether or not you would like this video ad to be actionable.
-                  </Typography>
-
-                  {/* Action Select */}
-                  <FormControl sx={{ width: '100%', mb: 3 }} size="small">
-                    <InputLabel>Action</InputLabel>
-                    <Select
-                      label="Action"
-                      value={selectedAction}
-                      onChange={(e) => setSelectedAction(e.target.value)}
-                      renderValue={(selected) => {
-                        if (!selected) return '';
-                        const actionTexts = {
-                          'none': 'None',
-                          'landing-page': 'Landing page (URL)',
-                          'sms-email': 'Send SMS/Email',
-                          'shop-tv': 'Shop on TV',
-                          'microsite': 'Microsite',
-                        };
-                        return actionTexts[selected] || '';
-                      }}
-                    >
-                      <MenuItem value="none">
-                        <Typography variant="body2">None</Typography>
-                      </MenuItem>
-                      <MenuItem value="landing-page">
-                        <Box>
-                          <Typography variant="body2">Landing page (URL)</Typography>
-                          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                            Link to to a URL (only when applicable)
-                          </Typography>
-                        </Box>
-                      </MenuItem>
-                      <MenuItem value="sms-email">
-                        <Box>
-                          <Typography variant="body2">Send SMS/Email</Typography>
-                          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                            Audience would have the option to get a text message and/or email about your advertisement.
-                          </Typography>
-                        </Box>
-                      </MenuItem>
-                      <MenuItem value="shop-tv">
-                        <Box>
-                          <Typography variant="body2">Shop on TV</Typography>
-                          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                            Audience would have the option to shop directly on their TV for your product.
-                          </Typography>
-                        </Box>
-                      </MenuItem>
-                      <MenuItem value="microsite">
-                        <Box>
-                          <Typography variant="body2">Microsite</Typography>
-                          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                            Create a microsite on to further engage your audience about your message.
-                          </Typography>
-                        </Box>
-                      </MenuItem>
-                    </Select>
-                  </FormControl>
-
-                  {/* Landing Page URL TextField - Only show when landing-page action is selected */}
-                  {selectedAction === 'landing-page' && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-                      <TextField
-                        label="Landing page URL"
-                        placeholder="(Optional)"
-                        variant="outlined"
-                        size="small"
-                        sx={{ flex: 1 }}
-                        InputLabelProps={{ shrink: true }}
-                      />
-                      <Tooltip title="The URL must match the brand in the creative. Note: URLs appear only in clickable environments (e.g., web, mobile).">
-                        <HelpOutlineIcon sx={{ color: 'text.secondary', cursor: 'pointer' }} />
-                      </Tooltip>
-                    </Box>
-                  )}
-
-                  {/* Advanced Settings Accordion */}
-                  <Accordion>
+                <Box sx={{ flex: 1, py: 3, px: 0, borderLeft: '1px solid #e0e0e0', overflow: 'auto' }}>
+                  <Typography variant="caption" sx={{ px: 2, color: 'text.secondary' }}>Ad product</Typography>
+                  <Typography variant="h4" sx={{ px: 2, mb: 2 }}>In-content video</Typography>
+                  <Accordion defaultExpanded sx={{ boxShadow: 'none', borderTop: '1px solid #e0e0e0', borderBottom: '1px solid #e0e0e0', borderLeft: 'none', borderRight: 'none', borderRadius: '0 !important', mb: 3, width: '100%', '&:before': { display: 'none' } }}>
                     <AccordionSummary expandIcon={<KeyboardArrowDownIcon />}>
-                      <Typography>Advanced settings</Typography>
+                      <Typography variant="h4">Video</Typography>
                     </AccordionSummary>
-                    <AccordionDetails sx={{ flexDirection: 'column', gap: 2 }}>
-                      <Typography variant="h5" sx={{ mb: 1 }}>
-                        Does your ad include special ad categories? (optional)
-                      </Typography>
-                      
-                      <Typography variant="caption" sx={{ color: 'grey', mb: 2 }}>
-                        These categories help to prevent discrimination in advertising. Check all that apply to expedite your ad approval. Learn more about special ad categories
-                      </Typography>
-                      
-                      <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                        <CheckboxOptionCleanComponent
-                          icon={<CreditCardIcon sx={{ fontSize: 24, color: 'black' }} />}
-                          title="Credit"
-                          description="This campaign promotes credit-related products or services"
-                          selected={specialCategories.credit}
-                          onClick={() => setSpecialCategories(prev => ({ ...prev, credit: !prev.credit }))}
-                        />
-                        <CheckboxOptionCleanComponent
-                          icon={<WorkIcon sx={{ fontSize: 24, color: 'black' }} />}
-                          title="Employment"
-                          description="This campaign is related to employment opportunities or services"
-                          selected={specialCategories.employment}
-                          onClick={() => setSpecialCategories(prev => ({ ...prev, employment: !prev.employment }))}
-                        />
-                        <CheckboxOptionCleanComponent
-                          icon={<HomeIcon sx={{ fontSize: 24, color: 'black' }} />}
-                          title="Housing"
-                          description="This campaign promotes housing-related products or services"
-                          selected={specialCategories.housing}
-                          onClick={() => setSpecialCategories(prev => ({ ...prev, housing: !prev.housing }))}
-                        />
-                      </Box>
-                    </AccordionDetails>
-                  </Accordion>
-
-                  {/* Tracking Settings Accordion */}
-                  <Accordion>
-                    <AccordionSummary expandIcon={<KeyboardArrowDownIcon />}>
-                      <Typography>Tracking settings</Typography>
-                    </AccordionSummary>
-                    <AccordionDetails sx={{ flexDirection: 'column', gap: 2 }}>
-                      <Typography variant="h5" sx={{ mb: 1 }}>
-                        Do you have impression tags?
-                      </Typography>
-                      
-                      <Typography variant="caption" sx={{ color: 'grey', mb: 4 }}>
-                        Add your tags below. Note that only authorized vendors are permitted. Learn more about tag formatting and macros. Maximum 20 tags.
-                      </Typography>
-
-                      {impressionTags.map((tag, index) => (
-                        <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                          <TextField
-                            placeholder="Enter impression tag"
-                            variant="outlined"
-                            size="small"
-                            fullWidth
-                            value={tag}
-                            onChange={(e) => {
-                              const newTags = [...impressionTags];
-                              newTags[index] = e.target.value;
-                              setImpressionTags(newTags);
-                            }}
-                            sx={{ my: 0.75 }}
-                          />
-                          {impressionTags.length > 1 && (
+                    <AccordionDetails>
+                      <Box 
+                        sx={{ p: '6px', border: '1px solid #ccc', borderRadius: 1, textAlign: 'center', backgroundColor: 'white', cursor: 'pointer', '&:hover': { backgroundColor: '#fafafa' }, transition: 'background-color 0.2s', width: '100%' }}
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          e.currentTarget.style.backgroundColor = '#f0f0f0';
+                        }}
+                        onDragLeave={(e) => {
+                          e.preventDefault();
+                          e.currentTarget.style.backgroundColor = 'white';
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          e.currentTarget.style.backgroundColor = 'white';
+                          const files = e.dataTransfer.files;
+                          if (files && files.length > 0) {
+                            setSelectedCreativeFile(files[0]);
+                            if (!newCreativeName || newCreativeName.startsWith('New creative ')) {
+                              setNewCreativeName(files[0].name.replace(/\.[^/.]+$/, ''));
+                            }
+                            setCreativeVideoTitle(files[0].name.replace(/\.[^/.]+$/, ''));
+                          }
+                        }}
+                        onClick={() => document.getElementById('creative-file-input')?.click()}
+                      >
+                        {selectedCreativeFile ? (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, width: '100%', textAlign: 'left' }} onClick={(e) => e.stopPropagation()}>
+                            <Box 
+                              component="video"
+                              src={URL.createObjectURL(selectedCreativeFile)}
+                              sx={{ width: 80, aspectRatio: '16/9', objectFit: 'cover', borderRadius: 1, backgroundColor: '#000', flexShrink: 0 }}
+                            />
+                            <Typography variant="body2" sx={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {selectedCreativeFile.name}
+                            </Typography>
                             <IconButton
                               size="small"
-                              onClick={() => {
-                                setImpressionTags(impressionTags.filter((_, i) => i !== index));
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const url = URL.createObjectURL(selectedCreativeFile);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = selectedCreativeFile.name;
+                                a.click();
+                                URL.revokeObjectURL(url);
                               }}
                               sx={{ color: 'text.secondary' }}
                             >
-                              <RemoveCircleOutlineIcon fontSize="small" />
+                              <DownloadIcon fontSize="small" />
                             </IconButton>
-                          )}
-                        </Box>
-                      ))}
-
-                      <Button
-                        variant="text"
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedCreativeFile(null);
+                                setCreativeVideoTitle('');
+                              }}
+                              sx={{ color: 'text.secondary' }}
+                            >
+                              <DeleteOutlineIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
+                        ) : (
+                          <>
+                            <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                              Drag and drop or <Link href="#" onClick={(e) => { e.preventDefault(); e.stopPropagation(); document.getElementById('creative-file-input')?.click(); }} sx={{ fontWeight: 'bold' }}>Choose file</Link> to upload
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ mt: 2, lineHeight: 1.6 }}>
+                              Upload a single file<br />
+                              Format: .mov or .mp4<br />
+                              File name length: 170<br />
+                              Duration: 6-92 seconds<br />
+                              Max file size: 1 GB
+                            </Typography>
+                          </>
+                        )}
+                      </Box>
+                      <TextField
+                        label="Title"
+                        variant="outlined"
                         size="small"
-                        startIcon={<AddIcon />}
-                        onClick={() => setImpressionTags([...impressionTags, ''])}
-                        sx={{ justifyContent: 'flex-start', pl: 0, mt: 2 }}
-                      >
-                        Add another impression tag
-                      </Button>
+                        fullWidth
+                        value={creativeVideoTitle}
+                        onChange={(e) => setCreativeVideoTitle(e.target.value)}
+                        sx={{ mt: 2 }}
+                        InputLabelProps={{ shrink: true }}
+                      />
+                    </AccordionDetails>
+                  </Accordion>
+                  <Accordion defaultExpanded sx={{ boxShadow: 'none', borderTop: '1px solid #e0e0e0', borderBottom: '1px solid #e0e0e0', borderLeft: 'none', borderRight: 'none', borderRadius: '0 !important', mb: 3, width: '100%', '&:before': { display: 'none' } }}>
+                    <AccordionSummary expandIcon={<KeyboardArrowDownIcon />}>
+                      <Typography variant="h4">Action</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <FormControl fullWidth size="small">
+                        <InputLabel>Type</InputLabel>
+                        <Select
+                          value={selectedAction}
+                          onChange={(e) => {
+                            setSelectedAction(e.target.value);
+                            setCreativeDrawerTab(0);
+                          }}
+                          label="Type"
+                        >
+                          <MenuItem value="none">None</MenuItem>
+                          <MenuItem value="sms-email">SMS/Email</MenuItem>
+                          <MenuItem value="purchase">Purchase</MenuItem>
+                        </Select>
+                        {selectedAction !== 'none' && (
+                          <>
+                            <Typography variant="caption" sx={{ color: 'text.secondary', mt: 1 }}>
+                              Setup for this action happens in the action tab
+                            </Typography>
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              sx={{ mt: 1, alignSelf: 'flex-start' }}
+                              onClick={() => setCreativeDrawerTab(1)}
+                            >
+                              Go to action tab
+                            </Button>
+                          </>
+                        )}
+                      </FormControl>
                     </AccordionDetails>
                   </Accordion>
                 </Box>
@@ -13088,10 +13079,6 @@ export default function App() {
             ) : (
               // Original tile selection layout
               <Box sx={{ p: 3 }}>
-                <Typography variant="body1" sx={{ mb: 2 }}>
-                  Select the type of creative you want to add to this ad group.
-                </Typography>
-                
                 <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 3, justifyContent: 'center' }}>
                   <TileComponent
                     image={CreativeIncontent}
@@ -13099,8 +13086,10 @@ export default function App() {
                     description="In-content ads are commercials that run directly in content, they can be either simple video ads or interactive action ads."
                     onClick={() => {
                       // Handle In-content video selection
+                      const now = new Date();
+                      const timestamp = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}-${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}`;
+                      setNewCreativeName(`New creative ${timestamp}`);
                       setSelectedCreativeType('in-content-video');
-                      console.log('Selected In-content video');
                     }}
                   />
                   <TileComponent
@@ -13507,20 +13496,25 @@ export default function App() {
                             )}
                           </TableCell>
                           <TableCell component="th" scope="row" sx={{ width: '100%' }}>
-                            <Link 
-                              href="#" 
-                              underline="hover" 
-                              color="primary"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                if (creative.type === 'In-content video') {
-                                  handleEditCreativeDrawerOpen(creative);
-                                }
-                              }}
-                              sx={{ cursor: 'pointer' }}
-                            >
-                              {creative.name}
-                            </Link>
+                              <Box>
+                                <Link 
+                                  href="#" 
+                                  underline="hover" 
+                                  color="primary"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    if (creative.type === 'In-content video') {
+                                      handleEditCreativeDrawerOpen(creative);
+                                    }
+                                  }}
+                                  sx={{ cursor: 'pointer' }}
+                                >
+                                  {creative.name}
+                                </Link>
+                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                                  {generateCampaignMetaId(`${creative.id}-${creative.name}`)}
+                                </Typography>
+                              </Box>
                           </TableCell>
                           <TableCell sx={{ whiteSpace: 'nowrap' }}>
                             <StatusComponent status={creative.status} />
