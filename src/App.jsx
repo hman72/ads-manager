@@ -4102,6 +4102,103 @@ export default function App() {
   // Dayparting state variables
   const [selectedTimeSlots, setSelectedTimeSlots] = useState(new Set());
   const [tempDayparting, setTempDayparting] = useState(new Set()); // For campaign creation/edit drawer
+
+  useEffect(() => {
+    const RESIZE_GUTTER_PX = 10;
+    const MIN_COLUMN_WIDTH_PX = 72;
+    let activeResize = null;
+    let hoveredHeaderCell = null;
+
+    const getHeaderCell = (target) => {
+      if (!(target instanceof Element)) return null;
+      const headerCell = target.closest('th');
+      if (!headerCell) return null;
+      return headerCell.closest('thead') ? headerCell : null;
+    };
+
+    const clearHoverCursor = () => {
+      if (hoveredHeaderCell) {
+        hoveredHeaderCell.style.cursor = '';
+        hoveredHeaderCell = null;
+      }
+    };
+
+    const handleMouseMove = (event) => {
+      if (activeResize) {
+        const deltaX = event.clientX - activeResize.startX;
+        const nextWidth = Math.max(MIN_COLUMN_WIDTH_PX, activeResize.startWidth + deltaX);
+        activeResize.headerCell.style.width = `${nextWidth}px`;
+        return;
+      }
+
+      const headerCell = getHeaderCell(event.target);
+      if (!headerCell) {
+        clearHoverCursor();
+        return;
+      }
+
+      if (hoveredHeaderCell && hoveredHeaderCell !== headerCell) {
+        hoveredHeaderCell.style.cursor = '';
+      }
+
+      hoveredHeaderCell = headerCell;
+      const rect = headerCell.getBoundingClientRect();
+      const nearRightEdge = rect.right - event.clientX <= RESIZE_GUTTER_PX;
+      headerCell.style.cursor = nearRightEdge ? 'col-resize' : '';
+    };
+
+    const handleMouseDown = (event) => {
+      const headerCell = getHeaderCell(event.target);
+      if (!headerCell) return;
+
+      const rect = headerCell.getBoundingClientRect();
+      const nearRightEdge = rect.right - event.clientX <= RESIZE_GUTTER_PX;
+      if (!nearRightEdge) return;
+
+      const table = headerCell.closest('table');
+      if (!table) return;
+
+      const headerRowCells = Array.from(headerCell.parentElement?.children || []);
+      headerRowCells.forEach((cell) => {
+        if (!cell.style.width) {
+          cell.style.width = `${cell.getBoundingClientRect().width}px`;
+        }
+      });
+
+      table.style.tableLayout = 'fixed';
+
+      activeResize = {
+        headerCell,
+        startX: event.clientX,
+        startWidth: headerCell.getBoundingClientRect().width,
+      };
+
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+      event.preventDefault();
+      event.stopPropagation();
+    };
+
+    const handleMouseUp = () => {
+      if (!activeResize) return;
+      activeResize = null;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+
+    document.addEventListener('mousedown', handleMouseDown);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousedown', handleMouseDown);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      clearHoverCursor();
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, []);
   
   // Get dayparting for a specific campaign or ad group
   const getDayparting = (type, id) => {
@@ -9568,7 +9665,7 @@ export default function App() {
                       onChange={handleSelectAllClick}
                     />
                   </TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>
+                  <TableCell sx={{ fontWeight: 'bold', width: selectedTab === 1 ? '100%' : 'auto' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       {selectedTab === 1 && (
                         <IconButton
@@ -9610,12 +9707,16 @@ export default function App() {
                   {selectedTab === 0 && <TableCell sx={{ fontWeight: 'bold' }}>Objective</TableCell>}
                   <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
                   {viewMode === 'Pre-launch' && <TableCell align="right" sx={{ fontWeight: 'bold' }}>Budget</TableCell>}
-                  {viewMode === 'Performance' && <TableCell sx={{ fontWeight: 'bold' }}>Off / On</TableCell>}
+                  {viewMode === 'Performance' && (
+                    <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', minWidth: 92 }}>
+                      Off / On
+                    </TableCell>
+                  )}
                   {viewMode === 'Performance' && (
                     <>
                       <TableCell align="right" sx={{ fontWeight: 'bold' }}>Spend</TableCell>
                       <TableCell align="right" sx={{ fontWeight: 'bold' }}>Results</TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 'bold' }}>Cost per result</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', minWidth: 132 }}>Cost per result</TableCell>
                       <TableCell align="right" sx={{ fontWeight: 'bold' }}>CPM</TableCell>
                       <TableCell align="right" sx={{ fontWeight: 'bold' }}>Impressions</TableCell>
                     </>
@@ -9813,7 +9914,7 @@ export default function App() {
                                   onChange={() => handleCampaignCheckboxClick(item.id)}
                                 />
                               </TableCell>
-                              <TableCell component="th" scope="row" sx={{ paddingLeft: '32px' }}>
+                              <TableCell component="th" scope="row" sx={{ paddingLeft: '32px', width: '100%' }}>
                                 <Box>
                                   <Link 
                                     href="#" 
